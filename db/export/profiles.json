@@ -1,0 +1,72 @@
+[
+  {
+    "id": "fa242a68-24b1-40c6-8e35-5a271e990090",
+    "full_name": "Admin Kampus Utama",
+    "email": "admin.kampusutama@kampusaset.id",
+    "role_id": 2,
+    "status": "aktif",
+    "created_at": "2026-05-18T10:34:32.448061+00:00",
+    "updated_at": "2026-05-18T10:34:32.448061+00:00",
+    "university_name": "Kampus Utama"
+  },
+  {
+    "id": "fa8aaf3b-a5f6-4a26-a084-ce32a6e73aef",
+    "full_name": "Operator Kampus Utama",
+    "email": "operator.kampusutama@kampusaset.id",
+    "role_id": 3,
+    "status": "aktif",
+    "created_at": "2026-05-18T10:34:32.905743+00:00",
+    "updated_at": "2026-05-18T10:34:32.905743+00:00",
+    "university_name": "Kampus Utama"
+  },
+  {
+    "id": "436652eb-013f-4421-9173-4f867d2f8cc7",
+    "full_name": "Verifikator Kampus Utama",
+    "email": "verifikator.kampusutama@kampusaset.id",
+    "role_id": 4,
+    "status": "aktif",
+    "created_at": "2026-05-18T10:34:33.355907+00:00",
+    "updated_at": "2026-05-18T10:34:33.355907+00:00",
+    "university_name": "Kampus Utama"
+  },
+  {
+    "id": "50ae4b9e-2358-432f-b985-d895ee979daa",
+    "full_name": "Viewer/Pimpinan Kampus Utama",
+    "email": "viewer.kampusutama@kampusaset.id",
+    "role_id": 5,
+    "status": "aktif",
+    "created_at": "2026-05-18T10:34:33.810755+00:00",
+    "updated_at": "2026-05-18T10:34:33.810755+00:00",
+    "university_name": "Kampus Utama"
+  },
+  {
+    "id": "efa70e52-1b08-4253-a0fe-1eec57e66df2",
+    "full_name": "Admin Aset",
+    "email": "admin@aset.id",
+    "role_id": 2,
+    "status": "aktif",
+    "created_at": "2026-05-21T05:18:55.736661+00:00",
+    "updated_at": "2026-05-21T05:18:55.736661+00:00",
+    "university_name": "Kampus Utama"
+  },
+  {
+    "id": "4221ebb7-4203-4693-816e-9d5a0638082d",
+    "full_name": "Operator Aset",
+    "email": "operator@aset.id",
+    "role_id": 3,
+    "status": "aktif",
+    "created_at": "2026-05-21T05:18:56.552311+00:00",
+    "updated_at": "2026-05-21T05:18:56.552311+00:00",
+    "university_name": "Kampus Utama"
+  },
+  {
+    "id": "5397fcc3-4b71-4af2-a200-7aade5cff449",
+    "full_name": "Super Admin",
+    "email": "jennisaris@gmail.com",
+    "role_id": 1,
+    "status": "aktif",
+    "created_at": "2026-05-18T09:39:13.212835+00:00",
+    "updated_at": "2026-05-18T09:39:13.212835+00:00",
+    "university_name": "Kampus Utama"
+  }
+]

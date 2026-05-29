@@ -1,0 +1,46 @@
+[
+  {
+    "id": 4,
+    "asset_id": 1,
+    "photo_path": "1/2026-05-19T13-00-36-538Z-jk-01010-090.jpeg",
+    "photo_url": "https://wzwfmnfdthwkkhhehern.supabase.co/storage/v1/object/public/asset-photos/1/2026-05-19T13-00-36-538Z-jk-01010-090.jpeg",
+    "caption": "PEMBINAAN PENGELOLAAN PNBP 13 MEI 26.jpg.jpeg",
+    "photo_type": "utama",
+    "is_primary": true,
+    "uploaded_by": null,
+    "created_at": "2026-05-19T13:00:42.028541+00:00"
+  },
+  {
+    "id": 5,
+    "asset_id": 2,
+    "photo_path": "2/2026-05-19T15-03-07-949Z-ijh-009-098.png",
+    "photo_url": "https://wzwfmnfdthwkkhhehern.supabase.co/storage/v1/object/public/asset-photos/2/2026-05-19T15-03-07-949Z-ijh-009-098.png",
+    "caption": "akreditasi S2 Ilmu Komputer.png",
+    "photo_type": "utama",
+    "is_primary": true,
+    "uploaded_by": null,
+    "created_at": "2026-05-19T15:03:11.278125+00:00"
+  },
+  {
+    "id": 6,
+    "asset_id": 2,
+    "photo_path": "2/2026-05-19T15-03-07-950Z-ijh-009-098.png",
+    "photo_url": "https://wzwfmnfdthwkkhhehern.supabase.co/storage/v1/object/public/asset-photos/2/2026-05-19T15-03-07-950Z-ijh-009-098.png",
+    "caption": "Screenshot 2025-09-13 094224.png",
+    "photo_type": "lainnya",
+    "is_primary": false,
+    "uploaded_by": null,
+    "created_at": "2026-05-19T15:03:11.278125+00:00"
+  },
+  {
+    "id": 7,
+    "asset_id": 2,
+    "photo_path": "2/2026-05-19T15-03-07-950Z-ijh-009-098.png",
+    "photo_url": "https://wzwfmnfdthwkkhhehern.supabase.co/storage/v1/object/public/asset-photos/2/2026-05-19T15-03-07-950Z-ijh-009-098.png",
+    "caption": "Screenshot 2025-09-15 091214.png",
+    "photo_type": "lainnya",
+    "is_primary": false,
+    "uploaded_by": null,
+    "created_at": "2026-05-19T15:03:11.278125+00:00"
+  }
+]

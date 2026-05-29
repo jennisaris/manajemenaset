@@ -1,0 +1,56 @@
+[
+  {
+    "id": 1,
+    "asset_code": "JK-01010-090",
+    "asset_name": "Gedung C",
+    "asset_type": "building",
+    "campus_name": "Kampus Utama",
+    "faculty_or_unit": "Pertanian",
+    "address": "",
+    "description": null,
+    "ownership_status": "Milik Universitas",
+    "condition_status": "Baik",
+    "verification_status": "terverifikasi",
+    "latitude": -6.3608,
+    "longitude": 106.8272,
+    "geometry_type": "point",
+    "geometry_geojson": {
+      "type": "Point",
+      "coordinates": [
+        106.8272,
+        -6.3608
+      ]
+    },
+    "created_by": null,
+    "updated_by": null,
+    "created_at": "2026-05-19T13:00:41.118327+00:00",
+    "updated_at": "2026-05-19T13:00:41.118327+00:00"
+  },
+  {
+    "id": 2,
+    "asset_code": "IJH-009-098",
+    "asset_name": "Gedung Perpustakaan",
+    "asset_type": "building",
+    "campus_name": "Kampus Utama",
+    "faculty_or_unit": "Budaya dan Sastra",
+    "address": "",
+    "description": null,
+    "ownership_status": "Milik Universitas",
+    "condition_status": "Baik",
+    "verification_status": "terverifikasi",
+    "latitude": -6.3608,
+    "longitude": 106.8272,
+    "geometry_type": "point",
+    "geometry_geojson": {
+      "type": "Point",
+      "coordinates": [
+        106.8272,
+        -6.3608
+      ]
+    },
+    "created_by": null,
+    "updated_by": null,
+    "created_at": "2026-05-19T15:03:10.721957+00:00",
+    "updated_at": "2026-05-19T15:03:10.721957+00:00"
+  }
+]

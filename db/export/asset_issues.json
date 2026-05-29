@@ -1,0 +1,32 @@
+[
+  {
+    "id": 1,
+    "asset_id": 1,
+    "issue_title": "Temuan",
+    "issue_type": "sengketa_tanah",
+    "description": null,
+    "found_date": "2026-05-19",
+    "priority": "tinggi",
+    "status": "sedang_ditindaklanjuti",
+    "reported_by": null,
+    "resolved_at": null,
+    "final_result": null,
+    "created_at": "2026-05-19T15:30:42.972012+00:00",
+    "updated_at": "2026-05-19T15:30:42.972012+00:00"
+  },
+  {
+    "id": 2,
+    "asset_id": 2,
+    "issue_title": "Buku Hilang",
+    "issue_type": "klaim_pihak_ketiga",
+    "description": null,
+    "found_date": "2026-05-19",
+    "priority": "tinggi",
+    "status": "sedang_ditindaklanjuti",
+    "reported_by": null,
+    "resolved_at": null,
+    "final_result": null,
+    "created_at": "2026-05-19T15:54:22.068074+00:00",
+    "updated_at": "2026-05-19T15:54:22.068074+00:00"
+  }
+]

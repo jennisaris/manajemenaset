@@ -1,0 +1,43 @@
+{
+  "name": "web",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint",
+    "test": "tsx --test tests/**/*.test.ts",
+    "db:schema": "psql \"$DATABASE_URL\" -f db/schema.sql",
+    "password:hash": "node scripts/hash-password.mjs",
+    "supabase:check": "node scripts/check-supabase.mjs",
+    "supabase:export": "node scripts/export-supabase-json.mjs",
+    "postgres:import": "node scripts/import-json-postgres.mjs",
+    "supabase:demo-users": "node scripts/upsert-demo-users.mjs"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.105.4",
+    "jimp": "^1.6.1",
+    "leaflet": "^1.9.4",
+    "lucide-react": "^1.16.0",
+    "next": "16.2.6",
+    "pg": "^8.21.0",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "react-leaflet": "^5.0.0",
+    "recharts": "^3.8.1"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/leaflet": "^1.9.21",
+    "@types/node": "^20",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.6",
+    "tailwindcss": "^4",
+    "tsx": "^4.22.3",
+    "typescript": "^5"
+  }
+}

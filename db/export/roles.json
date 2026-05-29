@@ -1,0 +1,37 @@
+[
+  {
+    "id": 1,
+    "name": "Super Admin",
+    "description": "Akses penuh seluruh sistem",
+    "created_at": "2026-05-18T09:38:56.460451+00:00",
+    "updated_at": "2026-05-18T09:38:56.460451+00:00"
+  },
+  {
+    "id": 2,
+    "name": "Admin Aset",
+    "description": "Mengelola data aset dan monitoring",
+    "created_at": "2026-05-18T09:38:56.460451+00:00",
+    "updated_at": "2026-05-18T09:38:56.460451+00:00"
+  },
+  {
+    "id": 3,
+    "name": "Operator",
+    "description": "Input dan update data aset",
+    "created_at": "2026-05-18T09:38:56.460451+00:00",
+    "updated_at": "2026-05-18T09:38:56.460451+00:00"
+  },
+  {
+    "id": 4,
+    "name": "Verifikator",
+    "description": "Review dan verifikasi data aset",
+    "created_at": "2026-05-18T09:38:56.460451+00:00",
+    "updated_at": "2026-05-18T09:38:56.460451+00:00"
+  },
+  {
+    "id": 5,
+    "name": "Pimpinan/Viewer",
+    "description": "Melihat dashboard, peta, dan laporan",
+    "created_at": "2026-05-18T09:38:56.460451+00:00",
+    "updated_at": "2026-05-18T09:38:56.460451+00:00"
+  }
+]
