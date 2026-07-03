@@ -1,7 +1,8 @@
 import 'server-only';
 import { query, transaction } from '@/lib/server/db';
+import { hashPassword, verifyPassword } from '@/lib/server/password';
 import { resolveUserRole } from '@/lib/role-utils';
-import type { Asset, AssetIssue, DashboardSummary, Utilization } from '@/lib/types';
+import type { Asset, AssetIssue, DashboardSummary, IssueProgress, Utilization } from '@/lib/types';
 
 function parseJson(value: unknown) {
   if (typeof value === 'string' && value.trim()) {
@@ -83,6 +84,31 @@ function normalizeIssue(row: Record<string, unknown>): AssetIssue {
   };
 }
 
+function normalizeIssueProgress(row: Record<string, unknown>): IssueProgress {
+  const documentPath = row.document_path as string | null;
+  const documentUrl = row.document_url as string | null;
+  return {
+    id: Number(row.id),
+    issue_id: Number(row.issue_id),
+    progress_date: row.progress_date ? String(row.progress_date).slice(0, 10) : new Date().toISOString().slice(0, 10),
+    progress_description: String(row.progress_description ?? ''),
+    responsible_person: row.responsible_person as string | null,
+    result_note: row.result_note as string | null,
+    status: String(row.status ?? 'dicatat'),
+    document_name: row.document_name as string | null,
+    document_path: documentPath,
+    document_url: documentUrl ?? (documentPath ? `/uploads/${documentPath}` : null),
+  };
+}
+
+async function ensureIssueProgressUploadColumns(client?: { query: (text: string, params?: unknown[]) => Promise<unknown> }) {
+  const runner = client ?? { query };
+  await runner.query('alter table issue_progress add column if not exists document_name text');
+  await runner.query('alter table issue_progress add column if not exists document_path text');
+  await runner.query('alter table issue_progress add column if not exists document_url text');
+  await runner.query('alter table issue_progress add column if not exists updated_at timestamptz');
+}
+
 export async function getAssetsFromDb(): Promise<Asset[]> {
   const { rows } = await query(`
     select a.*,
@@ -146,7 +172,31 @@ export async function upsertAssetToDb(asset: Asset) {
       on conflict (id) do update set asset_code=excluded.asset_code, asset_name=excluded.asset_name, asset_type=excluded.asset_type, campus_name=excluded.campus_name, faculty_or_unit=excluded.faculty_or_unit, address=excluded.address, ownership_status=excluded.ownership_status, condition_status=excluded.condition_status, verification_status=excluded.verification_status, latitude=excluded.latitude, longitude=excluded.longitude, geometry_type=excluded.geometry_type, geometry_geojson=excluded.geometry_geojson, updated_at=now()
       returning *
     `, [asset.id, asset.asset_code, asset.asset_name, asset.asset_type, asset.campus_name, asset.faculty_or_unit, asset.address, asset.ownership_status, asset.condition_status, asset.verification_status, asset.latitude, asset.longitude, asset.geometry_type, asset.geometry_geojson ? JSON.stringify(asset.geometry_geojson) : null]);
-    return normalizeAsset({ ...rows[0], photo_paths: asset.photo_paths ?? [], photo_urls: asset.photo_urls ?? [], photo_names: asset.photo_names ?? [], document_paths: asset.document_paths ?? [], document_names: asset.document_names ?? [] });
+
+    const savedAssetId = Number(rows[0].id);
+    const photoPaths = asset.photo_paths ?? [];
+    const photoUrls = asset.photo_urls ?? [];
+    const photoNames = asset.photo_names ?? [];
+    const documentPaths = asset.document_paths ?? [];
+    const documentNames = asset.document_names ?? [];
+
+    await client.query('delete from asset_photos where asset_id = $1', [savedAssetId]);
+    for (const [index, photoPath] of photoPaths.entries()) {
+      await client.query(
+        'insert into asset_photos (asset_id, photo_path, photo_url, caption, is_primary) values ($1,$2,$3,$4,$5) on conflict (asset_id, photo_path) do update set photo_url=excluded.photo_url, caption=excluded.caption, is_primary=excluded.is_primary',
+        [savedAssetId, photoPath, photoUrls[index] ?? `/uploads/${photoPath}`, photoNames[index] ?? photoPath.split('/').pop() ?? 'Foto Aset', index === 0]
+      );
+    }
+
+    await client.query('delete from asset_documents where asset_id = $1', [savedAssetId]);
+    for (const [index, documentPath] of documentPaths.entries()) {
+      await client.query(
+        'insert into asset_documents (asset_id, document_name, file_path) values ($1,$2,$3) on conflict (asset_id, file_path) do update set document_name=excluded.document_name',
+        [savedAssetId, documentNames[index] ?? documentPath.split('/').pop() ?? 'Dokumen Aset', documentPath]
+      );
+    }
+
+    return normalizeAsset({ ...rows[0], photo_paths: photoPaths, photo_urls: photoPaths.map((photoPath, index) => photoUrls[index] ?? `/uploads/${photoPath}`), photo_names: photoNames, document_paths: documentPaths, document_names: documentNames });
   });
 }
 
@@ -163,6 +213,23 @@ export async function upsertIssueToDb(issue: AssetIssue, isNew = false) {
 
 export async function deleteIssueFromDb(issueId: number) {
   await query('delete from asset_issues where id = $1', [issueId]);
+}
+
+export async function getIssueProgressFromDb() {
+  await ensureIssueProgressUploadColumns();
+  const { rows } = await query('select * from issue_progress order by progress_date desc, id desc');
+  return rows.map((row) => normalizeIssueProgress(row));
+}
+
+export async function upsertIssueProgressToDb(progress: IssueProgress) {
+  return transaction(async (client) => {
+    await ensureIssueProgressUploadColumns(client);
+    const { rows } = await client.query(
+      'insert into issue_progress (issue_id, progress_date, progress_description, responsible_person, result_note, status, document_name, document_path, document_url) values ($1,$2,$3,$4,$5,$6,$7,$8,$9) returning *',
+      [progress.issue_id, progress.progress_date, progress.progress_description, progress.responsible_person ?? null, progress.result_note ?? null, progress.status, progress.document_name ?? null, progress.document_path ?? null, progress.document_url ?? (progress.document_path ? `/uploads/${progress.document_path}` : null)]
+    );
+    return normalizeIssueProgress(rows[0]);
+  });
 }
 
 export async function upsertUtilizationToDb(utilization: Utilization, isNew = false) {
@@ -184,6 +251,18 @@ export async function upsertUtilizationToDb(utilization: Utilization, isNew = fa
 
 export async function deleteUtilizationFromDb(utilizationId: number) {
   await query('delete from asset_utilizations where id = $1', [utilizationId]);
+}
+
+export async function updateOwnPassword(userId: string, currentPassword: string, nextPassword: string) {
+  const { rows } = await query('select id, password_hash from profiles where id = $1 limit 1', [userId]);
+  const row = rows[0];
+  if (!row) return { ok: false as const, error: 'User tidak ditemukan.' };
+  if (!verifyPassword(currentPassword, row.password_hash as string | null)) {
+    return { ok: false as const, error: 'Password saat ini tidak sesuai.' };
+  }
+
+  await query('update profiles set password_hash = $1, updated_at = now() where id = $2', [hashPassword(nextPassword), userId]);
+  return { ok: true as const };
 }
 
 export async function findUserForLogin(email: string) {

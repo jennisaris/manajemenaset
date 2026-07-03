@@ -15,10 +15,10 @@ export async function deleteIssue(issueId: number): Promise<{ mode: 'postgres' |
 }
 
 export async function getIssueProgress(): Promise<IssueProgress[]> {
-  // Local PostgreSQL progress endpoint is planned for the next iteration.
-  return [];
+  const result = await apiJson<{ progress: IssueProgress[]; mode: 'postgres' | 'demo' }>('/api/issues/progress');
+  return result.progress;
 }
 
 export async function persistIssueProgress(progress: IssueProgress): Promise<{ progress: IssueProgress; mode: 'postgres' | 'demo' }> {
-  return { progress, mode: 'demo' };
+  return apiJson<{ progress: IssueProgress; mode: 'postgres' | 'demo' }>('/api/issues/progress', { method: 'POST', body: JSON.stringify(progress) });
 }

@@ -1,9 +1,9 @@
-import { Building2, CircleAlert, LayoutDashboard, Map } from 'lucide-react';
+import { Building2, CircleAlert, Handshake, LayoutDashboard } from 'lucide-react';
 
 const nav = [
   { href: '#dashboard', label: 'Dashboard', icon: LayoutDashboard, active: true },
-  { href: '#map-section', label: 'Peta', icon: Map },
   { href: '#asset-list', label: 'Aset', icon: Building2 },
+  { href: '#utilization', label: 'Pihak Ketiga', icon: Handshake },
   { href: '#issues', label: 'Masalah', icon: CircleAlert },
 ];
 

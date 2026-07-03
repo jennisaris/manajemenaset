@@ -5,7 +5,7 @@ import { CircleMarker, MapContainer, Polygon, Popup, TileLayer } from 'react-lea
 import type { Asset, Utilization } from '@/lib/types';
 import { formatArea } from '@/lib/geo';
 
-const center: LatLngExpression = [-6.2, 106.816666];
+const indonesiaCenter: LatLngExpression = [-2.548926, 118.0148634];
 
 function assetColor(asset: Asset) {
   if (asset.has_active_issue) return '#e11d48';
@@ -21,7 +21,7 @@ function polygonPositions(geometry: GeoJSON.Geometry | null | undefined): LatLng
 
 export function AssetMap({ assets, utilizations = [] }: { assets: Asset[]; utilizations?: Utilization[] }) {
   return (
-    <MapContainer center={center} zoom={16} scrollWheelZoom={false} className="h-[360px] w-full rounded-b-[1.5rem] sm:h-[430px] lg:h-[470px]">
+    <MapContainer center={indonesiaCenter} zoom={5} minZoom={4} scrollWheelZoom={false} className="h-[360px] w-full rounded-b-[1.5rem] sm:h-[430px] lg:h-[470px]">
       <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       {assets.map((asset) => {
         const color = assetColor(asset);

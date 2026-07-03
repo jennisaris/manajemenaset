@@ -5,7 +5,7 @@ import dynamic from 'next/dynamic';
 import { BadgeCheck, Building2, Eye, FileText, ImageIcon, Landmark, Pencil, Plus, RotateCcw, Search, Trash2, UploadCloud, X } from 'lucide-react';
 import { canApproveAssets, canManageAssets } from '@/lib/auth';
 import { deleteAsset, persistAsset } from '@/lib/asset-crud';
-import { isSupabaseConfigured } from '@/lib/supabase';
+
 import { createAssetDocumentPreviewUrl, createAssetDocumentPreviewUrls, createAssetPhotoPreviewUrl, uploadAssetDocument, uploadAssetPhoto } from '@/lib/storage';
 import type { Asset, AssetType, UserRole, VerificationStatus } from '@/lib/types';
 
@@ -51,6 +51,14 @@ function statusClass(status: Asset['verification_status']) {
 
 function normalizeStatus(status: VerificationStatus) {
   return status.replaceAll('_', ' ');
+}
+
+function StatusBadge({ status }: { status: VerificationStatus }) {
+  return (
+    <span className={`inline-flex min-w-36 justify-center rounded-full px-3 py-1 text-center text-xs font-black capitalize ${statusClass(status)}`}>
+      {normalizeStatus(status)}
+    </span>
+  );
 }
 
 function TextField({ label, value, onChange, required = false, type = 'text', error, step, min, max, disabled = false }: { label: string; value: string; onChange: (value: string) => void; required?: boolean; type?: string; error?: string; step?: string; min?: string; max?: string; disabled?: boolean }) {
@@ -101,21 +109,21 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
   const [photoNames, setPhotoNames] = useState<string[]>([]);
   const [photoPreviewUrls, setPhotoPreviewUrls] = useState<(string | null)[]>([]);
   const [previewPhoto, setPreviewPhoto] = useState<DocumentPreview | null>(null);
-  const [photoMessage, setPhotoMessage] = useState('Upload satu atau lebih foto aset ke bucket asset-photos.');
+  const [photoMessage, setPhotoMessage] = useState('Upload satu atau lebih foto aset ke storage lokal.');
   const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
   const [documentFiles, setDocumentFiles] = useState<File[]>([]);
   const [documentNames, setDocumentNames] = useState<string[]>([]);
   const [documentPreviewUrls, setDocumentPreviewUrls] = useState<(string | null)[]>([]);
   const [previewDocument, setPreviewDocument] = useState<DocumentPreview | null>(null);
-  const [documentMessage, setDocumentMessage] = useState('Upload dokumen pendukung ke bucket asset-documents.');
+  const [documentMessage, setDocumentMessage] = useState('Upload dokumen pendukung ke storage lokal.');
   const [isUploadingDocuments, setIsUploadingDocuments] = useState(false);
-  const [saveMessage, setSaveMessage] = useState(isSupabaseConfigured ? 'Mode database aktif: simpan aset akan menulis ke PostgreSQL lokal.' : 'Mode demo: simpan aset masih lokal sampai env PostgreSQL lokal diisi.');
+  const [saveMessage, setSaveMessage] = useState('Mode database aktif: simpan aset akan menulis ke PostgreSQL lokal.');
   const [isSavingAsset, setIsSavingAsset] = useState(false);
   const [deletingAssetId, setDeletingAssetId] = useState<number | null>(null);
   const canManage = canManageAssets(currentRole);
   const canApprove = canApproveAssets(currentRole);
   const isOperator = currentRole === 'Operator Kampus';
-  const isScopedRole = ['Operator Kampus', 'Admin Aset'].includes(currentRole);
+  const isScopedRole = currentRole === 'Operator Kampus';
 
   const filteredItems = useMemo(() => {
     const keyword = query.toLowerCase().trim();
@@ -130,13 +138,13 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
     setPhotoNames([]);
     setPhotoPreviewUrls([]);
     setPreviewPhoto(null);
-    setPhotoMessage(isSupabaseConfigured ? 'Foto akan diupload ke storage lokal saat aset disimpan.' : 'Mode demo: preview lokal aktif, upload PostgreSQL lokal menunggu env.');
+    setPhotoMessage('Foto akan diupload ke storage lokal saat aset disimpan.');
     setDocumentFiles([]);
     setDocumentNames([]);
     setDocumentPreviewUrls([]);
     setPreviewDocument(null);
-    setDocumentMessage(isSupabaseConfigured ? 'Dokumen akan diupload ke storage lokal saat aset disimpan.' : 'Mode demo: daftar dokumen lokal aktif, upload PostgreSQL lokal menunggu env.');
-    setSaveMessage(isSupabaseConfigured ? 'Aset baru akan disimpan ke tabel assets.' : 'Mode demo: aset baru tersimpan lokal di browser.');
+    setDocumentMessage('Dokumen akan diupload ke storage lokal saat aset disimpan.');
+    setSaveMessage('Aset baru akan disimpan ke tabel assets.');
     setEditingAsset({ ...emptyAsset(Math.max(0, ...items.map((asset) => asset.id)) + 1), campus_name: currentUniversity ?? '', verification_status: isOperator ? 'menunggu_verifikasi' : 'draft' });
     setFormOpen(true);
   }
@@ -148,13 +156,13 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
     setPhotoNames(asset.photo_names ?? (asset.primary_photo_url ? ['Foto Utama Aset'] : []));
     setPhotoPreviewUrls(asset.photo_urls ?? (asset.primary_photo_url ? [asset.primary_photo_url] : []));
     setPreviewPhoto(null);
-    setPhotoMessage(isSupabaseConfigured ? 'Foto baru akan ditambahkan saat aset disimpan.' : 'Mode demo: preview lokal aktif, upload PostgreSQL lokal menunggu env.');
+    setPhotoMessage('Foto baru akan ditambahkan saat aset disimpan.');
     setDocumentFiles([]);
     setDocumentNames(asset.document_names ?? []);
     setDocumentPreviewUrls(asset.document_urls ?? []);
     setPreviewDocument(null);
-    setDocumentMessage(isSupabaseConfigured ? 'Dokumen baru akan ditambahkan saat aset disimpan.' : 'Mode demo: daftar dokumen lokal aktif, upload PostgreSQL lokal menunggu env.');
-    setSaveMessage(isSupabaseConfigured ? 'Perubahan aset akan disimpan ke tabel assets.' : 'Mode demo: perubahan tersimpan lokal di browser.');
+    setDocumentMessage('Dokumen baru akan ditambahkan saat aset disimpan.');
+    setSaveMessage('Perubahan aset akan disimpan ke tabel assets.');
     setEditingAsset({ ...asset });
     setFormOpen(true);
   }
@@ -164,7 +172,7 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
     setEditingAsset((current) => {
       if (!current) return current;
       const nextPatch = { ...patch };
-      if (isScopedRole && currentUniversity) nextPatch.campus_name = currentUniversity;
+      if (isOperator && currentUniversity) nextPatch.campus_name = currentUniversity;
       if (isOperator && 'verification_status' in nextPatch) delete nextPatch.verification_status;
       return { ...current, ...nextPatch };
     });
@@ -184,7 +192,7 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
     setDocumentPreviewUrls([]);
     setPreviewDocument(null);
     setDocumentMessage('Upload dokumen pendukung ke bucket asset-documents.');
-    setSaveMessage(isSupabaseConfigured ? 'Mode database aktif: simpan aset akan menulis ke PostgreSQL lokal.' : 'Mode demo: simpan aset masih lokal sampai env PostgreSQL lokal diisi.');
+    setSaveMessage('Mode database aktif: simpan aset akan menulis ke PostgreSQL lokal.');
   }
 
   function handlePhotoChange(files: FileList | null) {
@@ -213,7 +221,7 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
     setPhotoFiles(nextFiles);
     setPhotoNames((current) => [...current, ...nextFiles.map((file) => file.name)]);
     setPhotoPreviewUrls((current) => [...current, ...nextFiles.map((file) => URL.createObjectURL(file))]);
-    setPhotoMessage(isSupabaseConfigured ? `${nextFiles.length} foto siap diupload saat simpan dan bisa dipreview lokal.` : `${nextFiles.length} foto tampil sebagai preview lokal karena PostgreSQL lokal env belum diisi.`);
+    setPhotoMessage(`${nextFiles.length} foto siap diupload saat simpan dan bisa dipreview lokal.`);
   }
 
   function escapeHtml(value: unknown) {
@@ -235,56 +243,30 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
     window.open(url, '_blank', 'noopener,noreferrer');
   }
 
-  async function openView(asset: Asset) {
-    const detailRows = [
-      ['Kode Aset', asset.asset_code],
-      ['Nama Aset', asset.asset_name],
-      ['Jenis', asset.asset_type === 'land' ? 'Tanah' : 'Bangunan'],
-      ['Kampus', asset.campus_name],
-      ['Unit/Fakultas', asset.faculty_or_unit],
-      ['Alamat', asset.address],
-      ['Kepemilikan', asset.ownership_status],
-      ['Kondisi', asset.condition_status],
-      ['Status Verifikasi', normalizeStatus(asset.verification_status)],
-      ['Latitude', asset.latitude],
-      ['Longitude', asset.longitude],
-    ];
-    const photoUrls = asset.photo_paths?.length
-      ? asset.photo_paths.map((path, index) => asset.photo_urls?.[index] || createAssetPhotoPreviewUrl(path) || asset.primary_photo_url || '')
-      : asset.photo_urls ?? (asset.primary_photo_url ? [asset.primary_photo_url] : []);
-    let documentUrls = asset.document_urls ?? [];
-    if (asset.document_paths?.length) {
-      try {
-        const signedUrls = await createAssetDocumentPreviewUrls(asset.document_paths);
-        documentUrls = signedUrls.map((url, index) => url ?? asset.document_urls?.[index] ?? '');
-      } catch (error) {
-        setDocumentMessage(error instanceof Error ? error.message : 'Gagal membuat link dokumen pendukung.');
-        documentUrls = asset.document_urls ?? [];
-      }
-    }
-    const photoNames = asset.photo_names?.length ? asset.photo_names : photoUrls.map((_, index) => `Foto Aset ${index + 1}`);
-    const documentNames = asset.document_names ?? [];
-    const photoGallery = photoUrls.length > 0
-      ? `<div class="slideshow"><a id="mainPhotoLink" href="${escapeHtml(photoUrls[0])}" target="_blank" rel="noopener noreferrer"><img id="mainPhoto" src="${escapeHtml(photoUrls[0])}" alt="${escapeHtml(photoNames[0] ?? 'Foto Aset 1')}"></a><div class="slidebar"><button type="button" onclick="moveSlide(-1)">‹</button><span id="photoCaption">${escapeHtml(photoNames[0] ?? 'Foto Aset 1')}</span><button type="button" onclick="moveSlide(1)">›</button></div><div class="thumbs">${photoUrls.map((url, index) => `<button type="button" class="thumb ${index === 0 ? 'active' : ''}" onclick="showSlide(${index})"><img src="${escapeHtml(url)}" alt="${escapeHtml(photoNames[index] ?? `Foto ${index + 1}`)}"></button>`).join('')}</div></div><script>const photos=${JSON.stringify(photoUrls)};const photoNames=${JSON.stringify(photoNames)};let currentPhoto=0;function showSlide(index){if(!photos.length)return;currentPhoto=(index+photos.length)%photos.length;document.getElementById('mainPhoto').src=photos[currentPhoto];document.getElementById('mainPhoto').alt=photoNames[currentPhoto]||('Foto '+(currentPhoto+1));document.getElementById('mainPhotoLink').href=photos[currentPhoto];document.getElementById('photoCaption').textContent=photoNames[currentPhoto]||('Foto '+(currentPhoto+1));document.querySelectorAll('.thumb').forEach((item,i)=>item.classList.toggle('active',i===currentPhoto));}function moveSlide(step){showSlide(currentPhoto+step);}</script>`
-      : '<p class="muted">Belum ada foto.</p>';
-    const documentLinks = documentNames.length > 0
-      ? documentNames.map((name, index) => documentUrls[index] ? `<a class="doc" href="${escapeHtml(documentUrls[index])}" target="_blank" rel="noopener noreferrer">Lihat ${escapeHtml(name)}</a>` : `<div class="doc disabled">${escapeHtml(name)} — link belum tersedia</div>`).join('')
-      : '<p class="muted">Belum ada dokumen.</p>';
-    const html = `<!doctype html><html lang="id"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${escapeHtml(asset.asset_name)}</title><style>body{font-family:Inter,Arial,sans-serif;margin:0;background:#f0f9ff;color:#0f172a}.wrap{max-width:1080px;margin:32px auto;padding:24px}.card{background:white;border:1px solid #bae6fd;border-radius:24px;padding:24px;box-shadow:0 24px 70px rgba(22,118,194,.14)}h1{margin:0 0 4px;font-size:28px}.muted{color:#64748b;font-weight:700}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:20px}.item{background:#f0f9ff;border:1px solid #e0f2fe;border-radius:16px;padding:14px}.label{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;font-weight:900}.value{margin-top:6px;font-size:14px;font-weight:800}.gallery{margin-top:12px}.slideshow{overflow:hidden;border:1px solid #bae6fd;border-radius:22px;background:#f8fafc;box-shadow:0 10px 30px rgba(14,165,233,.12)}#mainPhoto{display:block;width:100%;max-height:560px;object-fit:contain;background:#e0f2fe}.slidebar{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid #e0f2fe;padding:12px 14px}.slidebar button{border:0;border-radius:999px;background:#0284c7;color:white;width:38px;height:38px;font-size:26px;font-weight:900;cursor:pointer}.slidebar span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:900;color:#0369a1}.thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;padding:12px;border-top:1px solid #e0f2fe}.thumb{overflow:hidden;border:3px solid transparent;border-radius:14px;padding:0;background:white;cursor:pointer}.thumb.active{border-color:#0284c7}.thumb img{display:block;width:100%;aspect-ratio:4/3;object-fit:cover}.docs{display:grid;gap:10px;margin-top:12px}.doc{display:block;background:#f8fafc;border:1px solid #e0f2fe;border-radius:14px;padding:12px;color:#0369a1;font-weight:900;text-decoration:none}.doc.disabled{color:#94a3b8}</style></head><body><main class="wrap"><section class="card"><p class="muted">Detail Aset</p><h1>${escapeHtml(asset.asset_name)}</h1><p class="muted">${escapeHtml(asset.asset_code)} • ${escapeHtml(asset.asset_type === 'land' ? 'Tanah' : 'Bangunan')}</p><div class="grid">${detailRows.map(([label, value]) => `<div class="item"><div class="label">${escapeHtml(label)}</div><div class="value">${escapeHtml(value)}</div></div>`).join('')}</div><h2>Galeri Foto Aset</h2><div class="gallery">${photoGallery}</div><h2>Dokumen Pendukung</h2><div class="docs">${documentLinks}</div></section></main></body></html>`;
-    const url = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
-    window.open(url, '_blank', 'noopener,noreferrer');
+  function openView(asset: Asset) {
+    setPreviewPhoto(null);
+    setPreviewDocument(null);
+    setViewingAsset(asset);
+    setSaveMessage('Detail aset dibuka. Klik item foto/dokumen untuk melihat preview.');
   }
 
-  async function openPhotoPreview(name: string, url?: string | null, path?: string | null) {
-    void name;
+  function inferMimeType(name: string, url?: string | null) {
+    const value = `${name} ${url ?? ''}`.toLowerCase();
+    if (/\.(png|jpe?g|gif|webp|svg)(\?|#|$)/.test(value)) return 'image/*';
+    if (/\.pdf(\?|#|$)/.test(value)) return 'application/pdf';
+    return 'application/octet-stream';
+  }
+
+  function openPhotoPreview(name: string, url?: string | null, path?: string | null) {
     const nextUrl = url || (path ? createAssetPhotoPreviewUrl(path) : null);
     if (!nextUrl) {
       setPhotoMessage('Preview foto belum tersedia. Pilih ulang foto atau buka ulang data aset.');
       return;
     }
-    openNewTab(nextUrl, 'Preview foto belum tersedia. Pilih ulang foto atau buka ulang data aset.');
+    setPreviewDocument(null);
+    setPreviewPhoto({ name, url: nextUrl, mimeType: inferMimeType(name, nextUrl) });
+    setPhotoMessage('Preview foto aset dibuka di bawah detail aset.');
   }
-
   function handleDocumentChange(files: FileList | null) {
     const nextFiles = Array.from(files ?? []);
     if (nextFiles.length === 0) {
@@ -304,24 +286,19 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
     setDocumentFiles(nextFiles);
     setDocumentNames((current) => [...current, ...nextFiles.map((file) => file.name)]);
     setDocumentPreviewUrls((current) => [...current, ...nextFiles.map((file) => URL.createObjectURL(file))]);
-    setDocumentMessage(isSupabaseConfigured ? `${nextFiles.length} dokumen siap diupload saat simpan dan bisa dipreview lokal.` : `${nextFiles.length} dokumen masuk daftar demo lokal dan bisa dipreview.`);
+    setDocumentMessage(`${nextFiles.length} dokumen siap diupload saat simpan dan bisa dipreview lokal.`);
   }
 
-  async function openDocumentPreview(name: string, url?: string | null, path?: string | null) {
-    void name;
-    try {
-      const nextUrl = url || (path ? await createAssetDocumentPreviewUrl(path) : null);
-      if (!nextUrl) {
-        setDocumentMessage('Preview belum tersedia. Dokumen lama perlu dibaca ulang dari database atau dokumen baru perlu dipilih ulang.');
-        return;
-      }
-      openNewTab(nextUrl, 'Preview belum tersedia. Dokumen lama perlu dibaca ulang dari database atau dokumen baru perlu dipilih ulang.');
-    } catch (error) {
-      setDocumentMessage(error instanceof Error ? error.message : 'Gagal membuat preview dokumen.');
+  function openDocumentPreview(name: string, url?: string | null, path?: string | null) {
+    const nextUrl = url || (path ? createAssetDocumentPreviewUrl(path) : null);
+    if (!nextUrl) {
+      setDocumentMessage('Preview belum tersedia. Dokumen lama perlu dibaca ulang dari database atau dokumen baru perlu dipilih ulang.');
       return;
     }
+    setPreviewPhoto(null);
+    setPreviewDocument({ name, url: nextUrl, mimeType: inferMimeType(name, nextUrl) });
+    setDocumentMessage('Preview dokumen dibuka di bawah detail aset. Jika browser tidak bisa menampilkan formatnya, klik tombol Buka/Unduh dokumen.');
   }
-
   function validateAssetDraft(asset: Asset): AssetFormErrors {
     const errors: AssetFormErrors = {};
     const assetCode = asset.asset_code.trim().toUpperCase();
@@ -347,7 +324,7 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
     if (!confirmed) return;
 
     setDeletingAssetId(asset.id);
-    setSaveMessage(isSupabaseConfigured ? 'Menghapus aset dari PostgreSQL lokal...' : 'Menghapus aset dari state lokal demo...');
+    setSaveMessage('Menghapus aset dari PostgreSQL lokal...');
 
     try {
       const result = await deleteAsset(asset.id);
@@ -357,7 +334,7 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
         return nextItems;
       });
       if (editingAsset?.id === asset.id) closeForm();
-      setSaveMessage(result.mode === 'postgres' ? 'Aset berhasil dihapus dari PostgreSQL lokal.' : 'Aset berhasil dihapus di mode demo lokal.');
+      setSaveMessage('Aset berhasil dihapus dari PostgreSQL lokal.');
     } catch (error) {
       setSaveMessage(error instanceof Error ? error.message : 'Gagal menghapus aset.');
     } finally {
@@ -390,7 +367,7 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
     const normalizedDraft: Asset = {
       ...editingAsset,
       asset_code: editingAsset.asset_code.trim().toUpperCase(),
-      campus_name: isScopedRole && currentUniversity ? currentUniversity : editingAsset.campus_name,
+      campus_name: isOperator && currentUniversity ? currentUniversity : editingAsset.campus_name,
       verification_status: isOperator ? 'menunggu_verifikasi' : editingAsset.verification_status,
     };
     const errors = validateAssetDraft(normalizedDraft);
@@ -409,7 +386,7 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
     let primaryPhotoUrl = nextPhotoUrls[0] ?? normalizedDraft.primary_photo_url ?? null;
     let primaryPhotoPath = nextPhotoPaths[0] ?? normalizedDraft.primary_photo_path ?? null;
 
-    if (photoFiles.length > 0 && isSupabaseConfigured) {
+    if (photoFiles.length > 0) {
       setIsUploadingPhoto(true);
       setPhotoMessage('Mengupload foto ke storage lokal...');
       try {
@@ -436,7 +413,7 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
     let nextDocumentPaths = normalizedDraft.document_paths ?? [];
     let nextDocumentUrls: string[] = normalizedDraft.document_paths?.length ? (normalizedDraft.document_urls ?? []).filter((url) => url.startsWith('http')) : [];
 
-    if (documentFiles.length > 0 && isSupabaseConfigured) {
+    if (documentFiles.length > 0) {
       setIsUploadingDocuments(true);
       setDocumentMessage('Mengupload dokumen ke storage lokal...');
       try {
@@ -457,10 +434,14 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
       nextDocumentNames = documentNames;
     }
 
+    const selectedGeometry = normalizedDraft.geometry_geojson?.type === 'Polygon'
+      ? normalizedDraft.geometry_geojson
+      : { type: 'Point', coordinates: [lng, lat] } as GeoJSON.Point;
+
     const nextAsset: Asset = {
       ...normalizedDraft,
-      geometry_type: normalizedDraft.asset_type === 'land' ? 'polygon' : 'point',
-      geometry_geojson: { type: 'Point', coordinates: [lng, lat] },
+      geometry_type: selectedGeometry.type === 'Polygon' ? 'polygon' : 'point',
+      geometry_geojson: selectedGeometry,
       primary_photo_url: primaryPhotoUrl,
       primary_photo_path: primaryPhotoPath,
       photo_paths: nextPhotoPaths,
@@ -472,13 +453,13 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
     };
 
     setIsSavingAsset(true);
-    setSaveMessage(isSupabaseConfigured ? (isOperator ? 'Mengajukan data aset ke Admin untuk approval...' : 'Menyimpan aset ke PostgreSQL lokal...') : 'Menyimpan aset ke state lokal demo...');
+    setSaveMessage(isOperator ? 'Mengajukan data aset ke Admin untuk approval...' : 'Menyimpan aset ke PostgreSQL lokal...');
 
     let savedAsset = nextAsset;
     try {
       const result = await persistAsset(nextAsset);
       savedAsset = result.asset;
-      setSaveMessage(result.mode === 'postgres' ? (isOperator ? 'Data aset berhasil diajukan dan menunggu approval Admin.' : 'Aset berhasil disimpan ke PostgreSQL lokal.') : 'Aset berhasil disimpan di mode demo lokal.');
+      setSaveMessage(isOperator ? 'Data aset berhasil diajukan dan menunggu approval Admin.' : 'Aset berhasil disimpan ke PostgreSQL lokal.');
     } catch (error) {
       setSaveMessage(error instanceof Error ? error.message : 'Gagal menyimpan aset ke database.');
       setIsSavingAsset(false);
@@ -500,7 +481,7 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
       <div className="flex flex-col gap-4 border-b border-sky-100 p-5 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h3 className="text-lg font-black">Daftar Aset</h3>
-          <p className="mt-1 text-sm text-slate-500">Operator Kampus mengajukan data, Admin Aset memverifikasi data kampusnya, Superadmin melihat semua data.</p>
+          <p className="mt-1 text-sm text-slate-500">Operator Kampus mengajukan data kampusnya, sedangkan Admin Aset dan Superadmin melihat serta memverifikasi data semua kampus.</p>
           {isScopedRole && <p className="mt-2 text-xs font-black text-sky-700">Scope universitas: {currentUniversity ?? 'belum diset di profile'}</p>}
           {!canManage && <p className="mt-2 text-xs font-black text-amber-600">Role {currentRole} hanya boleh melihat data, tombol tambah/edit dikunci.</p>}
         </div>
@@ -529,7 +510,7 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
             <TextField label="Kode Aset" value={editingAsset.asset_code} onChange={(value) => updateDraft({ asset_code: value.toUpperCase() })} required error={formErrors.asset_code} />
             <TextField label="Nama Aset" value={editingAsset.asset_name} onChange={(value) => updateDraft({ asset_name: value })} required />
             <SelectField<AssetType> label="Jenis Aset" value={editingAsset.asset_type} onChange={(value) => updateDraft({ asset_type: value })} options={[{ value: 'building', label: 'Bangunan' }, { value: 'land', label: 'Tanah' }]} />
-            <TextField label="Universitas/Kampus" value={editingAsset.campus_name ?? ''} onChange={(value) => updateDraft({ campus_name: value })} disabled={isScopedRole && Boolean(currentUniversity)} />
+            <TextField label="Universitas/Kampus" value={editingAsset.campus_name ?? ''} onChange={(value) => updateDraft({ campus_name: value })} disabled={isOperator && Boolean(currentUniversity)} />
             <TextField label="Unit/Fakultas" value={editingAsset.faculty_or_unit ?? ''} onChange={(value) => updateDraft({ faculty_or_unit: value })} />
             <SelectField<VerificationStatus> label="Status Verifikasi" value={isOperator ? 'menunggu_verifikasi' : editingAsset.verification_status} onChange={(value) => updateDraft({ verification_status: value })} disabled={isOperator} options={[{ value: 'draft', label: 'Draft' }, { value: 'menunggu_verifikasi', label: 'Menunggu Verifikasi' }, { value: 'revisi', label: 'Revisi' }, { value: 'terverifikasi', label: 'Terverifikasi' }, { value: 'tidak_aktif', label: 'Tidak Aktif' }]} />
             <TextField label="Latitude Otomatis" type="number" step="any" min="-90" max="90" value={editingAsset.latitude?.toString() ?? ''} onChange={(value) => updateDraft({ latitude: value ? Number(value) : null })} error={formErrors.latitude} />
@@ -636,11 +617,14 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
                 </div>
                 <button type="button" onClick={() => setPreviewDocument(null)} className="grid h-9 w-9 place-items-center rounded-2xl border border-sky-100 bg-sky-50 text-slate-500"><X className="h-4 w-4" /></button>
               </div>
+              <div className="mb-3 flex flex-wrap gap-2"><a href={previewDocument.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-2xl bg-sky-50 px-4 py-2 text-xs font-black text-sky-700"><Eye className="h-4 w-4" /> Buka/Unduh dokumen</a></div>
               {previewDocument.mimeType?.startsWith('image/') ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={previewDocument.url} alt={previewDocument.name} className="max-h-[520px] w-full rounded-2xl border border-sky-100 object-contain" />
-              ) : (
+              ) : previewDocument.mimeType === 'application/pdf' ? (
                 <iframe title={`Preview ${previewDocument.name}`} src={previewDocument.url} className="h-[520px] w-full rounded-2xl border border-sky-100 bg-slate-50" />
+              ) : (
+                <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4 text-sm font-bold text-slate-600">Format dokumen ini mungkin tidak bisa ditampilkan langsung oleh browser. Klik tombol Buka/Unduh dokumen di atas.</div>
               )}
               <p className="mt-2 text-xs font-semibold text-slate-500">PDF dan gambar tampil langsung di halaman. Jika format Office tidak bisa dirender browser, simpan sebagai PDF agar preview lebih stabil.</p>
             </div>
@@ -650,7 +634,9 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
             <LocationPicker
               latitude={editingAsset.latitude}
               longitude={editingAsset.longitude}
-              onChange={(lat, lng, label) => updateDraft({ latitude: lat, longitude: lng, campus_name: isScopedRole && currentUniversity ? currentUniversity : label ?? editingAsset.campus_name })}
+              geometry={editingAsset.geometry_geojson}
+              onChange={(lat, lng, label) => updateDraft({ latitude: lat, longitude: lng, campus_name: label ?? editingAsset.campus_name })}
+              onGeometryChange={(geometry) => updateDraft({ geometry_geojson: geometry, geometry_type: geometry ? 'polygon' : 'point' })}
             />
           </div>
           <div className="mt-5 flex flex-col gap-3 sm:flex-row sm:justify-end">
@@ -715,11 +701,15 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
               <h5 className="flex items-center gap-2 font-black text-slate-900"><FileText className="h-5 w-5 text-sky-700" /> Dokumen Pendukung</h5>
               {(viewingAsset.document_names?.length ?? 0) > 0 ? (
                 <div className="mt-3 grid gap-2">
-                  {viewingAsset.document_names?.map((name, index) => (
-                    <button key={`${name}-${index}`} type="button" onClick={() => openDocumentPreview(name, viewingAsset.document_urls?.[index], viewingAsset.document_paths?.[index])} className="inline-flex items-center justify-between gap-3 rounded-2xl bg-white px-3 py-2 text-left text-xs font-black text-slate-600 shadow-sm hover:bg-sky-100">
-                      <span className="truncate">{name}</span><span className="inline-flex items-center gap-1 text-sky-700"><Eye className="h-3.5 w-3.5" /> Lihat</span>
-                    </button>
-                  ))}
+                  {viewingAsset.document_names?.map((name, index) => {
+                    const url = viewingAsset.document_urls?.[index] || (viewingAsset.document_paths?.[index] ? createAssetDocumentPreviewUrl(viewingAsset.document_paths[index]) : null);
+                    return (
+                      <div key={`${name}-${index}`} className="flex items-center justify-between gap-3 rounded-2xl bg-white px-3 py-2 text-xs font-black text-slate-600 shadow-sm hover:bg-sky-100">
+                        <button type="button" onClick={() => openDocumentPreview(name, url, viewingAsset.document_paths?.[index])} className="min-w-0 flex-1 truncate text-left">{name}</button>
+                        {url ? <a href={url} target="_blank" rel="noopener noreferrer" className="inline-flex shrink-0 items-center gap-1 text-sky-700"><Eye className="h-3.5 w-3.5" /> Buka</a> : <span className="shrink-0 text-slate-400">Link kosong</span>}
+                      </div>
+                    );
+                  })}
                 </div>
               ) : <p className="mt-2 text-sm font-semibold text-slate-500">Belum ada dokumen pendukung.</p>}
             </div>
@@ -736,11 +726,14 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
           {previewDocument?.url && (
             <div className="mt-5 rounded-3xl border border-sky-100 bg-white p-4 shadow-sm">
               <div className="mb-3 flex items-start justify-between gap-3"><div><h5 className="font-black text-slate-900">Preview Dokumen Pendukung</h5><p className="mt-1 text-xs font-bold text-slate-500">{previewDocument.name}</p></div><button type="button" onClick={() => setPreviewDocument(null)} className="grid h-9 w-9 place-items-center rounded-2xl border border-sky-100 bg-sky-50 text-slate-500"><X className="h-4 w-4" /></button></div>
+              <div className="mb-3 flex flex-wrap gap-2"><a href={previewDocument.url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 rounded-2xl bg-sky-50 px-4 py-2 text-xs font-black text-sky-700"><Eye className="h-4 w-4" /> Buka/Unduh dokumen</a></div>
               {previewDocument.mimeType?.startsWith('image/') ? (
                 // eslint-disable-next-line @next/next/no-img-element
                 <img src={previewDocument.url} alt={previewDocument.name} className="max-h-[520px] w-full rounded-2xl border border-sky-100 object-contain" />
-              ) : (
+              ) : previewDocument.mimeType === 'application/pdf' ? (
                 <iframe title={`Preview ${previewDocument.name}`} src={previewDocument.url} className="h-[520px] w-full rounded-2xl border border-sky-100 bg-slate-50" />
+              ) : (
+                <div className="rounded-2xl border border-sky-100 bg-sky-50 p-4 text-sm font-bold text-slate-600">Format dokumen ini mungkin tidak bisa ditampilkan langsung oleh browser. Klik tombol Buka/Unduh dokumen di atas.</div>
               )}
             </div>
           )}
@@ -765,9 +758,9 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
                   <button onClick={() => deleteSelectedAsset(asset)} disabled={!canManage || deletingAssetId === asset.id} className="grid h-9 w-9 place-items-center rounded-xl bg-rose-50 text-rose-600 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"><Trash2 className="h-4 w-4" /></button>
                 </div>
               </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <span className="rounded-full bg-sky-50 px-3 py-1 text-xs font-black text-sky-700">{asset.asset_type === 'land' ? 'Tanah' : 'Bangunan'}</span>
-                <span className={`rounded-full px-3 py-1 text-xs font-black ${statusClass(asset.verification_status)}`}>{normalizeStatus(asset.verification_status)}</span>
+              <div className="mt-4 flex flex-wrap justify-between gap-2">
+                <span className="inline-flex min-w-24 justify-center rounded-full bg-sky-50 px-3 py-1 text-center text-xs font-black text-sky-700">{asset.asset_type === 'land' ? 'Tanah' : 'Bangunan'}</span>
+                <StatusBadge status={asset.verification_status} />
                 {asset.has_active_issue && <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-black text-rose-600">Bermasalah</span>}
                 {asset.has_active_utilization && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">Dimanfaatkan</span>}
               </div>
@@ -778,14 +771,14 @@ export function AssetList({ assets, currentRole, currentUniversity, onAssetsChan
 
       <div className="hidden overflow-x-auto lg:block">
         <table className="w-full min-w-[760px] text-left text-sm">
-          <thead className="bg-sky-50/60 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-4">Aset</th><th className="px-5 py-4">Jenis</th><th className="px-5 py-4">Kampus/Unit</th><th className="px-5 py-4">Status</th><th className="px-5 py-4">Indikator</th><th className="px-5 py-4">Aksi</th></tr></thead>
+          <thead className="bg-sky-50/60 text-xs uppercase tracking-wide text-slate-500"><tr><th className="px-5 py-4">Aset</th><th className="px-5 py-4">Jenis</th><th className="px-5 py-4">Kampus/Unit</th><th className="px-5 py-4 text-center">Status</th><th className="px-5 py-4">Indikator</th><th className="px-5 py-4">Aksi</th></tr></thead>
           <tbody>
             {filteredItems.map((asset) => (
               <tr key={asset.id} className="border-t border-sky-100">
                 <td className="px-5 py-4"><strong className="block text-slate-950">{asset.asset_name}</strong><span className="text-xs font-semibold text-slate-500">{asset.asset_code}</span></td>
                 <td className="px-5 py-4">{asset.asset_type === 'land' ? 'Tanah' : 'Bangunan'}</td>
                 <td className="px-5 py-4"><span className="block">{asset.campus_name}</span><span className="text-xs text-slate-500">{asset.faculty_or_unit}</span></td>
-                <td className="px-5 py-4"><span className={`rounded-full px-3 py-1 text-xs font-black ${statusClass(asset.verification_status)}`}>{normalizeStatus(asset.verification_status)}</span></td>
+                <td className="px-5 py-4 text-center"><StatusBadge status={asset.verification_status} /></td>
                 <td className="px-5 py-4"><div className="flex flex-wrap gap-2">{asset.has_active_issue && <span className="rounded-full bg-rose-50 px-3 py-1 text-xs font-black text-rose-600">Masalah</span>}{asset.has_active_utilization && <span className="rounded-full bg-blue-50 px-3 py-1 text-xs font-black text-blue-700">Pemanfaatan</span>}{!asset.has_active_issue && !asset.has_active_utilization && <span className="text-xs font-semibold text-slate-400">Normal</span>}</div></td>
                 <td className="px-5 py-4"><div className="flex flex-wrap gap-2"><button onClick={() => openView(asset)} className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-xs font-black text-blue-700"><Eye className="h-3.5 w-3.5" />{canApprove && asset.verification_status === 'menunggu_verifikasi' ? 'Detail Usulan' : 'Lihat Aset'}</button>{canApprove && asset.verification_status === 'menunggu_verifikasi' && <button onClick={() => updateVerificationStatus(asset, 'terverifikasi')} className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700"><BadgeCheck className="h-3.5 w-3.5" />Approve</button>}{canApprove && asset.verification_status === 'menunggu_verifikasi' && <button onClick={() => updateVerificationStatus(asset, 'revisi')} className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-2 text-xs font-black text-amber-700"><RotateCcw className="h-3.5 w-3.5" />Revisi</button>}<button onClick={() => openEdit(asset)} disabled={!canManage} className="inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-2 text-xs font-black text-sky-700 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"><Pencil className="h-3.5 w-3.5" />Edit</button><button onClick={() => deleteSelectedAsset(asset)} disabled={!canManage || deletingAssetId === asset.id} className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-2 text-xs font-black text-rose-600 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"><Trash2 className="h-3.5 w-3.5" />{deletingAssetId === asset.id ? 'Hapus...' : 'Hapus'}</button></div></td>
               </tr>

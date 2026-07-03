@@ -2,8 +2,9 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { LatLngExpression } from 'leaflet';
-import { CircleMarker, MapContainer, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
+import { CircleMarker, MapContainer, Polygon, Popup, TileLayer, useMap, useMapEvents } from 'react-leaflet';
 import { Loader2, MapPin, Search } from 'lucide-react';
+import { closePolygon, formatArea, polygonAreaM2 } from '@/lib/geo';
 
 type LocationSearchResult = {
   place_id: number;
@@ -158,20 +159,34 @@ function shortName(result: LocationSearchResult) {
 export function LocationPicker({
   latitude,
   longitude,
+  geometry,
   onChange,
+  onGeometryChange,
 }: {
   latitude: number | null;
   longitude: number | null;
+  geometry?: GeoJSON.Geometry | null;
   onChange: (lat: number, lng: number, label?: string) => void;
+  onGeometryChange?: (geometry: GeoJSON.Polygon | null, areaM2: number | null) => void;
 }) {
   const [query, setQuery] = useState('');
   const [remoteResults, setRemoteResults] = useState<LocationSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [searchMessage, setSearchMessage] = useState('Ketik nama universitas, kampus, singkatan, atau kota di Indonesia. Contoh: UGM, ITB, Unhas, Telkom University, Jayapura.');
+  const [drawingArea, setDrawingArea] = useState(false);
+  const [areaPoints, setAreaPoints] = useState<[number, number][]>(() => geometry?.type === 'Polygon' ? geometry.coordinates[0].slice(0, -1).map(([lng, lat]) => [lng, lat]) : []);
   const selectedPosition: LatLngExpression = [latitude ?? -2.5489, longitude ?? 118.0149];
+  const draftGeometry = closePolygon(areaPoints);
+  const draftArea = polygonAreaM2(draftGeometry);
+  const draftPolygon = draftGeometry?.coordinates[0].map(([lng, lat]) => [lat, lng] as LatLngExpression) ?? null;
 
   const localResults = useMemo(() => (query.trim().length >= 2 ? searchLocalCampuses(query).slice(0, 12) : []), [query]);
   const results = useMemo(() => dedupeResults([...localResults, ...remoteResults]).slice(0, 18), [localResults, remoteResults]);
+
+  useEffect(() => {
+    if (geometry?.type === 'Polygon') setAreaPoints(geometry.coordinates[0].slice(0, -1).map(([lng, lat]) => [lng, lat]));
+    if (!geometry) setAreaPoints([]);
+  }, [geometry]);
 
   useEffect(() => {
     const keyword = query.trim();
@@ -248,12 +263,33 @@ export function LocationPicker({
     onChange(lat, lng, shortName(result));
   }
 
+  function updateAreaPoints(nextPoints: [number, number][]) {
+    setAreaPoints(nextPoints);
+    const nextGeometry = closePolygon(nextPoints);
+    onGeometryChange?.(nextGeometry, polygonAreaM2(nextGeometry));
+  }
+
+  function clearArea() {
+    setAreaPoints([]);
+    setDrawingArea(false);
+    onGeometryChange?.(null, null);
+  }
+
+  function handleMapPick(lat: number, lng: number) {
+    if (drawingArea) {
+      updateAreaPoints([...areaPoints, [lng, lat]]);
+      if (latitude === null || longitude === null) onChange(lat, lng);
+      return;
+    }
+    onChange(lat, lng);
+  }
+
   return (
     <div className="rounded-3xl border border-sky-100 bg-white/90 p-4 shadow-sm">
       <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
-          <h5 className="font-black text-slate-900">Pilih Lokasi dari Peta</h5>
-          <p className="mt-1 text-xs font-medium text-slate-500">Cari nama universitas, singkatan kampus, kota, atau klik langsung pada peta. Latitude/longitude akan terisi otomatis.</p>
+          <h5 className="font-black text-slate-900">Pilih Lokasi & Gambar Luasan Aset</h5>
+          <p className="mt-1 text-xs font-medium text-slate-500">Cari kampus atau klik peta untuk titik aset. Aktifkan Gambar Luasan untuk marking area/polygon aset.</p>
         </div>
         <label className="flex items-center gap-2 rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm text-slate-500 lg:w-[28rem]">
           {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
@@ -261,17 +297,26 @@ export function LocationPicker({
         </label>
       </div>
 
+      <div className="mb-3 flex flex-wrap items-center gap-2">
+        <button type="button" onClick={() => setDrawingArea((value) => !value)} className={`rounded-full px-3 py-2 text-xs font-black ${drawingArea ? 'bg-amber-100 text-amber-700' : 'bg-sky-600 text-white'}`}>{drawingArea ? 'Selesai Gambar Luasan' : 'Gambar Luasan'}</button>
+        <button type="button" onClick={clearArea} className="rounded-full bg-slate-100 px-3 py-2 text-xs font-black text-slate-600">Reset Luasan</button>
+        <span className="rounded-full bg-sky-50 px-3 py-2 text-xs font-black text-sky-700">Luas: {formatArea(draftArea)}</span>
+        <span className="text-xs font-bold text-slate-500">{drawingArea ? 'Klik minimal 3 titik di peta untuk membentuk polygon.' : 'Mode titik aktif: klik peta mengubah latitude/longitude.'}</span>
+      </div>
+
       <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
         <div className="overflow-hidden rounded-3xl border border-sky-100">
           <MapContainer center={selectedPosition} zoom={latitude && longitude ? 17 : 5} scrollWheelZoom className="h-72 w-full sm:h-80">
             <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
             <FlyToLocation position={selectedPosition} />
-            <ClickHandler onPick={(lat, lng) => onChange(lat, lng)} />
+            <ClickHandler onPick={handleMapPick} />
             {latitude !== null && longitude !== null && (
               <CircleMarker center={[latitude, longitude]} radius={12} pathOptions={{ color: '#ffffff', weight: 3, fillColor: '#0284c7', fillOpacity: 1 }}>
                 <Popup>Lokasi aset terpilih</Popup>
               </CircleMarker>
             )}
+            {draftPolygon && <Polygon positions={draftPolygon} pathOptions={{ color: '#f59e0b', fillColor: '#f59e0b', fillOpacity: 0.28, weight: 2 }}><Popup>Luasan aset<br />{formatArea(draftArea)}</Popup></Polygon>}
+            {areaPoints.map(([lng, lat], index) => <CircleMarker key={`${lng}-${lat}-${index}`} center={[lat, lng]} radius={5} pathOptions={{ color: '#ffffff', weight: 2, fillColor: '#f59e0b', fillOpacity: 1 }} />)}
           </MapContainer>
         </div>
 
@@ -280,6 +325,11 @@ export function LocationPicker({
           {latitude !== null && longitude !== null && (
             <div className="rounded-2xl border border-sky-100 bg-sky-50 px-4 py-3 text-xs font-black text-sky-700">
               Koordinat terpilih: {latitude}, {longitude}
+            </div>
+          )}
+          {areaPoints.length > 0 && (
+            <div className="rounded-2xl border border-amber-100 bg-amber-50 px-4 py-3 text-xs font-black text-amber-700">
+              Titik luasan: {areaPoints.length} • {draftPolygon ? formatArea(draftArea) : 'minimal 3 titik'}
             </div>
           )}
           {results.map((result) => {

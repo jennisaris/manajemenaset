@@ -2,7 +2,7 @@
 
 import { FormEvent, useState } from 'react';
 import { KeyRound, LockKeyhole } from 'lucide-react';
-import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { apiJson } from '@/lib/api-client';
 
 type PasswordState = {
   current: string;
@@ -12,7 +12,7 @@ type PasswordState = {
 
 export function ChangePasswordPanel({ visible }: { visible: boolean }) {
   const [form, setForm] = useState<PasswordState>({ current: '', next: '', confirm: '' });
-  const [message, setMessage] = useState(isSupabaseConfigured ? 'Gunakan form ini untuk mengganti password akun sendiri.' : 'Mode demo: PostgreSQL lokal belum aktif, perubahan password hanya simulasi.');
+  const [message, setMessage] = useState('Gunakan form ini untuk mengganti password akun sendiri.');
   const [isSaving, setIsSaving] = useState(false);
 
   if (!visible) return null;
@@ -29,21 +29,18 @@ export function ChangePasswordPanel({ visible }: { visible: boolean }) {
     }
 
     setIsSaving(true);
-    if (!isSupabaseConfigured) {
-      setMessage('Simulasi berhasil. Saat PostgreSQL lokal aktif, password akan diperbarui di PostgreSQL lokal Auth.');
-      setForm({ current: '', next: '', confirm: '' });
-      setIsSaving(false);
-      return;
-    }
-
-    const { error } = await supabase.auth.updateUser({ password: form.next });
-    if (error) {
-      setMessage(`Gagal mengubah password: ${error.message}`);
-    } else {
+    try {
+      await apiJson<{ ok: true }>('/api/auth/change-password', {
+        method: 'POST',
+        body: JSON.stringify({ currentPassword: form.current, nextPassword: form.next, confirmPassword: form.confirm }),
+      });
       setMessage('Password berhasil diubah. Gunakan password baru untuk login berikutnya.');
       setForm({ current: '', next: '', confirm: '' });
+    } catch (error) {
+      setMessage(`Gagal mengubah password: ${error instanceof Error ? error.message : 'Coba lagi.'}`);
+    } finally {
+      setIsSaving(false);
     }
-    setIsSaving(false);
   }
 
   return (
@@ -57,7 +54,7 @@ export function ChangePasswordPanel({ visible }: { visible: boolean }) {
         </div>
       </div>
       <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-3">
-        <label className="grid gap-2 text-sm font-bold text-slate-700">Password Saat Ini<input value={form.current} onChange={(event) => setForm({ ...form, current: event.target.value })} type="password" placeholder="Opsional untuk PostgreSQL lokal session aktif" className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" /></label>
+        <label className="grid gap-2 text-sm font-bold text-slate-700">Password Saat Ini<input value={form.current} onChange={(event) => setForm({ ...form, current: event.target.value })} type="password" placeholder="Masukkan password saat ini" required className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" /></label>
         <label className="grid gap-2 text-sm font-bold text-slate-700">Password Baru<input value={form.next} onChange={(event) => setForm({ ...form, next: event.target.value })} type="password" minLength={8} required className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" /></label>
         <label className="grid gap-2 text-sm font-bold text-slate-700">Konfirmasi Password<input value={form.confirm} onChange={(event) => setForm({ ...form, confirm: event.target.value })} type="password" minLength={8} required className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" /></label>
         <div className="md:col-span-3 flex justify-end"><button type="submit" disabled={isSaving} className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white disabled:opacity-60"><KeyRound className="h-4 w-4" />{isSaving ? 'Menyimpan...' : 'Simpan Password'}</button></div>

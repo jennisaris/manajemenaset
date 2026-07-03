@@ -5,7 +5,7 @@ export { roles };
 
 export const roleDescriptions: Record<UserRole, string> = {
   Superadmin: 'Akses global seluruh kampus, user, role, master data, dan verifikasi akhir.',
-  'Admin Aset': 'Admin sekaligus verifikator aset, dibatasi per kampus yang ditugaskan.',
+  'Admin Aset': 'Admin sekaligus verifikator aset dengan akses data semua kampus.',
   'Operator Kampus': 'Input dan update data aset kampus sendiri, lalu mengajukan verifikasi.',
   'Pimpinan Dashboard': 'View-only dashboard, peta, dan ringkasan eksekutif tanpa export data.',
 };
@@ -27,7 +27,7 @@ export function canVerifyAssets(role: UserRole) {
 }
 
 export function canViewAllUniversities(role: UserRole) {
-  return role === 'Superadmin';
+  return ['Superadmin', 'Admin Aset'].includes(role);
 }
 
 export function canViewExecutiveAnalytics(role: UserRole) {

@@ -1,7 +1,7 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { Eye, FileText, Pencil, Plus, Trash2, UploadCloud, X } from 'lucide-react';
+import { Eye, FileText, MapPinned, Pencil, Plus, Trash2, UploadCloud, X } from 'lucide-react';
 import { deleteIssue, getIssueProgress, persistIssue, persistIssueProgress } from '@/lib/issue-crud';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { createAssetDocumentPreviewUrl, uploadIssueProgressDocument } from '@/lib/storage';
@@ -75,6 +75,10 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
     setDraft(emptyIssue(Math.max(0, ...items.map((item) => item.id)) + 1, assetOptions[0].id));
     setFormOpen(true);
     setMessage(isSupabaseConfigured ? 'Permasalahan baru akan ditulis ke asset_issues.' : 'Mode demo: permasalahan baru tersimpan lokal.');
+  }
+
+  function openIssueMap(issue: AssetIssue) {
+    window.open(`/map?assetId=${issue.asset_id}&issueId=${issue.id}`, '_blank', 'noopener,noreferrer');
   }
 
   function openEdit(item: AssetIssue) {
@@ -305,6 +309,7 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
                   <p className="mt-1 text-sm text-slate-500">{asset?.asset_name ?? `Aset #${issue.asset_id}`} • {asset?.campus_name ?? 'Universitas belum diisi'} • {issue.issue_type.replaceAll('_', ' ')} • Prioritas {issue.priority}</p>
                 </div>
                 <div className="flex shrink-0 flex-wrap justify-end gap-2">
+                  <button type="button" onClick={() => openIssueMap(issue)} className="inline-flex items-center gap-2 rounded-full bg-emerald-50 px-3 py-2 text-xs font-black text-emerald-700"><MapPinned className="h-3.5 w-3.5" />Peta</button>
                   <button onClick={() => openProgress(issue)} disabled={!canManage} className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-2 text-xs font-black text-blue-700 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"><Plus className="h-3.5 w-3.5" />Progress Masalah</button>
                   <button onClick={() => openEdit(issue)} disabled={!canManage} className="inline-flex items-center gap-2 rounded-full bg-sky-50 px-3 py-2 text-xs font-black text-sky-700 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"><Pencil className="h-3.5 w-3.5" />Edit</button>
                   <button onClick={() => deleteSelectedIssue(issue)} disabled={!canManage || deletingId === issue.id} className="inline-flex items-center gap-2 rounded-full bg-rose-50 px-3 py-2 text-xs font-black text-rose-600 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"><Trash2 className="h-3.5 w-3.5" />{deletingId === issue.id ? 'Hapus...' : 'Hapus'}</button>

@@ -73,11 +73,11 @@ export async function uploadIssueProgressDocument({ issueId, file }: { issueId: 
   return { path: uploaded.path };
 }
 
-export async function createAssetDocumentPreviewUrl(path: string) {
+export function createAssetDocumentPreviewUrl(path: string) {
   if (!path) return null;
   return path.startsWith('/uploads/') || path.startsWith('http') ? path : `/uploads/${path}`;
 }
 
-export async function createAssetDocumentPreviewUrls(paths: string[]) {
+export function createAssetDocumentPreviewUrls(paths: string[]) {
   return paths.map((path) => path.startsWith('/uploads/') || path.startsWith('http') ? path : `/uploads/${path}`);
 }

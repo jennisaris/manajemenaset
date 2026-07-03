@@ -23,7 +23,7 @@ type RolePermission = {
 
 const rolePermissions: RolePermission[] = [
   { role: 'Superadmin', scope: 'Global semua kampus', permissions: ['Kelola user & role', 'Kelola master data', 'CRUD semua aset', 'Verifikasi semua data', 'Export laporan'] },
-  { role: 'Admin Aset', scope: 'Per kampus', permissions: ['CRUD aset kampusnya', 'Verifikasi/approve data kampusnya', 'Kelola dokumen aset', 'Export laporan kampus'] },
+  { role: 'Admin Aset', scope: 'Global semua kampus', permissions: ['CRUD semua aset', 'Verifikasi/approve data semua kampus', 'Kelola dokumen aset', 'Export laporan semua kampus'] },
   { role: 'Operator Kampus', scope: 'Per kampus', permissions: ['Input aset kampusnya', 'Upload foto/dokumen', 'Ajukan verifikasi', 'Tidak bisa approve sendiri'] },
   { role: 'Pimpinan Dashboard', scope: 'Dashboard saja', permissions: ['View-only dashboard', 'Lihat peta/statistik', 'Tanpa CRUD', 'Tanpa export data'] },
 ];
@@ -75,7 +75,7 @@ export function UserRoleManager({ currentRole, campusOptions }: { currentRole: U
   async function saveDraft(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!draft || !canManage) return;
-    const scopedCampus = draft.role_name === 'Admin Aset' || draft.role_name === 'Operator Kampus' ? draft.campus_name.trim() : null;
+    const scopedCampus = draft.role_name === 'Operator Kampus' ? draft.campus_name.trim() : null;
     const nextUser: UserProfile = {
       id: draft.id ?? `demo-${Date.now()}`,
       full_name: draft.full_name.trim(),
@@ -133,7 +133,7 @@ export function UserRoleManager({ currentRole, campusOptions }: { currentRole: U
         <div>
           <p className="mb-2 inline-flex items-center rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-black text-sky-700"><ShieldCheck className="mr-2 h-4 w-4" /> Role guard tahap 1</p>
           <h3 className="text-lg font-black">User & Role</h3>
-          <p className="mt-1 text-sm text-slate-500">Role dibatasi: Superadmin, Admin Aset per kampus, Operator Kampus, dan Pimpinan Dashboard tanpa export.</p>
+          <p className="mt-1 text-sm text-slate-500">Role dibatasi: Superadmin, Admin Aset semua kampus, Operator Kampus per kampus, dan Pimpinan Dashboard tanpa export.</p>
           {!canManage && <p className="mt-2 text-xs font-black text-amber-600">Hanya Superadmin yang boleh mengubah user dan role.</p>}
           <p className="mt-2 text-xs font-bold text-slate-500">{message}</p>
         </div>
@@ -174,12 +174,12 @@ export function UserRoleManager({ currentRole, campusOptions }: { currentRole: U
       </div>
 
       {draft && <form onSubmit={saveDraft} className="border-t border-sky-100 bg-sky-50/50 p-5">
-        <div className="mb-4 flex items-start justify-between gap-4"><div><h4 className="text-lg font-black">{draft.id ? 'Edit User' : 'Tambah User'}</h4><p className="mt-1 text-sm text-slate-500">Admin Aset dan Operator wajib punya scope kampus.</p></div><button type="button" onClick={closeForm} className="grid h-10 w-10 place-items-center rounded-2xl border border-sky-100 bg-white text-slate-500"><X className="h-5 w-5" /></button></div>
+        <div className="mb-4 flex items-start justify-between gap-4"><div><h4 className="text-lg font-black">{draft.id ? 'Edit User' : 'Tambah User'}</h4><p className="mt-1 text-sm text-slate-500">Operator wajib punya scope kampus. Admin Aset otomatis melihat semua kampus.</p></div><button type="button" onClick={closeForm} className="grid h-10 w-10 place-items-center rounded-2xl border border-sky-100 bg-white text-slate-500"><X className="h-5 w-5" /></button></div>
         <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
           <label className="grid gap-2 text-sm font-bold text-slate-700 xl:col-span-1">Nama<input value={draft.full_name} onChange={(event) => setDraft({ ...draft, full_name: event.target.value })} className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" /></label>
           <label className="grid gap-2 text-sm font-bold text-slate-700 xl:col-span-1">Email<input type="email" value={draft.email} onChange={(event) => setDraft({ ...draft, email: event.target.value })} className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" /></label>
           <label className="grid gap-2 text-sm font-bold text-slate-700">Role<select value={draft.role_name} onChange={(event) => setDraft({ ...draft, role_name: event.target.value as UserRole })} className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100">{roles.map((role) => <option key={role} value={role}>{role}</option>)}</select></label>
-          <label className="grid gap-2 text-sm font-bold text-slate-700">Kampus<select value={draft.campus_name} onChange={(event) => setDraft({ ...draft, campus_name: event.target.value })} disabled={!['Admin Aset', 'Operator Kampus'].includes(draft.role_name)} className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100 disabled:bg-slate-100 disabled:text-slate-400">{sortedCampusOptions.map((campus) => <option key={campus} value={campus}>{campus}</option>)}</select></label>
+          <label className="grid gap-2 text-sm font-bold text-slate-700">Kampus<select value={draft.campus_name} onChange={(event) => setDraft({ ...draft, campus_name: event.target.value })} disabled={draft.role_name !== 'Operator Kampus'} className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100 disabled:bg-slate-100 disabled:text-slate-400">{sortedCampusOptions.map((campus) => <option key={campus} value={campus}>{campus}</option>)}</select></label>
           <label className="grid gap-2 text-sm font-bold text-slate-700">Status<select value={draft.status} onChange={(event) => setDraft({ ...draft, status: event.target.value as 'aktif' | 'nonaktif' })} className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100"><option value="aktif">Aktif</option><option value="nonaktif">Nonaktif</option></select></label>
         </div>
         <div className="mt-4 flex justify-end"><button type="submit" className="rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white">Simpan User</button></div>

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
-import { BadgeCheck, Building2, CircleAlert, Download, FileText, Handshake, Landmark, Sparkles } from 'lucide-react';
+import { BadgeCheck, Building2, CircleAlert, Download, FileText, Handshake, Landmark, MapPinned, Sparkles } from 'lucide-react';
 import { canExportReports, canManageAssets, canManageUsers, canViewAllUniversities, canViewExecutiveAnalytics } from '@/lib/auth';
 import type { Asset, AssetIssue, DashboardSummary, UserRole, Utilization } from '@/lib/types';
 import { AssetList } from './asset-list';
@@ -51,12 +51,13 @@ export function Dashboard({ assets, summary, utilizations, issues, currentRole, 
     active_issues: scopedIssues.filter((issue) => issue.status !== 'selesai').length,
     active_utilizations: scopedUtilizations.filter((item) => ['aktif', 'akan_berakhir'].includes(item.status)).length,
   }), [displayedAssets, scopedIssues, scopedUtilizations, summary]);
-  const attentionAssets = displayedAssets.filter((asset) => asset.has_active_issue || asset.has_active_utilization || asset.verification_status === 'menunggu_verifikasi');
   const canManage = canManageAssets(role);
   const showExecutiveAnalytics = canViewExecutiveAnalytics(role);
   const canExport = canExportReports(role);
   const canManageUserRole = canManageUsers(role);
   const [activeHash, setActiveHash] = useState('');
+  const pageHash = activeHash || '#dashboard';
+  const isDashboardPage = pageHash === '#dashboard';
 
   useEffect(() => {
     const syncHash = () => setActiveHash(window.location.hash);
@@ -66,9 +67,9 @@ export function Dashboard({ assets, summary, utilizations, issues, currentRole, 
   }, []);
 
   useEffect(() => {
-    if (!['#utilization', '#issues'].includes(activeHash)) return;
-    requestAnimationFrame(() => document.querySelector(activeHash)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
-  }, [activeHash]);
+    if (pageHash === '#dashboard') return;
+    requestAnimationFrame(() => document.querySelector(pageHash)?.scrollIntoView({ behavior: 'smooth', block: 'start' }));
+  }, [pageHash]);
 
   function handleAssetsChange(nextAssets: Asset[]) {
     const nextAssetIds = new Set(nextAssets.map((asset) => asset.id));
@@ -106,6 +107,8 @@ export function Dashboard({ assets, summary, utilizations, issues, currentRole, 
         </section>
       )}
 
+      {isDashboardPage && (
+        <>
       <section className="mb-5 grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         <SummaryCard icon={Landmark} label="Total Tanah" value={nf.format(liveSummary.total_land)} helper={`${nf.format(liveSummary.total_land_area_m2)} m² tercatat`} />
         <SummaryCard icon={Building2} label="Total Bangunan" value={nf.format(liveSummary.total_building)} helper={`${nf.format(liveSummary.total_building_area_m2)} m² luas bangunan`} />
@@ -113,19 +116,41 @@ export function Dashboard({ assets, summary, utilizations, issues, currentRole, 
         <SummaryCard icon={CircleAlert} label="Aset Bermasalah" value={nf.format(liveSummary.active_issues)} helper="Perlu tindak lanjut" />
       </section>
 
-      <section className="grid gap-5 xl:grid-cols-[1.45fr_.75fr]"><MapCard assets={displayedAssets} utilizations={scopedUtilizations} /><aside className="grid gap-5"><div className="rounded-3xl border border-sky-100 bg-white/80 p-5 shadow-[0_24px_70px_rgba(22,118,194,.14)] backdrop-blur-xl"><h3 className="mb-4 text-lg font-black">Aset Perlu Perhatian</h3><div className="grid gap-3">{attentionAssets.map((asset) => <div key={asset.id} className="rounded-2xl border border-sky-100 bg-white/70 p-4 shadow-sm"><h4 className="font-black">{asset.asset_name}</h4><p className="mt-1 text-sm text-slate-500">{asset.asset_type === 'land' ? 'Tanah' : 'Bangunan'} • {asset.campus_name}</p><div className="mt-3 flex flex-wrap gap-2">{asset.has_active_issue && <StatusPill tone="rose">Bermasalah</StatusPill>}{asset.has_active_utilization && <StatusPill tone="sky">Pemanfaatan aktif</StatusPill>}{asset.verification_status === 'menunggu_verifikasi' && <StatusPill tone="slate">Menunggu verifikasi</StatusPill>}</div></div>)}</div></div><div className="rounded-3xl border border-sky-100 bg-white/80 p-5 shadow-[0_24px_70px_rgba(22,118,194,.14)] backdrop-blur-xl"><h3 className="mb-4 text-lg font-black">Legenda Status Peta</h3><div className="space-y-3 text-sm text-slate-600"><div className="flex flex-wrap items-center gap-2"><StatusPill tone="rose">Merah</StatusPill><span>Aset bermasalah aktif</span></div><div className="flex flex-wrap items-center gap-2"><StatusPill tone="amber">Oranye</StatusPill><span>Kontrak akan berakhir</span></div><div className="flex flex-wrap items-center gap-2"><StatusPill tone="sky">Biru</StatusPill><span>Dimanfaatkan pihak ketiga</span></div><div className="flex flex-wrap items-center gap-2"><StatusPill tone="emerald">Hijau</StatusPill><span>Terverifikasi normal</span></div></div></div></aside></section>
+      <section className="grid gap-5 xl:grid-cols-[1.45fr_.75fr]" id="map-section">
+        <MapCard assets={displayedAssets} utilizations={scopedUtilizations} />
+        <aside className="grid gap-5">
+          <div className="rounded-3xl border border-sky-100 bg-white/80 p-5 shadow-[0_24px_70px_rgba(22,118,194,.14)] backdrop-blur-xl">
+            <div className="mb-4 flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-2xl bg-sky-50 text-sky-700"><MapPinned className="h-5 w-5" /></div><h3 className="text-lg font-black">Legenda Status Peta</h3></div>
+            <div className="space-y-3 text-sm text-slate-600"><div className="flex flex-wrap items-center gap-2"><StatusPill tone="rose">Merah</StatusPill><span>Aset bermasalah aktif</span></div><div className="flex flex-wrap items-center gap-2"><StatusPill tone="amber">Oranye</StatusPill><span>Kontrak akan berakhir</span></div><div className="flex flex-wrap items-center gap-2"><StatusPill tone="sky">Biru</StatusPill><span>Dimanfaatkan pihak ketiga</span></div><div className="flex flex-wrap items-center gap-2"><StatusPill tone="emerald">Hijau</StatusPill><span>Terverifikasi normal</span></div></div>
+          </div>
+          <div className="rounded-3xl border border-sky-100 bg-white/80 p-5 shadow-[0_24px_70px_rgba(22,118,194,.14)] backdrop-blur-xl">
+            <h3 className="mb-2 text-lg font-black">Dashboard Ringkas</h3>
+            <p className="text-sm leading-6 text-slate-500">Halaman dashboard kini hanya berisi rekap utama dan peta. Data aset, pemanfaatan, permasalahan, laporan, user, dan ubah password dipisah ke menu masing-masing.</p>
+          </div>
+        </aside>
+      </section>
+        </>
+      )}
 
-      {showExecutiveAnalytics && <ExecutiveAnalytics assets={displayedAssets} summary={liveSummary} utilizations={scopedUtilizations} issues={scopedIssues} />}
+      {pageHash === '#analytics' && showExecutiveAnalytics && <ExecutiveAnalytics assets={displayedAssets} summary={liveSummary} utilizations={scopedUtilizations} issues={scopedIssues} />}
 
-      <AssetList key={`assets-${effectiveUniversity || 'all'}`} assets={displayedAssets} currentRole={role} currentUniversity={universityName} onAssetsChange={handleAssetsChange} />
+      {['#asset-list', '#verification'].includes(pageHash) && (
+        <section className="mt-5" id={pageHash === '#verification' ? 'verification' : 'asset-list'}>
+          <div className="mb-4 rounded-3xl border border-sky-100 bg-white/80 p-5 shadow-[0_24px_70px_rgba(22,118,194,.14)] backdrop-blur-xl">
+            <div className="flex items-center gap-3"><div className="grid h-10 w-10 place-items-center rounded-2xl bg-sky-50 text-sky-700">{pageHash === '#verification' ? <BadgeCheck className="h-5 w-5" /> : <Landmark className="h-5 w-5" />}</div><div><h3 className="text-lg font-black">{pageHash === '#verification' ? 'Verifikasi Aset' : 'Data Aset'}</h3><p className="mt-1 text-sm text-slate-500">Halaman terpisah dari dashboard untuk mengelola detail aset.</p></div></div>
+          </div>
+          <AssetList key={`assets-${effectiveUniversity || 'all'}-${pageHash}`} assets={displayedAssets} currentRole={role} currentUniversity={universityName} onAssetsChange={handleAssetsChange} />
+        </section>
+      )}
 
-      {activeHash === '#utilization' && <section className="mt-5"><UtilizationManager key={`utilization-${effectiveUniversity || 'all'}`} assets={displayedAssets} utilizations={scopedUtilizations} canManage={canManage} onUtilizationsChange={handleUtilizationsChange} /></section>}
+      {pageHash === '#utilization' && <section className="mt-5" id="utilization"><UtilizationManager key={`utilization-${effectiveUniversity || 'all'}`} assets={displayedAssets} utilizations={scopedUtilizations} canManage={canManage} onUtilizationsChange={handleUtilizationsChange} /></section>}
 
-      {activeHash === '#issues' && <section className="mt-5"><IssueManager key={`issues-${effectiveUniversity || 'all'}`} assets={displayedAssets} issues={scopedIssues} canManage={canManage} onIssuesChange={handleIssuesChange} /></section>}
+      {pageHash === '#issues' && <section className="mt-5" id="issues"><IssueManager key={`issues-${effectiveUniversity || 'all'}`} assets={displayedAssets} issues={scopedIssues} canManage={canManage} onIssuesChange={handleIssuesChange} /></section>}
 
-      <section className="mt-5 overflow-hidden rounded-3xl border border-sky-100 bg-white/80 p-5 shadow-[0_24px_70px_rgba(22,118,194,.14)] backdrop-blur-xl" id="reports"><div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="text-lg font-black">Preview Laporan</h3>{!canExport && <p className="mt-1 text-xs font-black text-amber-600">Role {role} tidak memiliki izin export data.</p>}</div><button disabled={!canExport} className="inline-flex w-fit items-center gap-2 rounded-full border border-sky-100 bg-white/80 px-4 py-2 text-xs font-black text-slate-600 shadow-sm disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"><Download className="h-4 w-4" />Export Excel</button></div><div className="grid gap-3 sm:grid-cols-3"><div className="rounded-2xl bg-sky-50 p-4"><FileText className="mb-3 text-sky-700" /><strong>Laporan Aset</strong><p className="mt-1 text-sm text-slate-500">Tanah, bangunan, status verifikasi.</p></div><div className="rounded-2xl bg-sky-50 p-4"><Handshake className="mb-3 text-sky-700" /><strong>Laporan Pemanfaatan</strong><p className="mt-1 text-sm text-slate-500">Kontrak aktif dan akan berakhir.</p></div><div className="rounded-2xl bg-sky-50 p-4"><BadgeCheck className="mb-3 text-sky-700" /><strong>Laporan Verifikasi</strong><p className="mt-1 text-sm text-slate-500">Monitoring review data aset.</p></div></div></section>
+      {pageHash === '#reports' && <section className="mt-5 overflow-hidden rounded-3xl border border-sky-100 bg-white/80 p-5 shadow-[0_24px_70px_rgba(22,118,194,.14)] backdrop-blur-xl" id="reports"><div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between"><div><h3 className="text-lg font-black">Preview Laporan</h3>{!canExport && <p className="mt-1 text-xs font-black text-amber-600">Role {role} tidak memiliki izin export data.</p>}</div><button disabled={!canExport} className="inline-flex w-fit items-center gap-2 rounded-full border border-sky-100 bg-white/80 px-4 py-2 text-xs font-black text-slate-600 shadow-sm disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"><Download className="h-4 w-4" />Export Excel</button></div><div className="grid gap-3 sm:grid-cols-3"><div className="rounded-2xl bg-sky-50 p-4"><FileText className="mb-3 text-sky-700" /><strong>Laporan Aset</strong><p className="mt-1 text-sm text-slate-500">Tanah, bangunan, status verifikasi.</p></div><div className="rounded-2xl bg-sky-50 p-4"><Handshake className="mb-3 text-sky-700" /><strong>Laporan Pemanfaatan</strong><p className="mt-1 text-sm text-slate-500">Kontrak aktif dan akan berakhir.</p></div><div className="rounded-2xl bg-sky-50 p-4"><BadgeCheck className="mb-3 text-sky-700" /><strong>Laporan Verifikasi</strong><p className="mt-1 text-sm text-slate-500">Monitoring review data aset.</p></div></div></section>}
 
-      {canManageUserRole ? <UserRoleManager currentRole={role} campusOptions={universityOptions} /> : <ChangePasswordPanel visible />}
+      {pageHash === '#users' && canManageUserRole && <UserRoleManager currentRole={role} campusOptions={universityOptions} />}
+      {pageHash === '#change-password' && !canManageUserRole && <ChangePasswordPanel visible />}
     </main>
   );
 }

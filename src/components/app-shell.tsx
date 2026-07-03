@@ -51,7 +51,7 @@ export function AppShell() {
     setFullName(user.full_name || user.email || 'User Lokal');
     setEmail(user.email ?? '');
     setRole(user.role);
-    setUniversityName(['Admin Aset', 'Operator Kampus'].includes(user.role) ? user.university_name ?? null : null);
+    setUniversityName(user.role === 'Operator Kampus' ? user.university_name ?? null : null);
   }
 
   useEffect(() => {
