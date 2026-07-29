@@ -8,6 +8,8 @@ import { createAssetDocumentPreviewUrl, uploadIssueProgressDocument } from '@/li
 import type { Asset, AssetIssue, IssueProgress } from '@/lib/types';
 import { formatDateIndo } from '@/lib/date-utils';
 
+import { AssetAutocompleteInput } from './asset-autocomplete-input';
+
 type IssueManagerProps = {
   assets: Asset[];
   issues: AssetIssue[];
@@ -17,17 +19,112 @@ type IssueManagerProps = {
 
 const issueTypes = ['sengketa_tanah', 'klaim_pihak_ketiga', 'dokumen_bermasalah', 'batas_lahan_tidak_jelas', 'pemanfaatan_tidak_sesuai', 'bangunan_rusak', 'aset_dikuasai_pihak_lain', 'konflik_kontrak', 'lainnya'];
 const priorityOptions = ['rendah', 'sedang', 'tinggi', 'mendesak'];
-const statusOptions = ['belum_ditindaklanjuti', 'sedang_ditindaklanjuti', 'selesai'];
+const statusOptions = ['permasalahan', 'identifikasi_masalah', 'sedang_ditindaklanjuti', 'selesai'];
 const issuesPerPage = 5;
 
+function getIssueProgressPercentage(status: string): number {
+  switch (status) {
+    case 'identifikasi_masalah':
+      return 25;
+    case 'sedang_ditindaklanjuti':
+      return 75;
+    case 'selesai':
+      return 100;
+    case 'permasalahan':
+    case 'belum_ditindaklanjuti':
+    default:
+      return 0;
+  }
+}
+
+function getIssueProgressLabel(status: string): string {
+  switch (status) {
+    case 'identifikasi_masalah':
+      return 'Identifikasi Masalah (25%)';
+    case 'sedang_ditindaklanjuti':
+      return 'Sedang Ditindaklanjuti (75%)';
+    case 'selesai':
+      return 'Selesai (100%)';
+    case 'permasalahan':
+    case 'belum_ditindaklanjuti':
+    default:
+      return 'Permasalahan (0%)';
+  }
+}
+
+function IssueProgressBar({ status }: { status: string }) {
+  const percentage = getIssueProgressPercentage(status);
+  const label = getIssueProgressLabel(status);
+
+  const barColor =
+    percentage === 100
+      ? 'bg-emerald-500'
+      : percentage === 75
+      ? 'bg-[#165DFF]'
+      : percentage === 25
+      ? 'bg-amber-500'
+      : 'bg-rose-500';
+
+  const badgeTone =
+    percentage === 100
+      ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+      : percentage === 75
+      ? 'bg-blue-50 text-blue-700 border-blue-200'
+      : percentage === 25
+      ? 'bg-amber-50 text-amber-700 border-amber-200'
+      : 'bg-rose-50 text-rose-700 border-rose-200';
+
+  return (
+    <div className="w-full space-y-1.5 my-3.5 rounded-2xl border border-slate-100 bg-slate-50/80 p-3.5">
+      <div className="flex items-center justify-between text-xs">
+        <span className={`inline-flex items-center rounded-full border px-3 py-0.5 text-xs font-black ${badgeTone}`}>
+          {label}
+        </span>
+        <span className="font-extrabold text-slate-900 text-xs">{percentage}% Selesai</span>
+      </div>
+
+      {/* Progress Bar Track */}
+      <div className="relative h-3 w-full overflow-hidden rounded-full bg-slate-200/80 p-0.5 shadow-inner">
+        <div
+          className={`h-full ${barColor} rounded-full transition-all duration-500 ease-out shadow-sm`}
+          style={{ width: `${percentage}%` }}
+        />
+      </div>
+
+      {/* 4-Stage Step Indicators */}
+      <div className="grid grid-cols-4 text-[10px] font-bold text-slate-400 text-center pt-1 gap-1">
+        <div className={`flex flex-col items-center ${percentage >= 0 ? 'text-rose-600 font-extrabold' : ''}`}>
+          <div className={`h-2 w-2 rounded-full mb-1 ${percentage >= 0 ? 'bg-rose-500 ring-2 ring-rose-200' : 'bg-slate-300'}`} />
+          <span>Permasalahan (0%)</span>
+        </div>
+        <div className={`flex flex-col items-center ${percentage >= 25 ? 'text-amber-600 font-extrabold' : ''}`}>
+          <div className={`h-2 w-2 rounded-full mb-1 ${percentage >= 25 ? 'bg-amber-500 ring-2 ring-amber-200' : 'bg-slate-300'}`} />
+          <span>Identifikasi (25%)</span>
+        </div>
+        <div className={`flex flex-col items-center ${percentage >= 75 ? 'text-blue-600 font-extrabold' : ''}`}>
+          <div className={`h-2 w-2 rounded-full mb-1 ${percentage >= 75 ? 'bg-[#165DFF] ring-2 ring-blue-200' : 'bg-slate-300'}`} />
+          <span>Ditindaklanjuti (75%)</span>
+        </div>
+        <div className={`flex flex-col items-center ${percentage === 100 ? 'text-emerald-600 font-extrabold' : ''}`}>
+          <div className={`h-2 w-2 rounded-full mb-1 ${percentage === 100 ? 'bg-emerald-500 ring-2 ring-emerald-200' : 'bg-slate-300'}`} />
+          <span>Selesai (100%)</span>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function StatusPill({ status }: { status: string }) {
+  const percentage = getIssueProgressPercentage(status);
   const tone =
-    status === 'selesai'
+    percentage === 100
       ? 'bg-success-light text-success-dark font-semibold'
-      : status === 'sedang_ditindaklanjuti'
+      : percentage === 75
+      ? 'bg-info-light text-primary font-semibold'
+      : percentage === 25
       ? 'bg-warning-light text-warning-dark font-semibold'
       : 'bg-error-light text-error-dark font-semibold';
-  return <span className={`rounded-full px-3 py-1 text-xs ${tone}`}>{status.replaceAll('_', ' ')}</span>;
+  return <span className={`rounded-full px-3 py-1 text-xs ${tone}`}>{getIssueProgressLabel(status)}</span>;
 }
 
 function emptyIssue(nextId: number, assetId: number): AssetIssue {
@@ -37,7 +134,7 @@ function emptyIssue(nextId: number, assetId: number): AssetIssue {
     issue_title: '',
     issue_type: 'lainnya',
     priority: 'sedang',
-    status: 'belum_ditindaklanjuti',
+    status: 'permasalahan',
     found_date: new Date().toISOString().slice(0, 10),
   };
 }
@@ -304,12 +401,14 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
 
         <form onSubmit={saveIssue} className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <label className="grid gap-1.5 text-xs font-medium text-foreground">
-              Aset
-              <select value={draft.asset_id} onChange={(event) => updateDraft({ asset_id: Number(event.target.value) })} className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all">
-                {assetOptions.map((asset) => <option key={asset.id} value={asset.id}>{asset.label}</option>)}
-              </select>
-            </label>
+            <div className="grid gap-1.5 text-xs font-medium text-foreground">
+              <span>Pilih Aset (Ketik Kode / Nama untuk mencari)</span>
+              <AssetAutocompleteInput
+                assets={assets}
+                selectedAssetId={draft.asset_id}
+                onSelectAsset={(id) => updateDraft({ asset_id: id })}
+              />
+            </div>
             <label className="grid gap-1.5 text-xs font-medium text-foreground">
               Judul
               <input value={draft.issue_title} onChange={(event) => updateDraft({ issue_title: event.target.value })} required className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
@@ -333,7 +432,11 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
             <label className="grid gap-1.5 text-xs font-medium text-foreground">
               Status
               <select value={draft.status} onChange={(event) => updateDraft({ status: event.target.value })} className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all">
-                {statusOptions.map((status) => <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>)}
+                {statusOptions.map((status) => (
+                  <option key={status} value={status}>
+                    {getIssueProgressLabel(status)}
+                  </option>
+                ))}
               </select>
             </label>
           </div>
@@ -503,9 +606,12 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
                   </button>
                 </div>
               </div>
-              <div className="mt-4 flex flex-wrap items-center gap-2">
-                <StatusPill status={issue.status} />
-                <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-secondary">{issueProgress.length} tindak lanjut</span>
+              
+              {/* Progress Bar Status (0%, 25%, 75%, 100%) */}
+              <IssueProgressBar status={issue.status} />
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <span className="rounded-full bg-muted px-3 py-1 text-xs font-semibold text-secondary">{issueProgress.length} tindak lanjut recorded</span>
                 <button type="button" onClick={() => toggleProgress(issue.id)} className="rounded-full bg-info-light px-3 py-1 text-xs font-semibold text-primary hover:bg-info-light/80 transition">
                   {isProgressExpanded ? 'Sembunyikan tindak lanjut' : 'Tampilkan tindak lanjut'}
                 </button>

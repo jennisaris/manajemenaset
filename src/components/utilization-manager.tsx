@@ -15,6 +15,8 @@ const UtilizationAreaMap = dynamic(() => import('./utilization-area-map').then((
   loading: () => <div className="grid h-[320px] place-items-center rounded-3xl bg-sky-50 text-sm font-bold text-sky-700">Memuat peta area pemanfaatan...</div>,
 });
 
+import { AssetAutocompleteInput } from './asset-autocomplete-input';
+
 type UtilizationManagerProps = {
   assets: Asset[];
   utilizations: Utilization[];
@@ -305,12 +307,14 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
 
         <form onSubmit={saveUtilization} className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-            <label className="grid gap-1.5 text-xs font-medium text-foreground">
-              Aset
-              <select value={draft.asset_id} onChange={(event) => updateDraft({ asset_id: Number(event.target.value) })} className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all">
-                {assetOptions.map((asset) => <option key={asset.id} value={asset.id}>{asset.label}</option>)}
-              </select>
-            </label>
+            <div className="grid gap-1.5 text-xs font-medium text-foreground">
+              <span>Pilih Aset (Ketik Kode / Nama untuk mencari)</span>
+              <AssetAutocompleteInput
+                assets={assets}
+                selectedAssetId={draft.asset_id}
+                onSelectAsset={(id) => updateDraft({ asset_id: id })}
+              />
+            </div>
             <label className="grid gap-1.5 text-xs font-medium text-foreground">
               Pihak Ketiga
               <input value={draft.third_party_name} onChange={(event) => updateDraft({ third_party_name: event.target.value })} required className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
