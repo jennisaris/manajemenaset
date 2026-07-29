@@ -1,0 +1,1029 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCampus - Lecturers Management</title>
+<meta name="description" content="EduCampus lecturers management dashboard for managing and monitoring lecturer data.">
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--primary-hover);
+    --color-foreground: var(--foreground);
+    --color-secondary: var(--secondary);
+    --color-muted: var(--muted);
+    --color-border: var(--border);
+    --color-card-grey: var(--card-grey);
+    --color-card-message: var(--card-message);
+    --color-accent-blue: var(--accent-blue);
+    --color-accent-teal: var(--accent-teal);
+    --color-accent-sky: var(--accent-sky);
+    --color-success: var(--success);
+    --color-success-light: var(--success-light);
+    --color-success-dark: var(--success-dark);
+    --color-error: var(--error);
+    --color-error-light: var(--error-light);
+    --color-error-lighter: var(--error-lighter);
+    --color-error-dark: var(--error-dark);
+    --color-warning: var(--warning);
+    --color-warning-light: var(--warning-light);
+    --color-warning-dark: var(--warning-dark);
+    --color-info: var(--info);
+    --color-info-light: var(--info-light);
+    --color-info-dark: var(--info-dark);
+    --color-alert: var(--alert);
+    --color-alert-light: var(--alert-light);
+    --color-alert-dark: var(--alert-dark);
+    --color-gray-50: var(--gray-50);
+    --color-gray-100: var(--gray-100);
+    --color-gray-200: var(--gray-200);
+    --color-gray-500: var(--gray-500);
+    --color-gray-600: var(--gray-600);
+    --color-gray-700: var(--gray-700);
+    --font-sans: var(--font-sans);
+    --radius-card: 24px;
+    --radius-button: 50px;
+    --radius-icon: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 20px;
+    --radius-3xl: 24px;
+  }
+  :root {
+    --primary: #165DFF;
+    --primary-hover: #0E4BD9;
+    --foreground: #080C1A;
+    --secondary: #6A7686;
+    --muted: #EFF2F7;
+    --border: #F3F4F3;
+    --card-grey: #F1F3F6;
+    --card-message: #C9E6FC;
+    --accent-blue: #C9E6FC;
+    --accent-teal: #82D9D7;
+    --accent-sky: #DBEAFE;
+    --success: #30B22D;
+    --success-light: #DCFCE7;
+    --success-dark: #166534;
+    --error: #ED6B60;
+    --error-light: #FEE2E2;
+    --error-lighter: #FEF2F2;
+    --error-dark: #991B1B;
+    --warning: #FED71F;
+    --warning-light: #FEF9C3;
+    --warning-dark: #854D0E;
+    --info: #165DFF;
+    --info-light: #DBEAFE;
+    --info-dark: #1E40AF;
+    --alert: #F97316;
+    --alert-light: #FFEDD5;
+    --alert-dark: #9A3412;
+    --gray-50: #F9FAFB;
+    --gray-100: #F1F3F6;
+    --gray-200: #E5E7EB;
+    --gray-500: #6A7686;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --font-sans: 'Lexend Deca', sans-serif;
+  }
+  select {
+    @apply appearance-none bg-no-repeat cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 10px center;
+    padding-right: 40px;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+<body class="font-sans bg-white min-h-screen overflow-x-hidden">
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/80 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+<div class="flex h-screen max-h-screen flex-1 bg-muted overflow-hidden">
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="flex flex-col w-[280px] shrink-0 h-screen fixed inset-y-0 left-0 z-50 bg-white border-r border-border transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-hidden">
+    <!-- Top Bar with logo and title -->
+    <div class="flex items-center justify-between border-b border-border h-[90px] px-5 gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-9 bg-primary rounded-xl flex items-center justify-center">
+          <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+        </div>
+        <h1 class="font-semibold text-xl">EduCampus</h1>
+      </div>
+      <div class="flex gap-2">
+        <button class="size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" aria-label="Search">
+          <i data-lucide="search" class="size-6 text-secondary"></i>
+        </button>
+        <button onclick="toggleSidebar()" aria-label="Close sidebar" class="lg:hidden size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+          <i data-lucide="x" class="size-6 text-secondary"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="flex flex-col p-5 pb-28 gap-6 overflow-y-auto flex-1">
+      <!-- Main Menu Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Main Menu</h3>
+        <div class="flex flex-col gap-1">
+          <!-- Regular menu items -->
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="layout-dashboard" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Dashboard</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="users" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Students</span>
+            </div>
+          </a>
+          <!-- Active menu item -->
+          <a href="#" class="group active cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="user-check" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Lecturers</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="book-open" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Classes</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="calendar-check" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Attendance</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Management Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Management</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="bar-chart-3" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Reports</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="settings" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Settings</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Help Card -->
+    <div class="absolute bottom-0 left-0 w-[280px]">
+      <div class="flex items-center justify-between border-t bg-white border-border p-5 gap-3">
+        <div class="min-w-0">
+          <p class="font-semibold text-foreground">Need help?</p>
+          <a href="#" class="cursor-pointer"><span class="text-sm text-secondary hover:text-primary hover:underline transition-all duration-300">Contact support</span></a>
+        </div>
+        <div class="size-11 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i data-lucide="message-circle-question" class="size-6 text-primary"></i>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 lg:ml-[280px] flex flex-col bg-white min-h-screen overflow-x-hidden">
+    <!-- Top Header Bar -->
+    <div class="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-border bg-white px-5 md:px-8">
+      <!-- Mobile hamburger -->
+      <button onclick="toggleSidebar()" aria-label="Open menu" class="lg:hidden size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+        <i data-lucide="menu" class="size-6 text-foreground"></i>
+      </button>
+      <!-- Page title (shown on desktop) -->
+      <h2 class="hidden lg:block font-bold text-2xl text-foreground">Lecturers Management</h2>
+      <!-- Right actions -->
+      <div class="flex items-center gap-3">
+        <button class="size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer relative" aria-label="Notifications">
+          <i data-lucide="bell" class="size-6 text-secondary"></i>
+          <span class="absolute -top-1 -right-1 h-5 px-1.5 rounded-full bg-error text-white text-xs font-medium flex items-center justify-center">3</span>
+        </button>
+        <div class="hidden md:flex items-center gap-3 pl-3 border-l border-border">
+          <div class="text-right">
+            <p class="font-semibold text-foreground text-sm">Admin User</p>
+            <p class="text-secondary text-xs">Administrator</p>
+          </div>
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="Profile" class="size-11 rounded-full object-cover ring-2 ring-border">
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content Area -->
+    <div class="flex-1 overflow-y-auto p-5 md:p-8">
+      <!-- Page Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+        <div>
+          <h1 class="text-foreground text-2xl md:text-3xl font-bold mb-1">Lecturers Management</h1>
+          <p class="text-secondary text-sm md:text-base">Manage lecturer profiles, departments, and workload assignments</p>
+        </div>
+        <div class="flex items-center gap-2 md:gap-3 ml-auto md:ml-0">
+          <button onclick="exportLecturers()" class="flex items-center gap-2 px-6 py-3 ring-1 ring-border hover:ring-primary rounded-full text-foreground font-semibold transition-all duration-300 cursor-pointer">
+            <i data-lucide="download" class="w-5 h-5"></i>
+            <span>Export</span>
+          </button>
+          <button onclick="openAddLecturerModal()" class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:bg-primary-hover transition-all duration-300 cursor-pointer">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+            <span>Add Lecturer</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+          <div class="flex items-center gap-[6px]">
+            <div class="size-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="user-check" class="size-6 text-primary"></i>
+            </div>
+            <p class="font-medium text-secondary">Total Lecturers</p>
+          </div>
+          <p class="font-bold text-[32px] leading-10">156</p>
+        </div>
+
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+          <div class="flex items-center gap-[6px]">
+            <div class="size-11 bg-success/10 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="check-circle" class="size-6 text-success"></i>
+            </div>
+            <p class="font-medium text-secondary">Active Lecturers</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <p class="font-bold text-[32px] leading-10">142</p>
+            <span class="text-success text-sm font-semibold">91%</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+          <div class="flex items-center gap-[6px]">
+            <div class="size-11 bg-warning/10 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="clock" class="size-6 text-warning-dark"></i>
+            </div>
+            <p class="font-medium text-secondary">On Leave</p>
+          </div>
+          <p class="font-bold text-[32px] leading-10">8</p>
+        </div>
+
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+          <div class="flex items-center gap-[6px]">
+            <div class="size-11 bg-info/10 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="user-plus" class="size-6 text-info"></i>
+            </div>
+            <p class="font-medium text-secondary">New This Month</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <p class="font-bold text-[32px] leading-10">6</p>
+            <span class="text-success text-sm font-semibold">+15%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white mb-6">
+        <div class="flex flex-col md:flex-row md:items-center gap-3">
+          <!-- Search Input -->
+          <div class="relative flex-1">
+            <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400"></i>
+            <input type="text" id="searchInput" placeholder="Search lecturers by name, ID, or department..." class="w-full pl-10 pr-4 py-2.5 border border-border rounded-2xl text-sm focus:outline-none focus:border-primary transition-all duration-200">
+          </div>
+          <!-- Filter Dropdowns -->
+          <div class="flex flex-wrap items-center gap-2">
+            <select id="departmentFilter" class="px-4 py-2.5 border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:border-primary transition-all duration-200">
+              <option value="all">All Departments</option>
+              <option value="computer-science">Computer Science</option>
+              <option value="mathematics">Mathematics</option>
+              <option value="physics">Physics</option>
+              <option value="chemistry">Chemistry</option>
+              <option value="biology">Biology</option>
+            </select>
+            <select id="statusFilter" class="px-4 py-2.5 border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:border-primary transition-all duration-200">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="on-leave">On Leave</option>
+              <option value="inactive">Inactive</option>
+            </select>
+            <button onclick="resetFilters()" class="px-4 py-2.5 border border-border rounded-2xl text-sm text-foreground hover:border-primary transition-all duration-200 cursor-pointer">
+              <i data-lucide="x" class="w-4 h-4 inline mr-1"></i>
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <!-- Bulk Actions -->
+        <div id="bulkActions" class="hidden flex items-center gap-3 p-3 bg-muted rounded-2xl">
+          <span class="text-sm font-medium text-foreground"><span id="selectedCount">0</span> lecturers selected</span>
+          <div class="flex items-center gap-2 ml-auto">
+            <button onclick="bulkExport()" class="px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-button hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+              Export Selected
+            </button>
+            <button onclick="bulkUpdateStatus()" class="px-3 py-1.5 border border-border text-foreground text-xs font-medium rounded-button hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer">
+              Update Status
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main Content Grid -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Lecturers Table -->
+        <div class="lg:col-span-2">
+          <div class="flex flex-col rounded-2xl border border-border bg-white overflow-hidden">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3 p-6 border-b border-border">
+              <h3 class="text-foreground text-lg font-bold">Lecturers List</h3>
+              <span class="text-gray-500 text-sm">Showing <span id="visibleCount">5</span> of 156 lecturers</span>
+            </div>
+
+            <!-- Desktop Table -->
+            <div class="hidden md:block overflow-x-auto">
+              <table id="lecturersTable" class="w-full">
+                <thead class="bg-gray-50">
+                  <tr>
+                    <th class="px-4 py-4 text-left">
+                      <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" class="rounded border-gray-300 text-primary focus:ring-primary">
+                    </th>
+                    <th class="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Lecturer</th>
+                    <th class="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Department</th>
+                    <th class="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Classes</th>
+                    <th class="px-4 py-4 text-left text-xs font-semibold text-gray-500 uppercase">Status</th>
+                    <th class="px-4 py-4 text-right text-xs font-semibold text-gray-500 uppercase">Actions</th>
+                  </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-100" data-searchable-container>
+                  <tr class="hover:bg-gray-50 lecturer-row" data-lecturer-id="1" data-department="computer-science" data-status="active" data-searchable="Dr. Sarah Johnson Computer Science CS101 CS201 Active">
+                    <td class="px-4 py-4">
+                      <input type="checkbox" class="lecturer-checkbox rounded border-gray-300 text-primary focus:ring-primary" onchange="updateBulkActions()">
+                    </td>
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" alt="Dr. Sarah Johnson" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+                        <div class="min-w-0 flex-1">
+                          <p class="font-medium text-foreground truncate">Dr. Sarah Johnson</p>
+                          <p class="text-gray-500 text-sm truncate">LEC-001</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4"><span class="truncate block">Computer Science</span></td>
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-1">
+                        <span class="text-sm font-medium">5 classes</span>
+                        <span class="text-xs text-gray-500">(CS101, CS201)</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4"><span class="bg-success-light text-success-dark text-xs px-2 py-1 rounded-full whitespace-nowrap">Active</span></td>
+                    <td class="px-4 py-4 text-right">
+                      <div class="flex items-center justify-end gap-2">
+                        <button onclick="viewLecturer('1')" class="px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-button hover:bg-primary-hover transition-all duration-200 cursor-pointer">View</button>
+                        <button onclick="editLecturer('1')" class="px-3 py-1.5 border border-border text-foreground text-xs font-medium rounded-button hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer">Edit</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr class="hover:bg-gray-50 lecturer-row" data-lecturer-id="2" data-department="mathematics" data-status="active" data-searchable="Prof. Michael Chen Mathematics MATH101 MATH201 Active">
+                    <td class="px-4 py-4">
+                      <input type="checkbox" class="lecturer-checkbox rounded border-gray-300 text-primary focus:ring-primary" onchange="updateBulkActions()">
+                    </td>
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" alt="Prof. Michael Chen" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+                        <div class="min-w-0 flex-1">
+                          <p class="font-medium text-foreground truncate">Prof. Michael Chen</p>
+                          <p class="text-gray-500 text-sm truncate">LEC-002</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4"><span class="truncate block">Mathematics</span></td>
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-1">
+                        <span class="text-sm font-medium">3 classes</span>
+                        <span class="text-xs text-gray-500">(MATH101, MATH201)</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4"><span class="bg-success-light text-success-dark text-xs px-2 py-1 rounded-full whitespace-nowrap">Active</span></td>
+                    <td class="px-4 py-4 text-right">
+                      <div class="flex items-center justify-end gap-2">
+                        <button onclick="viewLecturer('2')" class="px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-button hover:bg-primary-hover transition-all duration-200 cursor-pointer">View</button>
+                        <button onclick="editLecturer('2')" class="px-3 py-1.5 border border-border text-foreground text-xs font-medium rounded-button hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer">Edit</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr class="hover:bg-gray-50 lecturer-row" data-lecturer-id="3" data-department="physics" data-status="on-leave" data-searchable="Dr. Emily Rodriguez Physics PHYS101 On Leave">
+                    <td class="px-4 py-4">
+                      <input type="checkbox" class="lecturer-checkbox rounded border-gray-300 text-primary focus:ring-primary" onchange="updateBulkActions()">
+                    </td>
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop" alt="Dr. Emily Rodriguez" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+                        <div class="min-w-0 flex-1">
+                          <p class="font-medium text-foreground truncate">Dr. Emily Rodriguez</p>
+                          <p class="text-gray-500 text-sm truncate">LEC-003</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4"><span class="truncate block">Physics</span></td>
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-1">
+                        <span class="text-sm font-medium">2 classes</span>
+                        <span class="text-xs text-gray-500">(PHYS101)</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4"><span class="bg-warning-light text-warning-dark text-xs px-2 py-1 rounded-full whitespace-nowrap">On Leave</span></td>
+                    <td class="px-4 py-4 text-right">
+                      <div class="flex items-center justify-end gap-2">
+                        <button onclick="viewLecturer('3')" class="px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-button hover:bg-primary-hover transition-all duration-200 cursor-pointer">View</button>
+                        <button onclick="editLecturer('3')" class="px-3 py-1.5 border border-border text-foreground text-xs font-medium rounded-button hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer">Edit</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr class="hover:bg-gray-50 lecturer-row" data-lecturer-id="4" data-department="chemistry" data-status="active" data-searchable="Dr. James Wilson Chemistry CHEM101 CHEM201 Active">
+                    <td class="px-4 py-4">
+                      <input type="checkbox" class="lecturer-checkbox rounded border-gray-300 text-primary focus:ring-primary" onchange="updateBulkActions()">
+                    </td>
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="Dr. James Wilson" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+                        <div class="min-w-0 flex-1">
+                          <p class="font-medium text-foreground truncate">Dr. James Wilson</p>
+                          <p class="text-gray-500 text-sm truncate">LEC-004</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4"><span class="truncate block">Chemistry</span></td>
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-1">
+                        <span class="text-sm font-medium">4 classes</span>
+                        <span class="text-xs text-gray-500">(CHEM101, CHEM201)</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4"><span class="bg-success-light text-success-dark text-xs px-2 py-1 rounded-full whitespace-nowrap">Active</span></td>
+                    <td class="px-4 py-4 text-right">
+                      <div class="flex items-center justify-end gap-2">
+                        <button onclick="viewLecturer('4')" class="px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-button hover:bg-primary-hover transition-all duration-200 cursor-pointer">View</button>
+                        <button onclick="editLecturer('4')" class="px-3 py-1.5 border border-border text-foreground text-xs font-medium rounded-button hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer">Edit</button>
+                      </div>
+                    </td>
+                  </tr>
+
+                  <tr class="hover:bg-gray-50 lecturer-row" data-lecturer-id="5" data-department="biology" data-status="active" data-searchable="Dr. Lisa Thompson Biology BIO101 BIO201 Active">
+                    <td class="px-4 py-4">
+                      <input type="checkbox" class="lecturer-checkbox rounded border-gray-300 text-primary focus:ring-primary" onchange="updateBulkActions()">
+                    </td>
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-3 min-w-0">
+                        <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop" alt="Dr. Lisa Thompson" class="w-10 h-10 rounded-full object-cover flex-shrink-0">
+                        <div class="min-w-0 flex-1">
+                          <p class="font-medium text-foreground truncate">Dr. Lisa Thompson</p>
+                          <p class="text-gray-500 text-sm truncate">LEC-005</p>
+                        </div>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4"><span class="truncate block">Biology</span></td>
+                    <td class="px-4 py-4">
+                      <div class="flex items-center gap-1">
+                        <span class="text-sm font-medium">3 classes</span>
+                        <span class="text-xs text-gray-500">(BIO101, BIO201)</span>
+                      </div>
+                    </td>
+                    <td class="px-4 py-4"><span class="bg-success-light text-success-dark text-xs px-2 py-1 rounded-full whitespace-nowrap">Active</span></td>
+                    <td class="px-4 py-4 text-right">
+                      <div class="flex items-center justify-end gap-2">
+                        <button onclick="viewLecturer('5')" class="px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-button hover:bg-primary-hover transition-all duration-200 cursor-pointer">View</button>
+                        <button onclick="editLecturer('5')" class="px-3 py-1.5 border border-border text-foreground text-xs font-medium rounded-button hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer">Edit</button>
+                      </div>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div class="md:hidden space-y-3 p-4" id="mobileCards">
+              <div class="bg-white rounded-2xl p-4 border border-gray-100 lecturer-card" data-lecturer-id="1" data-department="computer-science" data-status="active" data-searchable="Dr. Sarah Johnson Computer Science CS101 CS201 Active">
+                <div class="flex items-center gap-3 mb-3 min-w-0">
+                  <input type="checkbox" class="lecturer-checkbox rounded border-gray-300 text-primary focus:ring-primary" onchange="updateBulkActions()">
+                  <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop" alt="Dr. Sarah Johnson" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+                  <div class="flex-1 min-w-0">
+                    <h4 class="text-foreground font-semibold truncate">Dr. Sarah Johnson</h4>
+                    <p class="text-gray-500 text-xs truncate">Computer Science • 5 classes</p>
+                  </div>
+                  <span class="bg-success-light text-success-dark text-xs px-2 py-1 rounded-full whitespace-nowrap">Active</span>
+                </div>
+                <div class="flex gap-2 pt-3 border-t border-gray-100">
+                  <button onclick="viewLecturer('1')" class="flex-1 text-center py-2 text-sm font-medium text-primary bg-primary/10 rounded-lg cursor-pointer">View</button>
+                  <button onclick="editLecturer('1')" class="flex-1 text-center py-2 text-sm font-medium text-foreground bg-gray-50 rounded-lg cursor-pointer">Edit</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- No Results Message -->
+            <div id="noResults" class="hidden text-center py-8">
+              <i data-lucide="search-x" class="w-12 h-12 text-secondary mx-auto mb-3"></i>
+              <p class="text-secondary">No lecturers found matching your criteria</p>
+            </div>
+          </div>
+
+          <!-- Pagination -->
+          <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 pb-4">
+            <div class="text-sm text-gray-600">Showing 1 to 5 of 156 entries</div>
+            <div class="flex flex-wrap items-center gap-2">
+              <button class="px-3 py-2 border border-border rounded-lg text-sm cursor-pointer transition-all duration-200 hover:border-primary">Previous</button>
+              <button class="px-3 py-2 bg-primary text-white rounded-lg text-sm">1</button>
+              <button class="px-3 py-2 border border-border rounded-lg text-sm cursor-pointer transition-all duration-200 hover:border-primary">2</button>
+              <button class="px-3 py-2 border border-border rounded-lg text-sm cursor-pointer transition-all duration-200 hover:border-primary">3</button>
+              <button class="px-3 py-2 border border-border rounded-lg text-sm cursor-pointer transition-all duration-200 hover:border-primary">Next</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lecturer Detail Panel -->
+        <div class="lg:col-span-1">
+          <div class="flex flex-col rounded-2xl border border-border p-6 gap-6 bg-white sticky top-6">
+            <div class="flex items-center justify-between">
+              <h3 class="text-foreground text-lg font-bold">Lecturer Details</h3>
+              <button onclick="closeLecturerDetail()" class="p-1 hover:bg-gray-100 rounded-lg cursor-pointer">
+                <i data-lucide="x" class="w-4 h-4 text-gray-500"></i>
+              </button>
+            </div>
+
+            <div id="lecturerDetailContent" class="flex flex-col items-center text-center py-8">
+              <div class="w-16 h-16 bg-muted rounded-full flex items-center justify-center mb-4">
+                <i data-lucide="user-check" class="w-8 h-8 text-secondary"></i>
+              </div>
+              <p class="text-secondary text-sm">Select a lecturer to view details</p>
+            </div>
+
+            <div id="lecturerDetailInfo" class="hidden space-y-4">
+              <div class="flex flex-col items-center text-center">
+                <img id="detailAvatar" src="" alt="Lecturer" class="w-20 h-20 rounded-full object-cover mb-3">
+                <h4 id="detailName" class="font-semibold text-lg text-foreground"></h4>
+                <p id="detailId" class="text-sm text-secondary"></p>
+                <span id="detailStatus" class="mt-2 px-3 py-1 rounded-full text-xs font-medium"></span>
+              </div>
+
+              <div class="space-y-3 pt-4 border-t border-border">
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-secondary">Department</span>
+                  <span id="detailDepartment" class="text-sm font-medium text-foreground"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-secondary">Total Classes</span>
+                  <span id="detailClasses" class="text-sm font-medium text-foreground"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-secondary">Workload</span>
+                  <span id="detailWorkload" class="text-sm font-medium text-foreground"></span>
+                </div>
+                <div class="flex justify-between items-center">
+                  <span class="text-sm text-secondary">Experience</span>
+                  <span id="detailExperience" class="text-sm font-medium text-foreground"></span>
+                </div>
+              </div>
+
+              <div class="pt-4 border-t border-border">
+                <h5 class="text-sm font-semibold text-foreground mb-2">Assigned Classes</h5>
+                <div id="detailClassList" class="space-y-2">
+                  <!-- Classes will be populated here -->
+                </div>
+              </div>
+
+              <div class="flex gap-2 pt-4">
+                <button onclick="editSelectedLecturer()" class="flex-1 px-4 py-2 bg-primary text-white rounded-2xl font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+                  Edit Profile
+                </button>
+                <button onclick="viewSchedule()" class="flex-1 px-4 py-2 border border-border text-foreground rounded-2xl font-medium hover:border-primary transition-all duration-200 cursor-pointer">
+                  View Schedule
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add Lecturer Modal -->
+<div id="addLecturerModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-foreground text-xl font-bold">Add New Lecturer</h3>
+      <button onclick="closeAddLecturerModal()" class="p-2 hover:bg-gray-100 rounded-full cursor-pointer" aria-label="Close modal">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+
+    <form id="addLecturerForm" class="space-y-4">
+      <div class="space-y-3">
+        <label class="block text-foreground text-sm font-medium">Full Name <span class="text-error">*</span></label>
+        <input type="text" id="lecturerName" required class="w-full px-4 py-3 border border-border rounded-2xl focus:outline-none focus:border-primary transition-all duration-200" placeholder="Dr. John Smith">
+      </div>
+
+      <div class="space-y-3">
+        <label class="block text-foreground text-sm font-medium">Lecturer ID <span class="text-error">*</span></label>
+        <input type="text" id="lecturerId" required class="w-full px-4 py-3 border border-border rounded-2xl focus:outline-none focus:border-primary transition-all duration-200" placeholder="LEC-006">
+      </div>
+
+      <div class="space-y-3">
+        <label class="block text-foreground text-sm font-medium">Department <span class="text-error">*</span></label>
+        <select id="lecturerDepartment" required class="w-full px-4 py-3 border border-border rounded-2xl focus:outline-none focus:border-primary transition-all duration-200">
+          <option value="">Select Department</option>
+          <option value="computer-science">Computer Science</option>
+          <option value="mathematics">Mathematics</option>
+          <option value="physics">Physics</option>
+          <option value="chemistry">Chemistry</option>
+          <option value="biology">Biology</option>
+        </select>
+      </div>
+
+      <div class="space-y-3">
+        <label class="block text-foreground text-sm font-medium">Email <span class="text-error">*</span></label>
+        <input type="email" id="lecturerEmail" required class="w-full px-4 py-3 border border-border rounded-2xl focus:outline-none focus:border-primary transition-all duration-200" placeholder="john.smith@university.edu">
+      </div>
+
+      <div class="space-y-3">
+        <label class="block text-foreground text-sm font-medium">Phone</label>
+        <input type="tel" id="lecturerPhone" class="w-full px-4 py-3 border border-border rounded-2xl focus:outline-none focus:border-primary transition-all duration-200" placeholder="+1 (555) 123-4567">
+      </div>
+
+      <div class="space-y-3">
+        <label class="block text-foreground text-sm font-medium">Status</label>
+        <select id="lecturerStatus" class="w-full px-4 py-3 border border-border rounded-2xl focus:outline-none focus:border-primary transition-all duration-200">
+          <option value="active">Active</option>
+          <option value="on-leave">On Leave</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+
+      <div class="flex gap-3 pt-4">
+        <button type="button" onclick="closeAddLecturerModal()" class="flex-1 px-4 py-3 border border-border text-foreground rounded-2xl font-medium hover:border-primary transition-all duration-200 cursor-pointer">
+          Cancel
+        </button>
+        <button type="submit" class="flex-1 px-4 py-3 bg-primary text-white rounded-2xl font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+          Add Lecturer
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Page Not Found Modal -->
+<div id="page-not-found-modal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-warning-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="alert-triangle" class="w-8 h-8 text-warning-dark"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Page Not Available</h3>
+    <p class="text-gray-500 text-sm mb-6">This page hasn't been created yet. Generate it using the chat!</p>
+    <button onclick="closePageNotFoundModal()" class="w-full px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+      Got it
+    </button>
+  </div>
+</div>
+
+<script>
+// Complete lecturer data with all required fields
+const lecturerData = {
+  '1': {
+    name: 'Dr. Sarah Johnson',
+    id: 'LEC-001',
+    avatar: 'https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop',
+    department: 'Computer Science',
+    status: 'Active',
+    classes: '5',
+    workload: '20 hrs/week',
+    experience: '8 years',
+    classList: ['CS101 - Intro to Programming', 'CS201 - Data Structures', 'CS301 - Algorithms']
+  },
+  '2': {
+    name: 'Prof. Michael Chen',
+    id: 'LEC-002',
+    avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop',
+    department: 'Mathematics',
+    status: 'Active',
+    classes: '3',
+    workload: '15 hrs/week',
+    experience: '12 years',
+    classList: ['MATH101 - Calculus I', 'MATH201 - Linear Algebra', 'MATH301 - Statistics']
+  },
+  '3': {
+    name: 'Dr. Emily Rodriguez',
+    id: 'LEC-003',
+    avatar: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop',
+    department: 'Physics',
+    status: 'On Leave',
+    classes: '2',
+    workload: '10 hrs/week',
+    experience: '6 years',
+    classList: ['PHYS101 - General Physics', 'PHYS201 - Mechanics']
+  },
+  '4': {
+    name: 'Dr. James Wilson',
+    id: 'LEC-004',
+    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop',
+    department: 'Chemistry',
+    status: 'Active',
+    classes: '4',
+    workload: '18 hrs/week',
+    experience: '10 years',
+    classList: ['CHEM101 - General Chemistry', 'CHEM201 - Organic Chemistry', 'CHEM301 - Analytical Chemistry']
+  },
+  '5': {
+    name: 'Dr. Lisa Thompson',
+    id: 'LEC-005',
+    avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop',
+    department: 'Biology',
+    status: 'Active',
+    classes: '3',
+    workload: '16 hrs/week',
+    experience: '7 years',
+    classList: ['BIO101 - General Biology', 'BIO201 - Cell Biology', 'BIO301 - Genetics']
+  }
+};
+
+let selectedLecturerId = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  lucide.createIcons();
+
+  // Show modal when clicking any link
+  document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('page-not-found-modal').classList.remove('hidden');
+    });
+  });
+
+  // Bind filter events
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('departmentFilter').addEventListener('change', applyFilters);
+  document.getElementById('statusFilter').addEventListener('change', applyFilters);
+});
+
+function closePageNotFoundModal() {
+  document.getElementById('page-not-found-modal').classList.add('hidden');
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.toggle('-translate-x-full');
+  overlay.classList.toggle('hidden');
+  document.body.classList.toggle('overflow-hidden');
+}
+
+// Filter and Search Functions
+function applyFilters() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+  const departmentValue = document.getElementById('departmentFilter').value;
+  const statusValue = document.getElementById('statusFilter').value;
+
+  const rows = document.querySelectorAll('.lecturer-row');
+  const cards = document.querySelectorAll('.lecturer-card');
+  let visibleCount = 0;
+
+  // Filter table rows
+  rows.forEach(row => {
+    const searchableText = (row.dataset.searchable || '').toLowerCase();
+    const matchesSearch = searchTerm === '' || searchableText.includes(searchTerm);
+    const matchesDepartment = departmentValue === 'all' || row.dataset.department === departmentValue;
+    const matchesStatus = statusValue === 'all' || row.dataset.status === statusValue;
+
+    const isVisible = matchesSearch && matchesDepartment && matchesStatus;
+    row.style.display = isVisible ? '' : 'none';
+    if (isVisible) visibleCount++;
+  });
+
+  // Filter mobile cards
+  cards.forEach(card => {
+    const searchableText = (card.dataset.searchable || '').toLowerCase();
+    const matchesSearch = searchTerm === '' || searchableText.includes(searchTerm);
+    const matchesDepartment = departmentValue === 'all' || card.dataset.department === departmentValue;
+    const matchesStatus = statusValue === 'all' || card.dataset.status === statusValue;
+
+    const isVisible = matchesSearch && matchesDepartment && matchesStatus;
+    card.style.display = isVisible ? '' : 'none';
+  });
+
+  // Update visible count
+  document.getElementById('visibleCount').textContent = visibleCount;
+
+  // Show/hide no results message
+  const noResults = document.getElementById('noResults');
+  noResults.classList.toggle('hidden', visibleCount > 0);
+}
+
+function resetFilters() {
+  document.getElementById('searchInput').value = '';
+  document.getElementById('departmentFilter').value = 'all';
+  document.getElementById('statusFilter').value = 'all';
+  applyFilters();
+}
+
+// Bulk Actions
+function toggleSelectAll() {
+  const selectAll = document.getElementById('selectAll');
+  const checkboxes = document.querySelectorAll('.lecturer-checkbox');
+  
+  checkboxes.forEach(checkbox => {
+    checkbox.checked = selectAll.checked;
+  });
+  
+  updateBulkActions();
+}
+
+function updateBulkActions() {
+  const checkboxes = document.querySelectorAll('.lecturer-checkbox:checked');
+  const bulkActions = document.getElementById('bulkActions');
+  const selectedCount = document.getElementById('selectedCount');
+  
+  selectedCount.textContent = checkboxes.length;
+  bulkActions.classList.toggle('hidden', checkboxes.length === 0);
+  
+  // Update select all checkbox
+  const allCheckboxes = document.querySelectorAll('.lecturer-checkbox');
+  const selectAll = document.getElementById('selectAll');
+  selectAll.checked = checkboxes.length === allCheckboxes.length;
+  selectAll.indeterminate = checkboxes.length > 0 && checkboxes.length < allCheckboxes.length;
+}
+
+function bulkExport() {
+  const selected = document.querySelectorAll('.lecturer-checkbox:checked');
+  showToast(`Exporting ${selected.length} lecturers...`, 'success');
+}
+
+function bulkUpdateStatus() {
+  const selected = document.querySelectorAll('.lecturer-checkbox:checked');
+  showToast(`Updating status for ${selected.length} lecturers...`, 'success');
+}
+
+// Lecturer Detail Panel Functions
+function viewLecturer(id) {
+  console.log('viewLecturer called with ID:', id);
+  
+  selectedLecturerId = id;
+  
+  // Get lecturer data
+  const data = lecturerData[id];
+  
+  if (!data) {
+    console.error('Lecturer data not found for ID:', id);
+    showToast('Lecturer data not found', 'error');
+    return;
+  }
+  
+  console.log('Found lecturer data:', data);
+  
+  // Get all required elements
+  const detailAvatar = document.getElementById('detailAvatar');
+  const detailName = document.getElementById('detailName');
+  const detailId = document.getElementById('detailId');
+  const detailDepartment = document.getElementById('detailDepartment');
+  const detailClasses = document.getElementById('detailClasses');
+  const detailWorkload = document.getElementById('detailWorkload');
+  const detailExperience = document.getElementById('detailExperience');
+  const detailStatus = document.getElementById('detailStatus');
+  const detailClassList = document.getElementById('detailClassList');
+  const lecturerDetailContent = document.getElementById('lecturerDetailContent');
+  const lecturerDetailInfo = document.getElementById('lecturerDetailInfo');
+  
+  // Check if all elements exist
+  if (!detailAvatar || !detailName || !detailId || !detailDepartment || 
+      !detailClasses || !detailWorkload || !detailExperience || 
+      !detailStatus || !detailClassList || !lecturerDetailContent || !lecturerDetailInfo) {
+    console.error('One or more detail panel elements not found');
+    showToast('Error loading lecturer details', 'error');
+    return;
+  }
+  
+  try {
+    // Update all fields
+    detailAvatar.src = data.avatar;
+    detailAvatar.alt = data.name;
+    detailName.textContent = data.name;
+    detailId.textContent = data.id;
+    detailDepartment.textContent = data.department;
+    detailClasses.textContent = data.classes;
+    detailWorkload.textContent = data.workload;
+    detailExperience.textContent = data.experience;
+    
+    // Update status badge with proper styling
+    detailStatus.textContent = data.status;
+    detailStatus.className = 'mt-2 px-3 py-1 rounded-full text-xs font-medium ' + 
+      (data.status === 'Active' 
+        ? 'bg-success-light text-success-dark'
+        : data.status === 'On Leave'
+        ? 'bg-warning-light text-warning-dark'
+        : 'bg-error-light text-error-dark');
+    
+    // Update class list
+    detailClassList.innerHTML = data.classList.map(cls => 
+      `<div class="text-xs text-secondary bg-muted px-2 py-1 rounded-lg">${cls}</div>`
+    ).join('');
+    
+    // Show detail panel and hide placeholder
+    lecturerDetailContent.classList.add('hidden');
+    lecturerDetailInfo.classList.remove('hidden');
+    
+    console.log('Lecturer details updated successfully');
+    
+    // Re-initialize Lucide icons for any new icons
+    lucide.createIcons();
+    
+  } catch (error) {
+    console.error('Error updating lecturer details:', error);
+    showToast('Error displaying lecturer details', 'error');
+  }
+}
+
+function closeLecturerDetail() {
+  selectedLecturerId = null;
+  const lecturerDetailContent = document.getElementById('lecturerDetailContent');
+  const lecturerDetailInfo = document.getElementById('lecturerDetailInfo');
+  
+  if (lecturerDetailContent && lecturerDetailInfo) {
+    lecturerDetailContent.classList.remove('hidden');
+    lecturerDetailInfo.classList.add('hidden');
+  }
+}
+
+function editSelectedLecturer() {
+  if (selectedLecturerId) {
+    editLecturer(selectedLecturerId);
+  }
+}
+
+function viewSchedule() {
+  if (selectedLecturerId) {
+    const data = lecturerData[selectedLecturerId];
+    showToast(`Opening schedule for ${data ? data.name : 'selected lecturer'}...`, 'info');
+  } else {
+    showToast('Please select a lecturer first', 'error');
+  }
+}
+
+// Modal Functions
+function openAddLecturerModal() {
+  document.getElementById('addLecturerModal').classList.remove('hidden');
+}
+
+function closeAddLecturerModal() {
+  document.getElementById('addLecturerModal').classList.add('hidden');
+  document.getElementById('addLecturerForm').reset();
+}
+
+// Form Submission
+document.getElementById('addLecturerForm').addEventListener('submit', function(e) {
+  e.preventDefault();
+  
+  const formData = {
+    name: document.getElementById('lecturerName').value,
+    id: document.getElementById('lecturerId').value,
+    department: document.getElementById('lecturerDepartment').value,
+    email: document.getElementById('lecturerEmail').value,
+    phone: document.getElementById('lecturerPhone').value,
+    status: document.getElementById('lecturerStatus').value
+  };
+  
+  // Simulate adding lecturer
+  showToast('Lecturer added successfully!', 'success');
+  closeAddLecturerModal();
+});
+
+// Action Functions
+function editLecturer(id) {
+  const data = lecturerData[id];
+  showToast(`Opening edit form for ${data ? data.name : 'lecturer ' + id}...`, 'info');
+}
+
+function exportLecturers() {
+  showToast('Exporting lecturers data...', 'success');
+}
+
+// Toast Notification
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  const bgColor = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-error' : 'bg-primary';
+  toast.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-3 rounded-xl z-50 font-medium shadow-lg`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+</script>
+</body>
+</html>

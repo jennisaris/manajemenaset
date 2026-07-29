@@ -11,7 +11,7 @@ export const roleDescriptions: Record<UserRole, string> = {
 };
 
 export function canManageUsers(role: UserRole) {
-  return role === 'Superadmin';
+  return ['Superadmin', 'Admin Aset'].includes(role);
 }
 
 export function canManageAssets(role: UserRole) {

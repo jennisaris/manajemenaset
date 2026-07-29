@@ -1,0 +1,865 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCampus - Digital Library</title>
+<meta name="description" content="EduCampus digital library for managing academic files and resources.">
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--primary-hover);
+    --color-foreground: var(--foreground);
+    --color-secondary: var(--secondary);
+    --color-muted: var(--muted);
+    --color-border: var(--border);
+    --color-card-grey: var(--card-grey);
+    --color-card-message: var(--card-message);
+    --color-accent-blue: var(--accent-blue);
+    --color-accent-teal: var(--accent-teal);
+    --color-accent-sky: var(--accent-sky);
+    --color-success: var(--success);
+    --color-success-light: var(--success-light);
+    --color-success-dark: var(--success-dark);
+    --color-error: var(--error);
+    --color-error-light: var(--error-light);
+    --color-error-lighter: var(--error-lighter);
+    --color-error-dark: var(--error-dark);
+    --color-warning: var(--warning);
+    --color-warning-light: var(--warning-light);
+    --color-warning-dark: var(--warning-dark);
+    --color-info: var(--info);
+    --color-info-light: var(--info-light);
+    --color-info-dark: var(--info-dark);
+    --color-alert: var(--alert);
+    --color-alert-light: var(--alert-light);
+    --color-alert-dark: var(--alert-dark);
+    --color-gray-50: var(--gray-50);
+    --color-gray-100: var(--gray-100);
+    --color-gray-200: var(--gray-200);
+    --color-gray-500: var(--gray-500);
+    --color-gray-600: var(--gray-600);
+    --color-gray-700: var(--gray-700);
+    --font-sans: var(--font-sans);
+    --radius-card: 24px;
+    --radius-button: 50px;
+    --radius-icon: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 20px;
+    --radius-3xl: 24px;
+  }
+  :root {
+    --primary: #165DFF;
+    --primary-hover: #0E4BD9;
+    --foreground: #080C1A;
+    --secondary: #6A7686;
+    --muted: #EFF2F7;
+    --border: #F3F4F3;
+    --card-grey: #F1F3F6;
+    --card-message: #C9E6FC;
+    --accent-blue: #C9E6FC;
+    --accent-teal: #82D9D7;
+    --accent-sky: #DBEAFE;
+    --success: #30B22D;
+    --success-light: #DCFCE7;
+    --success-dark: #166534;
+    --error: #ED6B60;
+    --error-light: #FEE2E2;
+    --error-lighter: #FEF2F2;
+    --error-dark: #991B1B;
+    --warning: #FED71F;
+    --warning-light: #FEF9C3;
+    --warning-dark: #854D0E;
+    --info: #165DFF;
+    --info-light: #DBEAFE;
+    --info-dark: #1E40AF;
+    --alert: #F97316;
+    --alert-light: #FFEDD5;
+    --alert-dark: #9A3412;
+    --gray-50: #F9FAFB;
+    --gray-100: #F1F3F6;
+    --gray-200: #E5E7EB;
+    --gray-500: #6A7686;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --font-sans: 'Lexend Deca', sans-serif;
+  }
+  select {
+    @apply appearance-none bg-no-repeat cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 10px center;
+    padding-right: 40px;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+<body class="font-sans bg-white min-h-screen overflow-x-hidden">
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/80 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+<div class="flex h-screen max-h-screen flex-1 bg-muted overflow-hidden">
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="flex flex-col w-[280px] shrink-0 h-screen fixed inset-y-0 left-0 z-50 bg-white border-r border-border transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-hidden">
+    <!-- Top Bar with logo and title -->
+    <div class="flex items-center justify-between border-b border-border h-[90px] px-5 gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-9 bg-primary rounded-xl flex items-center justify-center">
+          <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+        </div>
+        <h1 class="font-semibold text-xl">EduCampus</h1>
+      </div>
+      <div class="flex gap-2">
+        <button class="size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" aria-label="Search">
+          <i data-lucide="search" class="size-6 text-secondary"></i>
+        </button>
+        <button onclick="toggleSidebar()" aria-label="Close sidebar" class="lg:hidden size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+          <i data-lucide="x" class="size-6 text-secondary"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="flex flex-col p-5 pb-28 gap-6 overflow-y-auto flex-1">
+      <!-- Main Menu Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Main Menu</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="layout-dashboard" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Dashboard</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="users" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Students</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="user-check" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Lecturers</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="book-open" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Classes</span>
+            </div>
+          </a>
+          <!-- Active menu item -->
+          <a href="#" class="group active cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="library" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Library</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Management Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Management</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="bar-chart-3" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Reports</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="settings" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Settings</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Support Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Support</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="help-circle" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Help Center</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Help Card -->
+    <div class="absolute bottom-0 left-0 w-[280px]">
+      <div class="flex items-center justify-between border-t bg-white border-border p-5 gap-3">
+        <div class="min-w-0">
+          <p class="font-semibold text-foreground">Need help?</p>
+          <a href="#" class="cursor-pointer"><span class="text-sm text-secondary hover:text-primary hover:underline transition-all duration-300">Contact support</span></a>
+        </div>
+        <div class="size-11 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i data-lucide="message-circle-question" class="size-6 text-primary"></i>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 lg:ml-[280px] flex flex-col bg-white min-h-screen overflow-x-hidden">
+    <!-- Top Header Bar -->
+    <div class="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-border bg-white px-5 md:px-8">
+      <!-- Mobile hamburger -->
+      <button onclick="toggleSidebar()" aria-label="Open menu" class="lg:hidden size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+        <i data-lucide="menu" class="size-6 text-foreground"></i>
+      </button>
+      <!-- Page title (shown on desktop) -->
+      <h2 class="hidden lg:block font-bold text-2xl text-foreground">Digital Library</h2>
+      <!-- Right actions -->
+      <div class="flex items-center gap-3">
+        <button class="size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer relative" aria-label="Notifications">
+          <i data-lucide="bell" class="size-6 text-secondary"></i>
+          <span class="absolute -top-1 -right-1 h-5 px-1.5 rounded-full bg-error text-white text-xs font-medium flex items-center justify-center">3</span>
+        </button>
+        <div class="hidden md:flex items-center gap-3 pl-3 border-l border-border">
+          <div class="text-right">
+            <p class="font-semibold text-foreground text-sm">Admin User</p>
+            <p class="text-secondary text-xs">Administrator</p>
+          </div>
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="Profile" class="size-11 rounded-full object-cover ring-2 ring-border">
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content Area -->
+    <div class="flex-1 overflow-y-auto p-5 md:p-8">
+      <!-- Page Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+        <div>
+          <h1 class="text-foreground text-2xl md:text-3xl font-bold mb-1">Digital Library</h1>
+          <p class="text-secondary text-sm md:text-base">Manage academic files and resources</p>
+        </div>
+        <div class="flex items-center gap-2 md:gap-3 ml-auto md:ml-0">
+          <button onclick="showUploadModal()" class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:bg-primary-hover transition-all duration-300 cursor-pointer">
+            <i data-lucide="upload" class="w-5 h-5"></i>
+            <span>Upload File</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Resource Categories -->
+      <div class="flex flex-col rounded-2xl border border-border p-6 gap-6 bg-white mb-6">
+        <h3 class="font-bold text-lg text-foreground">Resource Categories</h3>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <button onclick="filterByCategory('syllabus')" data-category-btn="syllabus" class="category-btn flex flex-col items-center gap-3 p-4 rounded-2xl bg-primary/10 text-primary font-semibold transition-all duration-300 cursor-pointer">
+            <div class="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center">
+              <i data-lucide="book-open" class="w-6 h-6"></i>
+            </div>
+            <span class="text-sm">Syllabus</span>
+          </button>
+          <button onclick="filterByCategory('slides')" data-category-btn="slides" class="category-btn flex flex-col items-center gap-3 p-4 rounded-2xl hover:bg-card-grey text-secondary hover:text-foreground font-medium transition-all duration-300 cursor-pointer">
+            <div class="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
+              <i data-lucide="presentation" class="w-6 h-6"></i>
+            </div>
+            <span class="text-sm">Lecture Slides</span>
+          </button>
+          <button onclick="filterByCategory('exams')" data-category-btn="exams" class="category-btn flex flex-col items-center gap-3 p-4 rounded-2xl hover:bg-card-grey text-secondary hover:text-foreground font-medium transition-all duration-300 cursor-pointer">
+            <div class="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
+              <i data-lucide="file-text" class="w-6 h-6"></i>
+            </div>
+            <span class="text-sm">Exams</span>
+          </button>
+          <button onclick="filterByCategory('policies')" data-category-btn="policies" class="category-btn flex flex-col items-center gap-3 p-4 rounded-2xl hover:bg-card-grey text-secondary hover:text-foreground font-medium transition-all duration-300 cursor-pointer">
+            <div class="w-12 h-12 bg-muted rounded-xl flex items-center justify-center">
+              <i data-lucide="shield-check" class="w-6 h-6"></i>
+            </div>
+            <span class="text-sm">Policies</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Search and Filters -->
+      <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white mb-6">
+        <div class="flex flex-col md:flex-row gap-4">
+          <div class="flex-1 relative">
+            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-secondary"></i>
+            <input type="text" id="searchInput" class="w-full h-12 pl-12 pr-4 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium transition-all duration-300" placeholder="Search files...">
+          </div>
+          <select id="classFilter" class="px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium cursor-pointer">
+            <option value="all">All Classes</option>
+            <option value="CS101">Computer Science 101</option>
+            <option value="MATH201">Mathematics 201</option>
+            <option value="ENG301">English 301</option>
+            <option value="PHY101">Physics 101</option>
+          </select>
+          <select id="accessFilter" class="px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium cursor-pointer">
+            <option value="all">All Access</option>
+            <option value="public">Public</option>
+            <option value="restricted">Restricted</option>
+            <option value="private">Private</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Files List -->
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Files Container -->
+        <div class="lg:col-span-2">
+          <div class="flex flex-col rounded-2xl border border-border bg-white overflow-hidden">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-border">
+              <h3 class="font-bold text-lg text-foreground">Academic Files</h3>
+              <span id="fileCount" class="text-sm text-secondary">5 files</span>
+            </div>
+            
+            <!-- Files List -->
+            <div id="filesContainer" class="divide-y divide-border">
+              <div class="file-item flex items-center gap-4 p-6 hover:bg-card-grey transition-all duration-300 cursor-pointer" data-file-id="1" data-category="syllabus" data-class="CS101" data-access="public" data-searchable="introduction computer science syllabus dr smith cs101" onclick="viewFileDetails('1')">
+                <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="book-open" class="w-6 h-6 text-primary"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-semibold text-foreground truncate" data-file-name>Introduction to Computer Science - Syllabus</h4>
+                  <div class="flex items-center gap-4 text-sm text-secondary mt-1">
+                    <span data-file-owner>Dr. Smith</span>
+                    <span data-file-class>CS101</span>
+                    <span data-file-date>Dec 15, 2024</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full" data-access-badge>Public</span>
+                  <button onclick="event.stopPropagation(); downloadFile('1')" class="p-2 hover:bg-gray-100 rounded-xl transition-all duration-300 cursor-pointer" aria-label="Download">
+                    <i data-lucide="download" class="w-4 h-4 text-secondary"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="file-item flex items-center gap-4 p-6 hover:bg-card-grey transition-all duration-300 cursor-pointer" data-file-id="2" data-category="slides" data-class="MATH201" data-access="restricted" data-searchable="calculus fundamentals lecture slides prof johnson math201" onclick="viewFileDetails('2')">
+                <div class="w-12 h-12 bg-info/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="presentation" class="w-6 h-6 text-info"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-semibold text-foreground truncate" data-file-name>Calculus Fundamentals - Lecture Slides</h4>
+                  <div class="flex items-center gap-4 text-sm text-secondary mt-1">
+                    <span data-file-owner>Prof. Johnson</span>
+                    <span data-file-class>MATH201</span>
+                    <span data-file-date>Dec 12, 2024</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="bg-warning-light text-warning-dark text-xs font-medium px-3 py-1 rounded-full" data-access-badge>Restricted</span>
+                  <button onclick="event.stopPropagation(); downloadFile('2')" class="p-2 hover:bg-gray-100 rounded-xl transition-all duration-300 cursor-pointer" aria-label="Download">
+                    <i data-lucide="download" class="w-4 h-4 text-secondary"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="file-item flex items-center gap-4 p-6 hover:bg-card-grey transition-all duration-300 cursor-pointer" data-file-id="3" data-category="exams" data-class="ENG301" data-access="private" data-searchable="midterm exam literature analysis dr brown eng301" onclick="viewFileDetails('3')">
+                <div class="w-12 h-12 bg-error/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="file-text" class="w-6 h-6 text-error"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-semibold text-foreground truncate" data-file-name>Midterm Exam - Literature Analysis</h4>
+                  <div class="flex items-center gap-4 text-sm text-secondary mt-1">
+                    <span data-file-owner>Dr. Brown</span>
+                    <span data-file-class>ENG301</span>
+                    <span data-file-date>Dec 10, 2024</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="bg-error-light text-error-dark text-xs font-medium px-3 py-1 rounded-full" data-access-badge>Private</span>
+                  <button onclick="event.stopPropagation(); downloadFile('3')" class="p-2 hover:bg-gray-100 rounded-xl transition-all duration-300 cursor-pointer" aria-label="Download">
+                    <i data-lucide="download" class="w-4 h-4 text-secondary"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="file-item flex items-center gap-4 p-6 hover:bg-card-grey transition-all duration-300 cursor-pointer" data-file-id="4" data-category="policies" data-class="all" data-access="public" data-searchable="academic integrity policy university guidelines" onclick="viewFileDetails('4')">
+                <div class="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="shield-check" class="w-6 h-6 text-success"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-semibold text-foreground truncate" data-file-name>Academic Integrity Policy</h4>
+                  <div class="flex items-center gap-4 text-sm text-secondary mt-1">
+                    <span data-file-owner>University Admin</span>
+                    <span data-file-class>All Classes</span>
+                    <span data-file-date>Dec 8, 2024</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full" data-access-badge>Public</span>
+                  <button onclick="event.stopPropagation(); downloadFile('4')" class="p-2 hover:bg-gray-100 rounded-xl transition-all duration-300 cursor-pointer" aria-label="Download">
+                    <i data-lucide="download" class="w-4 h-4 text-secondary"></i>
+                  </button>
+                </div>
+              </div>
+
+              <div class="file-item flex items-center gap-4 p-6 hover:bg-card-grey transition-all duration-300 cursor-pointer" data-file-id="5" data-category="slides" data-class="PHY101" data-access="public" data-searchable="quantum mechanics introduction physics slides prof wilson phy101" onclick="viewFileDetails('5')">
+                <div class="w-12 h-12 bg-info/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="presentation" class="w-6 h-6 text-info"></i>
+                </div>
+                <div class="flex-1 min-w-0">
+                  <h4 class="font-semibold text-foreground truncate" data-file-name>Quantum Mechanics - Introduction</h4>
+                  <div class="flex items-center gap-4 text-sm text-secondary mt-1">
+                    <span data-file-owner>Prof. Wilson</span>
+                    <span data-file-class>PHY101</span>
+                    <span data-file-date>Dec 5, 2024</span>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 flex-shrink-0">
+                  <span class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full" data-access-badge>Public</span>
+                  <button onclick="event.stopPropagation(); downloadFile('5')" class="p-2 hover:bg-gray-100 rounded-xl transition-all duration-300 cursor-pointer" aria-label="Download">
+                    <i data-lucide="download" class="w-4 h-4 text-secondary"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- No Results -->
+            <div id="noResults" class="hidden text-center py-8">
+              <i data-lucide="search-x" class="w-12 h-12 text-secondary mx-auto mb-3"></i>
+              <p class="text-secondary">No files found matching your criteria</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Detail Panel -->
+        <div class="lg:col-span-1">
+          <div class="flex flex-col rounded-2xl border border-border bg-white overflow-hidden sticky top-6">
+            <!-- Placeholder -->
+            <div id="detailPlaceholder" class="text-center py-8 px-6">
+              <i data-lucide="file" class="w-12 h-12 text-secondary mx-auto mb-3"></i>
+              <p class="text-secondary">Select a file to view details</p>
+            </div>
+
+            <!-- Detail Content -->
+            <div id="detailContent" class="hidden">
+              <!-- Header -->
+              <div class="p-6 border-b border-border">
+                <div class="flex items-start justify-between gap-3 mb-4">
+                  <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="book-open" id="detailIcon" class="w-6 h-6 text-primary"></i>
+                  </div>
+                  <button onclick="closeDetail()" class="p-2 hover:bg-gray-100 rounded-xl transition-all duration-300 cursor-pointer" aria-label="Close">
+                    <i data-lucide="x" class="w-4 h-4 text-secondary"></i>
+                  </button>
+                </div>
+                <h4 id="detailFileName" class="font-semibold text-foreground mb-2">File Name</h4>
+                <span id="detailAccessBadge" class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full">Public</span>
+              </div>
+
+              <!-- File Info -->
+              <div class="p-6 space-y-4">
+                <div class="space-y-3">
+                  <div class="flex justify-between">
+                    <span class="text-secondary text-sm">Owner</span>
+                    <span id="detailOwner" class="text-foreground text-sm font-medium">Dr. Smith</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-secondary text-sm">Class</span>
+                    <span id="detailClass" class="text-foreground text-sm font-medium">CS101</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-secondary text-sm">Upload Date</span>
+                    <span id="detailDate" class="text-foreground text-sm font-medium">Dec 15, 2024</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-secondary text-sm">File Size</span>
+                    <span id="detailSize" class="text-foreground text-sm font-medium">2.4 MB</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="text-secondary text-sm">Downloads</span>
+                    <span id="detailDownloads" class="text-foreground text-sm font-medium">142</span>
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="pt-4 border-t border-border space-y-3">
+                  <button onclick="downloadFile(selectedFileId)" class="w-full flex items-center justify-center gap-2 px-4 py-3 bg-primary text-white rounded-2xl font-semibold hover:bg-primary-hover transition-all duration-300 cursor-pointer">
+                    <i data-lucide="download" class="w-4 h-4"></i>
+                    <span>Download</span>
+                  </button>
+                  <button onclick="shareFile(selectedFileId)" class="w-full flex items-center justify-center gap-2 px-4 py-3 ring-1 ring-border hover:ring-primary rounded-2xl font-medium transition-all duration-300 cursor-pointer">
+                    <i data-lucide="share-2" class="w-4 h-4"></i>
+                    <span>Share</span>
+                  </button>
+                </div>
+
+                <!-- Download History -->
+                <div class="pt-4 border-t border-border">
+                  <h5 class="font-semibold text-foreground mb-3">Recent Downloads</h5>
+                  <div class="space-y-3">
+                    <div class="flex items-center gap-3">
+                      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" class="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="User">
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-foreground truncate">John Student</p>
+                        <p class="text-xs text-secondary">2 hours ago</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop" class="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="User">
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-foreground truncate">Sarah Wilson</p>
+                        <p class="text-xs text-secondary">5 hours ago</p>
+                      </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                      <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" class="w-8 h-8 rounded-full object-cover flex-shrink-0" alt="User">
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-medium text-foreground truncate">Mike Davis</p>
+                        <p class="text-xs text-secondary">1 day ago</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Upload Modal -->
+<div id="uploadModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-md w-full">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-foreground text-xl font-bold">Upload File</h3>
+      <button onclick="closeUploadModal()" class="p-2 hover:bg-gray-100 rounded-xl transition-all duration-300 cursor-pointer" aria-label="Close">
+        <i data-lucide="x" class="w-5 h-5 text-secondary"></i>
+      </button>
+    </div>
+    
+    <form class="space-y-4">
+      <div>
+        <label class="block text-foreground text-sm font-medium mb-2">File</label>
+        <div class="border-2 border-dashed border-border rounded-2xl p-6 text-center hover:border-primary transition-all duration-300 cursor-pointer" onclick="document.getElementById('fileInput').click()">
+          <i data-lucide="upload" class="w-8 h-8 text-secondary mx-auto mb-2"></i>
+          <p class="text-foreground font-medium">Click to upload file</p>
+          <p class="text-secondary text-sm">PDF, DOC, PPT up to 10MB</p>
+          <input type="file" id="fileInput" class="hidden" accept=".pdf,.doc,.docx,.ppt,.pptx">
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-foreground text-sm font-medium mb-2">Category</label>
+        <select id="inputCategory" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium cursor-pointer">
+          <option value="syllabus">Syllabus</option>
+          <option value="slides">Lecture Slides</option>
+          <option value="exams">Exams</option>
+          <option value="policies">Policies</option>
+        </select>
+      </div>
+      
+      <div>
+        <label class="block text-foreground text-sm font-medium mb-2">Related Class</label>
+        <select id="inputClass" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium cursor-pointer">
+          <option value="CS101">Computer Science 101</option>
+          <option value="MATH201">Mathematics 201</option>
+          <option value="ENG301">English 301</option>
+          <option value="PHY101">Physics 101</option>
+          <option value="all">All Classes</option>
+        </select>
+      </div>
+      
+      <div>
+        <label class="block text-foreground text-sm font-medium mb-2">Access Level</label>
+        <select id="inputAccess" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium cursor-pointer">
+          <option value="public">Public</option>
+          <option value="restricted">Restricted</option>
+          <option value="private">Private</option>
+        </select>
+      </div>
+      
+      <div class="flex gap-3 pt-4">
+        <button type="button" onclick="closeUploadModal()" class="flex-1 px-4 py-3 ring-1 ring-border hover:ring-primary rounded-2xl font-medium transition-all duration-300 cursor-pointer">
+          Cancel
+        </button>
+        <button type="button" onclick="confirmUpload()" class="flex-1 px-4 py-3 bg-primary text-white rounded-2xl font-semibold hover:bg-primary-hover transition-all duration-300 cursor-pointer">
+          Upload
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-success-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="check" class="w-8 h-8 text-success"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">File Uploaded!</h3>
+    <p class="text-secondary text-sm mb-6">Your file has been successfully uploaded to the library.</p>
+    <button onclick="closeSuccessModal()" class="w-full px-4 py-3 bg-primary text-white rounded-2xl font-semibold hover:bg-primary-hover transition-all duration-300 cursor-pointer">
+      Continue
+    </button>
+  </div>
+</div>
+
+<!-- Page Not Found Modal -->
+<div id="page-not-found-modal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-warning-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="alert-triangle" class="w-8 h-8 text-warning-dark"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Page Not Available</h3>
+    <p class="text-gray-500 text-sm mb-6">This page hasn't been created yet. Generate it using the chat!</p>
+    <button onclick="closePageNotFoundModal()" class="w-full px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+      Got it
+    </button>
+  </div>
+</div>
+
+<script>
+// File data
+const filesData = {
+  '1': { 
+    name: 'Introduction to Computer Science - Syllabus', 
+    owner: 'Dr. Smith', 
+    class: 'CS101', 
+    date: 'Dec 15, 2024',
+    size: '2.4 MB',
+    downloads: '142',
+    category: 'syllabus',
+    access: 'public',
+    icon: 'book-open',
+    iconColor: 'text-primary',
+    iconBg: 'bg-primary/10'
+  },
+  '2': { 
+    name: 'Calculus Fundamentals - Lecture Slides', 
+    owner: 'Prof. Johnson', 
+    class: 'MATH201', 
+    date: 'Dec 12, 2024',
+    size: '5.8 MB',
+    downloads: '89',
+    category: 'slides',
+    access: 'restricted',
+    icon: 'presentation',
+    iconColor: 'text-info',
+    iconBg: 'bg-info/10'
+  },
+  '3': { 
+    name: 'Midterm Exam - Literature Analysis', 
+    owner: 'Dr. Brown', 
+    class: 'ENG301', 
+    date: 'Dec 10, 2024',
+    size: '1.2 MB',
+    downloads: '67',
+    category: 'exams',
+    access: 'private',
+    icon: 'file-text',
+    iconColor: 'text-error',
+    iconBg: 'bg-error/10'
+  },
+  '4': { 
+    name: 'Academic Integrity Policy', 
+    owner: 'University Admin', 
+    class: 'All Classes', 
+    date: 'Dec 8, 2024',
+    size: '890 KB',
+    downloads: '234',
+    category: 'policies',
+    access: 'public',
+    icon: 'shield-check',
+    iconColor: 'text-success',
+    iconBg: 'bg-success/10'
+  },
+  '5': { 
+    name: 'Quantum Mechanics - Introduction', 
+    owner: 'Prof. Wilson', 
+    class: 'PHY101', 
+    date: 'Dec 5, 2024',
+    size: '4.1 MB',
+    downloads: '156',
+    category: 'slides',
+    access: 'public',
+    icon: 'presentation',
+    iconColor: 'text-info',
+    iconBg: 'bg-info/10'
+  }
+};
+
+let selectedFileId = null;
+let currentCategory = 'syllabus';
+
+document.addEventListener('DOMContentLoaded', function() {
+  lucide.createIcons();
+
+  // Bind filter events
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('classFilter').addEventListener('change', applyFilters);
+  document.getElementById('accessFilter').addEventListener('change', applyFilters);
+
+  // Show modal when clicking any link
+  document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('page-not-found-modal').classList.remove('hidden');
+    });
+  });
+});
+
+function filterByCategory(category) {
+  currentCategory = category;
+  
+  // Update category buttons
+  document.querySelectorAll('[data-category-btn]').forEach(btn => {
+    const isActive = btn.dataset.categoryBtn === category;
+    if (isActive) {
+      btn.className = 'category-btn flex flex-col items-center gap-3 p-4 rounded-2xl bg-primary/10 text-primary font-semibold transition-all duration-300 cursor-pointer';
+      btn.querySelector('.w-12').className = 'w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center';
+    } else {
+      btn.className = 'category-btn flex flex-col items-center gap-3 p-4 rounded-2xl hover:bg-card-grey text-secondary hover:text-foreground font-medium transition-all duration-300 cursor-pointer';
+      btn.querySelector('.w-12').className = 'w-12 h-12 bg-muted rounded-xl flex items-center justify-center';
+    }
+  });
+  
+  applyFilters();
+}
+
+function applyFilters() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+  const classValue = document.getElementById('classFilter').value;
+  const accessValue = document.getElementById('accessFilter').value;
+
+  const items = document.querySelectorAll('.file-item');
+  let visibleCount = 0;
+
+  items.forEach(item => {
+    const searchableText = (item.dataset.searchable || '').toLowerCase();
+    const itemName = item.querySelector('[data-file-name]')?.textContent.toLowerCase() || '';
+    const combinedText = searchableText + ' ' + itemName;
+
+    const matchesSearch = searchTerm === '' || combinedText.includes(searchTerm);
+    const matchesCategory = item.dataset.category === currentCategory;
+    const matchesClass = classValue === 'all' || item.dataset.class === classValue;
+    const matchesAccess = accessValue === 'all' || item.dataset.access === accessValue;
+
+    const isVisible = matchesSearch && matchesCategory && matchesClass && matchesAccess;
+    item.style.display = isVisible ? '' : 'none';
+
+    if (isVisible) visibleCount++;
+  });
+
+  // Show/hide no results message
+  const noResults = document.getElementById('noResults');
+  if (noResults) {
+    noResults.classList.toggle('hidden', visibleCount > 0);
+  }
+
+  // Update count
+  document.getElementById('fileCount').textContent = `${visibleCount} files`;
+}
+
+function viewFileDetails(id) {
+  selectedFileId = id;
+  const data = filesData[id];
+  if (!data) return;
+
+  // Update detail panel
+  document.getElementById('detailFileName').textContent = data.name;
+  document.getElementById('detailOwner').textContent = data.owner;
+  document.getElementById('detailClass').textContent = data.class;
+  document.getElementById('detailDate').textContent = data.date;
+  document.getElementById('detailSize').textContent = data.size;
+  document.getElementById('detailDownloads').textContent = data.downloads;
+
+  // Update icon
+  const iconEl = document.getElementById('detailIcon');
+  iconEl.setAttribute('data-lucide', data.icon);
+  iconEl.className = `w-6 h-6 ${data.iconColor}`;
+  iconEl.parentElement.className = `w-12 h-12 ${data.iconBg} rounded-xl flex items-center justify-center flex-shrink-0`;
+
+  // Update access badge
+  const badge = document.getElementById('detailAccessBadge');
+  if (data.access === 'public') {
+    badge.className = 'bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full';
+    badge.textContent = 'Public';
+  } else if (data.access === 'restricted') {
+    badge.className = 'bg-warning-light text-warning-dark text-xs font-medium px-3 py-1 rounded-full';
+    badge.textContent = 'Restricted';
+  } else {
+    badge.className = 'bg-error-light text-error-dark text-xs font-medium px-3 py-1 rounded-full';
+    badge.textContent = 'Private';
+  }
+
+  // Show detail panel
+  document.getElementById('detailPlaceholder').classList.add('hidden');
+  document.getElementById('detailContent').classList.remove('hidden');
+  
+  lucide.createIcons();
+}
+
+function closeDetail() {
+  selectedFileId = null;
+  document.getElementById('detailPlaceholder').classList.remove('hidden');
+  document.getElementById('detailContent').classList.add('hidden');
+}
+
+function downloadFile(id) {
+  showToast('File download started', 'success');
+}
+
+function shareFile(id) {
+  showToast('Share link copied to clipboard', 'success');
+}
+
+function showUploadModal() {
+  document.getElementById('uploadModal').classList.remove('hidden');
+}
+
+function closeUploadModal() {
+  document.getElementById('uploadModal').classList.add('hidden');
+  document.getElementById('fileInput').value = '';
+}
+
+function confirmUpload() {
+  const fileInput = document.getElementById('fileInput');
+  const category = document.getElementById('inputCategory').value;
+  const classValue = document.getElementById('inputClass').value;
+  const access = document.getElementById('inputAccess').value;
+
+  if (!fileInput.files[0]) {
+    showToast('Please select a file to upload', 'error');
+    return;
+  }
+
+  closeUploadModal();
+  document.getElementById('successModal').classList.remove('hidden');
+}
+
+function closeSuccessModal() {
+  document.getElementById('successModal').classList.add('hidden');
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  const bgColor = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-error' : 'bg-primary';
+  toast.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-3 rounded-xl z-50 font-medium shadow-lg`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+function closePageNotFoundModal() {
+  document.getElementById('page-not-found-modal').classList.add('hidden');
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.toggle('-translate-x-full');
+  overlay.classList.toggle('hidden');
+  document.body.classList.toggle('overflow-hidden');
+}
+</script>
+</body>
+</html>

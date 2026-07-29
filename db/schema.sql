@@ -14,8 +14,15 @@ create table if not exists profiles (
   full_name text not null,
   email text not null unique,
   password_hash text not null,
-  status text not null default 'aktif' check (status in ('aktif', 'nonaktif')),
+  status text not null default 'aktif' check (status in ('aktif', 'nonaktif', 'menunggu_persetujuan', 'ditolak')),
   university_name text,
+  nip text,
+  satuan_kerja text,
+  phone_number text,
+  assignment_letter_name text,
+  assignment_letter_path text,
+  assignment_letter_url text,
+  rejection_reason text,
   role_id bigint references roles(id),
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
@@ -37,6 +44,7 @@ create table if not exists assets (
   longitude numeric,
   geometry_type text check (geometry_type in ('point','polygon')),
   geometry_geojson jsonb,
+  is_deleted smallint not null default 0,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );

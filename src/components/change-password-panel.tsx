@@ -44,20 +44,36 @@ export function ChangePasswordPanel({ visible }: { visible: boolean }) {
   }
 
   return (
-    <section className="mt-5 overflow-hidden rounded-3xl border border-sky-100 bg-white/80 p-5 shadow-[0_24px_70px_rgba(22,118,194,.14)] backdrop-blur-xl" id="change-password">
-      <div className="mb-5 flex items-start gap-3">
-        <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl bg-sky-50 text-sky-700"><LockKeyhole className="h-5 w-5" /></div>
+    <section className="mt-6 overflow-hidden rounded-card border border-border bg-white p-6 shadow-sm" id="change-password">
+      <div className="mb-6 flex items-start gap-4">
+        <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+          <LockKeyhole className="h-6 w-6" />
+        </div>
         <div>
-          <h3 className="text-lg font-black">Ubah Password</h3>
-          <p className="mt-1 text-sm text-slate-500">Menu ini tampil untuk role non-Superadmin. User & Role hanya dikelola oleh Superadmin.</p>
-          <p className={`mt-2 text-xs font-black ${message.includes('Gagal') || message.includes('tidak') || message.includes('minimal') ? 'text-rose-600' : 'text-slate-500'}`}>{message}</p>
+          <h3 className="text-xl font-bold text-foreground">Ubah Password</h3>
+          <p className="mt-0.5 text-xs text-secondary">Menu ini tampil untuk role non-Superadmin. User & Role hanya dikelola oleh Superadmin.</p>
+          <p className={`mt-2 text-xs font-medium ${message.includes('Gagal') || message.includes('tidak') || message.includes('minimal') ? 'text-error' : 'text-secondary'}`}>{message}</p>
         </div>
       </div>
       <form onSubmit={handleSubmit} className="grid gap-4 md:grid-cols-3">
-        <label className="grid gap-2 text-sm font-bold text-slate-700">Password Saat Ini<input value={form.current} onChange={(event) => setForm({ ...form, current: event.target.value })} type="password" placeholder="Masukkan password saat ini" required className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" /></label>
-        <label className="grid gap-2 text-sm font-bold text-slate-700">Password Baru<input value={form.next} onChange={(event) => setForm({ ...form, next: event.target.value })} type="password" minLength={8} required className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" /></label>
-        <label className="grid gap-2 text-sm font-bold text-slate-700">Konfirmasi Password<input value={form.confirm} onChange={(event) => setForm({ ...form, confirm: event.target.value })} type="password" minLength={8} required className="rounded-2xl border border-sky-100 bg-white px-4 py-3 text-sm outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" /></label>
-        <div className="md:col-span-3 flex justify-end"><button type="submit" disabled={isSaving} className="inline-flex items-center gap-2 rounded-2xl bg-slate-950 px-5 py-3 text-sm font-black text-white disabled:opacity-60"><KeyRound className="h-4 w-4" />{isSaving ? 'Menyimpan...' : 'Simpan Password'}</button></div>
+        <label className="grid gap-1.5 text-xs font-medium text-foreground">
+          Password Saat Ini
+          <input value={form.current} onChange={(event) => setForm({ ...form, current: event.target.value })} type="password" placeholder="Masukkan password saat ini" required className="rounded-2xl border border-border bg-gray-50 px-4 py-3 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
+        </label>
+        <label className="grid gap-1.5 text-xs font-medium text-foreground">
+          Password Baru
+          <input value={form.next} onChange={(event) => setForm({ ...form, next: event.target.value })} type="password" minLength={8} placeholder="Minimal 8 karakter" required className="rounded-2xl border border-border bg-gray-50 px-4 py-3 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
+        </label>
+        <label className="grid gap-1.5 text-xs font-medium text-foreground">
+          Konfirmasi Password
+          <input value={form.confirm} onChange={(event) => setForm({ ...form, confirm: event.target.value })} type="password" minLength={8} placeholder="Ulangi password baru" required className="rounded-2xl border border-border bg-gray-50 px-4 py-3 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
+        </label>
+        <div className="md:col-span-3 flex justify-end">
+          <button type="submit" disabled={isSaving} className="inline-flex items-center gap-2 rounded-button bg-primary px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-primary/20 hover:bg-primary-hover transition duration-200 disabled:opacity-60">
+            <KeyRound className="h-4 w-4" />
+            {isSaving ? 'Menyimpan...' : 'Simpan Password'}
+          </button>
+        </div>
       </form>
     </section>
   );

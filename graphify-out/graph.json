@@ -1,0 +1,144 @@
+{
+  "project": "manajemenaset",
+  "generated_at": "2026-07-27T06:54:40Z",
+  "communities": [
+    {
+      "id": "data_layer",
+      "name": "Database & Persistence Layer",
+      "color": "#3B82F6",
+      "nodes_count": 14
+    },
+    {
+      "id": "server_api",
+      "name": "Server & Security Layer",
+      "color": "#10B981",
+      "nodes_count": 9
+    },
+    {
+      "id": "ui_components",
+      "name": "Frontend Application Layer",
+      "color": "#8B5CF6",
+      "nodes_count": 17
+    },
+    {
+      "id": "utilities_types",
+      "name": "Shared Utility Layer",
+      "color": "#F59E0B",
+      "nodes_count": 10
+    }
+  ],
+  "nodes": [
+    {
+      "id": "src/lib/types.ts",
+      "label": "types.ts",
+      "community": "utilities_types",
+      "type": "God Node / Type Definition",
+      "description": "Universal domain models for Asset, UserProfile, Utilization, Issue, and Enums."
+    },
+    {
+      "id": "src/components/asset-list.tsx",
+      "label": "asset-list.tsx",
+      "community": "ui_components",
+      "type": "God Node / UI Component",
+      "description": "Primary Asset Management table, form drawer, file uploader, and workflow triggers."
+    },
+    {
+      "id": "src/lib/server/local-repository.ts",
+      "label": "local-repository.ts",
+      "community": "data_layer",
+      "type": "God Node / Repository",
+      "description": "PostgreSQL data access layer executing raw SQL queries and data mappers."
+    },
+    {
+      "id": "db/schema.sql",
+      "label": "schema.sql",
+      "community": "data_layer",
+      "type": "Database Schema",
+      "description": "10 relational SQL tables including roles, profiles, assets, utilizations, and issues."
+    },
+    {
+      "id": "src/components/app-shell.tsx",
+      "label": "app-shell.tsx",
+      "community": "ui_components",
+      "type": "UI Shell Component",
+      "description": "Master layout containing top header, navigation tabs, sidebar, and auth context."
+    },
+    {
+      "id": "src/components/dashboard.tsx",
+      "label": "dashboard.tsx",
+      "community": "ui_components",
+      "type": "UI Dashboard Component",
+      "description": "Executive dashboard view displaying summary cards, filter bars, and metric charts."
+    },
+    {
+      "id": "src/components/location-picker.tsx",
+      "label": "location-picker.tsx",
+      "community": "ui_components",
+      "type": "GIS Component",
+      "description": "Leaflet map picker for point coordinates, polygon drawing, and campus layer overlays."
+    },
+    {
+      "id": "src/components/issue-manager.tsx",
+      "label": "issue-manager.tsx",
+      "community": "ui_components",
+      "type": "UI Feature Component",
+      "description": "Asset issue management interface with progress logs and resolution tracking."
+    },
+    {
+      "id": "src/components/utilization-manager.tsx",
+      "label": "utilization-manager.tsx",
+      "community": "ui_components",
+      "type": "UI Feature Component",
+      "description": "Third-party asset lease & contract manager with PKS document uploads."
+    },
+    {
+      "id": "src/components/user-role-manager.tsx",
+      "label": "user-role-manager.tsx",
+      "community": "ui_components",
+      "type": "UI Feature Component",
+      "description": "Superadmin user management, role assignments, and campus scoping controls."
+    },
+    {
+      "id": "src/lib/server/session.ts",
+      "label": "session.ts",
+      "community": "server_api",
+      "type": "Auth Utility",
+      "description": "JWT & HTTP-only cookie session handling with RBAC permission enforcement."
+    },
+    {
+      "id": "src/lib/role-utils.ts",
+      "label": "role-utils.ts",
+      "community": "utilities_types",
+      "type": "Security Helper",
+      "description": "Role capability evaluation logic (Superadmin, Admin Aset, Operator, Pimpinan)."
+    },
+    {
+      "id": "src/lib/geo.ts",
+      "label": "geo.ts",
+      "community": "utilities_types",
+      "type": "GIS Utility",
+      "description": "Geographic centroid calculations, GeoJSON parsers, and area helpers."
+    },
+    {
+      "id": "src/app/api/assets/route.ts",
+      "label": "api/assets",
+      "community": "server_api",
+      "type": "REST Route",
+      "description": "GET/POST endpoint for assets with campus filtering and authorization."
+    }
+  ],
+  "edges": [
+    { "source": "src/components/app-shell.tsx", "target": "src/components/asset-list.tsx", "relation": "renders" },
+    { "source": "src/components/app-shell.tsx", "target": "src/components/dashboard.tsx", "relation": "renders" },
+    { "source": "src/components/app-shell.tsx", "target": "src/components/issue-manager.tsx", "relation": "renders" },
+    { "source": "src/components/app-shell.tsx", "target": "src/components/utilization-manager.tsx", "relation": "renders" },
+    { "source": "src/components/app-shell.tsx", "target": "src/components/user-role-manager.tsx", "relation": "renders" },
+    { "source": "src/components/asset-list.tsx", "target": "src/components/location-picker.tsx", "relation": "uses" },
+    { "source": "src/components/asset-list.tsx", "target": "src/lib/types.ts", "relation": "imports" },
+    { "source": "src/components/asset-list.tsx", "target": "src/lib/role-utils.ts", "relation": "imports" },
+    { "source": "src/components/asset-list.tsx", "target": "src/app/api/assets/route.ts", "relation": "fetches" },
+    { "source": "src/app/api/assets/route.ts", "target": "src/lib/server/local-repository.ts", "relation": "calls" },
+    { "source": "src/app/api/assets/route.ts", "target": "src/lib/server/session.ts", "relation": "authenticates" },
+    { "source": "src/lib/server/local-repository.ts", "target": "db/schema.sql", "relation": "queries" }
+  ]
+}

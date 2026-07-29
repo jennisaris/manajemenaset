@@ -89,6 +89,63 @@ const CAMPUS_LOCATIONS: CampusLocation[] = [
   { name: 'Universitas Muhammadiyah Yogyakarta', city: 'Bantul', province: 'DI Yogyakarta', lat: -7.8104, lon: 110.3218, aliases: ['UMY'] },
   { name: 'Universitas Muhammadiyah Malang', city: 'Malang', province: 'Jawa Timur', lat: -7.9218, lon: 112.5985, aliases: ['UMM'] },
   { name: 'Universitas Ahmad Dahlan', city: 'Yogyakarta', province: 'DI Yogyakarta', lat: -7.8333, lon: 110.3833, aliases: ['UAD'] },
+
+  // Politeknik Negeri Seluruh Indonesia
+  { name: 'Politeknik Negeri Jakarta', city: 'Depok', province: 'Jawa Barat', lat: -6.3725, lon: 106.8276, aliases: ['PNJ', 'Poltekba', 'Politeknik Jakarta'] },
+  { name: 'Politeknik Negeri Bandung', city: 'Bandung', province: 'Jawa Barat', lat: -6.8715, lon: 107.5746, aliases: ['POLBAN', 'Poltek Bandung'] },
+  { name: 'Politeknik Negeri Semarang', city: 'Semarang', province: 'Jawa Tengah', lat: -7.0526, lon: 110.4371, aliases: ['POLINES'] },
+  { name: 'Politeknik Negeri Malang', city: 'Malang', province: 'Jawa Timur', lat: -7.9467, lon: 112.6156, aliases: ['POLINEMA'] },
+  { name: 'Politeknik Elektronika Negeri Surabaya', city: 'Surabaya', province: 'Jawa Timur', lat: -7.2758, lon: 112.7938, aliases: ['PENS'] },
+  { name: 'Politeknik Perkapalan Negeri Surabaya', city: 'Surabaya', province: 'Jawa Timur', lat: -7.2831, lon: 112.7932, aliases: ['PPNS'] },
+  { name: 'Politeknik Negeri Bali', city: 'Badung', province: 'Bali', lat: -8.7963, lon: 115.1764, aliases: ['PNB', 'Poltek Bali'] },
+  { name: 'Politeknik Negeri Medan', city: 'Medan', province: 'Sumatera Utara', lat: 3.5639, lon: 98.6536, aliases: ['POLMED'] },
+  { name: 'Politeknik Negeri Padang', city: 'Padang', province: 'Sumatera Barat', lat: -0.9135, lon: 100.4638, aliases: ['PNP'] },
+  { name: 'Politeknik Negeri Sriwijaya', city: 'Palembang', province: 'Sumatera Selatan', lat: -2.9839, lon: 104.7314, aliases: ['POLSRI'] },
+  { name: 'Politeknik Negeri Lampung', city: 'Bandar Lampung', province: 'Lampung', lat: -5.3582, lon: 105.2343, aliases: ['POLINELA'] },
+  { name: 'Politeknik Negeri Pontianak', city: 'Pontianak', province: 'Kalimantan Barat', lat: -0.0573, lon: 109.3472, aliases: ['POLNEP'] },
+  { name: 'Politeknik Negeri Banjarmasin', city: 'Banjarmasin', province: 'Kalimantan Selatan', lat: -3.2965, lon: 114.5828, aliases: ['POLIBAN'] },
+  { name: 'Politeknik Negeri Samarinda', city: 'Samarinda', province: 'Kalimantan Timur', lat: -0.5401, lon: 117.1264, aliases: ['POLNES'] },
+  { name: 'Politeknik Negeri Ujung Pandang', city: 'Makassar', province: 'Sulawesi Selatan', lat: -5.1325, lon: 119.4891, aliases: ['PNUP'] },
+  { name: 'Politeknik Negeri Manado', city: 'Manado', province: 'Sulawesi Utara', lat: 1.4646, lon: 124.8967, aliases: ['POLIMDO'] },
+  { name: 'Politeknik Negeri Ambon', city: 'Ambon', province: 'Maluku', lat: -3.6542, lon: 128.1884, aliases: ['POLNAM'] },
+  { name: 'Politeknik Negeri Kupang', city: 'Kupang', province: 'Nusa Tenggara Timur', lat: -10.1582, lon: 123.6641, aliases: ['PNK'] },
+  { name: 'Politeknik Negeri Lhokseumawe', city: 'Lhokseumawe', province: 'Aceh', lat: 5.1206, lon: 97.1578, aliases: ['PNL'] },
+  { name: 'Politeknik Pertanian Negeri Payakumbuh', city: 'Payakumbuh', province: 'Sumatera Barat', lat: -0.2312, lon: 100.6409, aliases: ['PPNP'] },
+  { name: 'Politeknik Negeri Balikpapan', city: 'Balikpapan', province: 'Kalimantan Timur', lat: -1.2289, lon: 116.8624, aliases: ['POLTEKBA'] },
+  { name: 'Politeknik Negeri Jember', city: 'Jember', province: 'Jawa Timur', lat: -8.1589, lon: 113.7221, aliases: ['POLIJE'] },
+  { name: 'Politeknik Negeri Banyuwangi', city: 'Banyuwangi', province: 'Jawa Timur', lat: -8.3012, lon: 114.3012, aliases: ['POLIWANGI'] },
+  { name: 'Politeknik Negeri Madura', city: 'Sampang', province: 'Jawa Timur', lat: -7.1981, lon: 113.2512, aliases: ['POLTERA'] },
+  { name: 'Politeknik Negeri Subang', city: 'Subang', province: 'Jawa Barat', lat: -6.5712, lon: 107.7612, aliases: ['POLSUB'] },
+  { name: 'Politeknik Negeri Indramayu', city: 'Indramayu', province: 'Jawa Barat', lat: -6.3981, lon: 108.2831, aliases: ['POLDRA'] },
+  { name: 'Politeknik Negeri Cilacap', city: 'Cilacap', province: 'Jawa Tengah', lat: -7.6981, lon: 109.0234, aliases: ['PNC'] },
+
+  // Lembaga Layanan Pendidikan Tinggi (LLDIKTI)
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah I', city: 'Medan', province: 'Sumatera Utara', lat: 3.6125, lon: 98.7012, aliases: ['LLDIKTI I', 'LLDIKTI Wilayah 1', 'LLDIKTI Sumut'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah II', city: 'Palembang', province: 'Sumatera Selatan', lat: -2.9612, lon: 104.7412, aliases: ['LLDIKTI II', 'LLDIKTI Wilayah 2', 'LLDIKTI Sumsel'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah III', city: 'Jakarta Timur', province: 'DKI Jakarta', lat: -6.2575, lon: 106.8698, aliases: ['LLDIKTI III', 'LLDIKTI Wilayah 3', 'LLDIKTI Jakarta'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah IV', city: 'Bandung', province: 'Jawa Barat', lat: -6.8912, lon: 107.6389, aliases: ['LLDIKTI IV', 'LLDIKTI Wilayah 4', 'LLDIKTI Jabar Banten'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah V', city: 'Yogyakarta', province: 'DI Yogyakarta', lat: -7.7912, lon: 110.3981, aliases: ['LLDIKTI V', 'LLDIKTI Wilayah 5', 'LLDIKTI DIY'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah VI', city: 'Semarang', province: 'Jawa Tengah', lat: -7.0112, lon: 110.4289, aliases: ['LLDIKTI VI', 'LLDIKTI Wilayah 6', 'LLDIKTI Jateng'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah VII', city: 'Surabaya', province: 'Jawa Timur', lat: -7.2889, lon: 112.7589, aliases: ['LLDIKTI VII', 'LLDIKTI Wilayah 7', 'LLDIKTI Jatim'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah VIII', city: 'Denpasar', province: 'Bali', lat: -8.6612, lon: 115.2289, aliases: ['LLDIKTI VIII', 'LLDIKTI Wilayah 8', 'LLDIKTI Bali'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah IX', city: 'Makassar', province: 'Sulawesi Selatan', lat: -5.1489, lon: 119.4389, aliases: ['LLDIKTI IX', 'LLDIKTI Wilayah 9', 'LLDIKTI Sulawesi'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah X', city: 'Padang', province: 'Sumatera Barat', lat: -0.9289, lon: 100.3689, aliases: ['LLDIKTI X', 'LLDIKTI Wilayah 10', 'LLDIKTI Sumbar'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah XI', city: 'Banjarmasin', province: 'Kalimantan Selatan', lat: -3.3189, lon: 114.5989, aliases: ['LLDIKTI XI', 'LLDIKTI Wilayah 11', 'LLDIKTI Kalimantan'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah XII', city: 'Ambon', province: 'Maluku', lat: -3.6889, lon: 128.1889, aliases: ['LLDIKTI XII', 'LLDIKTI Wilayah 12', 'LLDIKTI Maluku'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah XIII', city: 'Banda Aceh', province: 'Aceh', lat: 5.5589, lon: 95.3289, aliases: ['LLDIKTI XIII', 'LLDIKTI Wilayah 13', 'LLDIKTI Aceh'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah XIV', city: 'Jayapura', province: 'Papua', lat: -2.5389, lon: 140.7089, aliases: ['LLDIKTI XIV', 'LLDIKTI Wilayah 14', 'LLDIKTI Papua'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah XV', city: 'Kupang', province: 'Nusa Tenggara Timur', lat: -10.1789, lon: 123.5889, aliases: ['LLDIKTI XV', 'LLDIKTI Wilayah 15', 'LLDIKTI NTT'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah XVI', city: 'Gorontalo', province: 'Gorontalo', lat: 0.5489, lon: 123.0689, aliases: ['LLDIKTI XVI', 'LLDIKTI Wilayah 16', 'LLDIKTI Gorontalo'] },
+  { name: 'Lembaga Layanan Pendidikan Tinggi Wilayah XVII', city: 'Mataram', province: 'Nusa Tenggara Barat', lat: -8.5889, lon: 116.1089, aliases: ['LLDIKTI XVII', 'LLDIKTI Wilayah 17', 'LLDIKTI NTB'] },
+
+  // Institut Seni & ISBI
+  { name: 'Institut Seni Indonesia Yogyakarta', city: 'Bantul', province: 'DI Yogyakarta', lat: -7.8481, lon: 110.3689, aliases: ['ISI Jogja', 'ISI Yogyakarta'] },
+  { name: 'Institut Seni Indonesia Surakarta', city: 'Surakarta', province: 'Jawa Tengah', lat: -7.5581, lon: 110.8489, aliases: ['ISI Solo', 'ISI Surakarta'] },
+  { name: 'Institut Seni Indonesia Denpasar', city: 'Denpasar', province: 'Bali', lat: -8.6481, lon: 115.2289, aliases: ['ISI Denpasar'] },
+  { name: 'Institut Seni Indonesia Padangpanjang', city: 'Padangpanjang', province: 'Sumatera Barat', lat: -0.4681, lon: 100.4089, aliases: ['ISI Padangpanjang'] },
+  { name: 'Institut Seni Budaya Indonesia Aceh', city: 'Aceh Besar', province: 'Aceh', lat: 5.4212, lon: 95.3891, aliases: ['ISBI Aceh'] },
+  { name: 'Institut Seni Budaya Indonesia Bandung', city: 'Bandung', province: 'Jawa Barat', lat: -6.9481, lon: 107.6289, aliases: ['ISBI Bandung'] },
+  { name: 'Institut Seni Budaya Indonesia Tanah Papua', city: 'Jayapura', province: 'Papua', lat: -2.5981, lon: 140.6891, aliases: ['ISBI Tanah Papua'] },
 ];
 
 function normalizeText(value: string) {
@@ -172,7 +229,7 @@ export function LocationPicker({
   const [query, setQuery] = useState('');
   const [remoteResults, setRemoteResults] = useState<LocationSearchResult[]>([]);
   const [isSearching, setIsSearching] = useState(false);
-  const [searchMessage, setSearchMessage] = useState('Ketik nama universitas, kampus, singkatan, atau kota di Indonesia. Contoh: UGM, ITB, Unhas, Telkom University, Jayapura.');
+  const [searchMessage, setSearchMessage] = useState('Ketik nama politeknik, LLDIKTI, universitas, singkatan, atau kota di Indonesia. Contoh: PNJ, POLBAN, LLDIKTI III, UGM, ITB, Jayapura.');
   const [drawingArea, setDrawingArea] = useState(false);
   const [areaPoints, setAreaPoints] = useState<[number, number][]>(() => geometry?.type === 'Polygon' ? geometry.coordinates[0].slice(0, -1).map(([lng, lat]) => [lng, lat]) : []);
   const selectedPosition: LatLngExpression = [latitude ?? -2.5489, longitude ?? 118.0149];
@@ -183,10 +240,11 @@ export function LocationPicker({
   const localResults = useMemo(() => (query.trim().length >= 2 ? searchLocalCampuses(query).slice(0, 12) : []), [query]);
   const results = useMemo(() => dedupeResults([...localResults, ...remoteResults]).slice(0, 18), [localResults, remoteResults]);
 
-  useEffect(() => {
-    if (geometry?.type === 'Polygon') setAreaPoints(geometry.coordinates[0].slice(0, -1).map(([lng, lat]) => [lng, lat]));
-    if (!geometry) setAreaPoints([]);
-  }, [geometry]);
+  const [prevGeometry, setPrevGeometry] = useState(geometry);
+  if (JSON.stringify(geometry) !== JSON.stringify(prevGeometry)) {
+    setPrevGeometry(geometry);
+    setAreaPoints(geometry?.type === 'Polygon' ? geometry.coordinates[0].slice(0, -1).map(([lng, lat]) => [lng, lat]) : []);
+  }
 
   useEffect(() => {
     const keyword = query.trim();
@@ -195,44 +253,34 @@ export function LocationPicker({
     const controller = new AbortController();
     const timeout = window.setTimeout(async () => {
       setIsSearching(true);
-      setSearchMessage('Mencari lokasi kampus dari daftar internal dan OpenStreetMap...');
+      setSearchMessage('Mencari lokasi dari daftar internal politeknik, LLDIKTI, universitas & OpenStreetMap...');
 
       try {
-        const searchQueries = Array.from(new Set([
-          keyword,
-          `${keyword} Indonesia`,
-          `${keyword} kampus Indonesia`,
-          `${keyword} universitas Indonesia`,
-        ]));
+        const params = new URLSearchParams({
+          format: 'jsonv2',
+          q: keyword,
+          countrycodes: 'id',
+          addressdetails: '1',
+          limit: '10',
+        });
+        const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
+          signal: controller.signal,
+          headers: { Accept: 'application/json' },
+        });
 
-        const responses = await Promise.all(searchQueries.map(async (searchQuery) => {
-          const params = new URLSearchParams({
-            format: 'jsonv2',
-            q: searchQuery,
-            countrycodes: 'id',
-            addressdetails: '1',
-            limit: '8',
-          });
-          const response = await fetch(`https://nominatim.openstreetmap.org/search?${params.toString()}`, {
-            signal: controller.signal,
-            headers: { Accept: 'application/json' },
-          });
-
-          if (!response.ok) throw new Error('Pencarian lokasi gagal.');
-          return (await response.json()) as LocationSearchResult[];
-        }));
-
-        const data = responses.flat().map((item) => ({ ...item, source: 'osm' as const }));
+        if (!response.ok) throw new Error('Pencarian lokasi gagal.');
+        const rawData = (await response.json()) as LocationSearchResult[];
+        const data = rawData.map((item) => ({ ...item, source: 'osm' as const }));
         const filtered = data.filter((item) => Number.isFinite(Number(item.lat)) && Number.isFinite(Number(item.lon)));
         setRemoteResults(filtered);
       } catch (error) {
         if (error instanceof DOMException && error.name === 'AbortError') return;
         setRemoteResults([]);
-        setSearchMessage(error instanceof Error ? `${error.message} Daftar internal tetap bisa dipakai.` : 'Pencarian lokasi gagal. Daftar internal tetap bisa dipakai.');
+        setSearchMessage('Tidak dapat menghubungi layanan peta online. Hasil terbatas dari database internal.');
       } finally {
         setIsSearching(false);
       }
-    }, 650);
+    }, 400);
 
     return () => {
       controller.abort();
@@ -241,10 +289,10 @@ export function LocationPicker({
   }, [query]);
 
   const displayedSearchMessage = isSearching
-    ? 'Mencari lokasi kampus dari daftar internal dan OpenStreetMap...'
+    ? 'Mencari lokasi dari daftar internal politeknik, LLDIKTI, universitas & OpenStreetMap...'
     : query.trim().length >= 2
       ? results.length > 0
-        ? `${results.length} lokasi ditemukan. Hasil bertanda Data kampus berasal dari daftar internal.`
+        ? `${results.length} lokasi ditemukan. Hasil bertanda Data internal berasal dari database lokasi.`
         : searchMessage
       : searchMessage;
 
@@ -253,7 +301,7 @@ export function LocationPicker({
     if (value.trim().length < 2) {
       setRemoteResults([]);
       setIsSearching(false);
-      setSearchMessage('Ketik minimal 2 huruf untuk mencari lokasi universitas/kampus di Indonesia.');
+      setSearchMessage('Ketik minimal 2 huruf untuk mencari lokasi Politeknik, LLDIKTI, atau Universitas di Indonesia.');
     }
   }
 
@@ -289,11 +337,11 @@ export function LocationPicker({
       <div className="mb-3 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h5 className="font-black text-slate-900">Pilih Lokasi & Gambar Luasan Aset</h5>
-          <p className="mt-1 text-xs font-medium text-slate-500">Cari kampus atau klik peta untuk titik aset. Aktifkan Gambar Luasan untuk marking area/polygon aset.</p>
+          <p className="mt-1 text-xs font-medium text-slate-500">Cari Politeknik, LLDIKTI, Universitas, atau klik peta untuk titik/polygon aset.</p>
         </div>
         <label className="flex items-center gap-2 rounded-2xl border border-sky-100 bg-sky-50/70 px-4 py-3 text-sm text-slate-500 lg:w-[28rem]">
           {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-          <input value={query} onChange={(event) => handleQueryChange(event.target.value)} placeholder="Cari kampus: UGM, ITB, Unhas, Binus, kota..." className="w-full bg-transparent font-medium text-slate-800 outline-none placeholder:text-slate-400" />
+          <input value={query} onChange={(event) => handleQueryChange(event.target.value)} placeholder="Cari Politeknik, LLDIKTI, Universitas, kota..." className="w-full bg-transparent font-medium text-slate-800 outline-none placeholder:text-slate-400" />
         </label>
       </div>
 

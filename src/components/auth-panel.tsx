@@ -4,11 +4,13 @@ import { FormEvent, useEffect, useState } from 'react';
 import { LogIn, ShieldCheck } from 'lucide-react';
 import { roles } from '@/lib/auth';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
+import { UserRegistrationModal } from '@/components/user-registration-modal';
 import type { UserRole } from '@/lib/types';
 
 type AuthPanelProps = {
   role: UserRole;
   onRoleChange: (role: UserRole) => void;
+  campusOptions?: string[];
 };
 
 type ProfileRow = {
@@ -23,12 +25,18 @@ function resolveRole(row: ProfileRow | null): UserRole {
   return roleValue && roles.includes(roleValue) ? roleValue : 'Admin Aset';
 }
 
-export function AuthPanel({ role, onRoleChange }: AuthPanelProps) {
+export function AuthPanel({ role, onRoleChange, campusOptions = [] }: AuthPanelProps) {
+  const [isMounted, setIsMounted] = useState(false);
   const [email, setEmail] = useState('admin@aset.id');
   const [password, setPassword] = useState('admin123');
   const [fullName, setFullName] = useState('Admin Demo');
   const [status, setStatus] = useState<'demo' | 'idle' | 'loading' | 'signed-in' | 'error'>(isSupabaseConfigured ? 'idle' : 'demo');
   const [message, setMessage] = useState(isSupabaseConfigured ? 'Login PostgreSQL lokal siap digunakan setelah user dibuat.' : 'Mode demo: PostgreSQL lokal env belum diisi, gunakan role selector untuk simulasi akses.');
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   useEffect(() => {
     if (!isSupabaseConfigured) return;
@@ -86,6 +94,14 @@ export function AuthPanel({ role, onRoleChange }: AuthPanelProps) {
     setMessage(isSupabaseConfigured ? 'Session keluar. Silakan login kembali.' : 'Mode demo tetap aktif.');
   }
 
+  if (!isMounted) {
+    return (
+      <section className="mb-5 rounded-3xl border border-sky-100 bg-white/80 p-5 shadow-[0_24px_70px_rgba(22,118,194,.14)] backdrop-blur-xl min-h-[160px] grid place-items-center" id="auth">
+        <div className="text-sm font-semibold text-slate-500">Memuat panel autentikasi...</div>
+      </section>
+    );
+  }
+
   return (
     <section className="mb-5 rounded-3xl border border-sky-100 bg-white/80 p-5 shadow-[0_24px_70px_rgba(22,118,194,.14)] backdrop-blur-xl" id="auth">
       <div className="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
@@ -109,9 +125,18 @@ export function AuthPanel({ role, onRoleChange }: AuthPanelProps) {
           <select value={role} onChange={(event) => onRoleChange(event.target.value as UserRole)} className="rounded-2xl border border-sky-100 bg-white/90 px-4 py-3 text-sm font-black text-slate-800 outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100">
             {roles.map((item) => <option key={item} value={item}>{item}</option>)}
           </select>
+          <button type="button" onClick={() => setIsRegisterOpen(true)} className="rounded-2xl border border-sky-200 bg-sky-50 px-4 py-3 text-sm font-bold text-sky-700 hover:bg-sky-100 transition">
+            + Daftar Akun Operator
+          </button>
           <button type="button" onClick={handleSignOut} className="rounded-2xl border border-sky-100 bg-white px-5 py-3 text-sm font-black text-slate-600">Keluar / Reset Demo</button>
         </div>
       </div>
+
+      <UserRegistrationModal
+        isOpen={isRegisterOpen}
+        onClose={() => setIsRegisterOpen(false)}
+        campusOptions={campusOptions}
+      />
     </section>
   );
 }

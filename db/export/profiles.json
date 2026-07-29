@@ -14,7 +14,7 @@
     "id": "4221ebb7-4203-4693-816e-9d5a0638082d",
     "full_name": "Operator Aset",
     "email": "operator@aset.id",
-    "password_hash": "plain:ChangeMe123!",
+    "password_hash": "pbkdf2$210000$nVMMpV7e3X2A9d84cJ4LHA$gV_K36pnPsNeXI99jNkRw-x0jpUQ6XfzsItQEPFaUeI",
     "status": "aktif",
     "university_name": "Kampus Utama",
     "role_id": "3",

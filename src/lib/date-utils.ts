@@ -1,0 +1,53 @@
+export function formatDateIndo(dateStr: string | null | undefined): string {
+  if (!dateStr) return '-';
+  try {
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return dateStr;
+    return new Intl.DateTimeFormat('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric',
+    }).format(date);
+  } catch {
+    return dateStr;
+  }
+}
+
+export function formatDateIndoShort(dateStr: string | null | undefined): string {
+  if (!dateStr) return '-';
+  try {
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return dateStr;
+    return new Intl.DateTimeFormat('id-ID', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    }).format(date).replace(/\//g, '-');
+  } catch {
+    return dateStr;
+  }
+}
+
+export function formatDateRangeIndo(startStr: string | null | undefined, endStr: string | null | undefined): string {
+  if (!startStr && !endStr) return '-';
+  if (startStr && !endStr) return `${formatDateIndo(startStr)} - selesai`;
+  if (!startStr && endStr) return `s/d ${formatDateIndo(endStr)}`;
+  
+  try {
+    const start = new Date(startStr!);
+    const end = new Date(endStr!);
+    if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+      return `${startStr} - ${endStr}`;
+    }
+    
+    // Short format range: "DD/MM/YYYY - DD/MM/YYYY" or "DD-MM-YYYY - DD-MM-YYYY"
+    const formatter = new Intl.DateTimeFormat('id-ID', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric',
+    });
+    return `${formatter.format(start)} s/d ${formatter.format(end)}`;
+  } catch {
+    return `${startStr} - ${endStr}`;
+  }
+}

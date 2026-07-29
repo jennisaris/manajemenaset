@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCampus - Sign In</title>
+<meta name="description" content="Sign in to your EduCampus account to access your courses and educational resources.">
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--primary-hover);
+    --color-foreground: var(--foreground);
+    --color-secondary: var(--secondary);
+    --color-muted: var(--muted);
+    --color-border: var(--border);
+    --color-card-grey: var(--card-grey);
+    --color-card-message: var(--card-message);
+    --color-accent-blue: var(--accent-blue);
+    --color-accent-teal: var(--accent-teal);
+    --color-accent-sky: var(--accent-sky);
+    --color-success: var(--success);
+    --color-success-light: var(--success-light);
+    --color-success-dark: var(--success-dark);
+    --color-error: var(--error);
+    --color-error-light: var(--error-light);
+    --color-error-lighter: var(--error-lighter);
+    --color-error-dark: var(--error-dark);
+    --color-warning: var(--warning);
+    --color-warning-light: var(--warning-light);
+    --color-warning-dark: var(--warning-dark);
+    --color-info: var(--info);
+    --color-info-light: var(--info-light);
+    --color-info-dark: var(--info-dark);
+    --color-alert: var(--alert);
+    --color-alert-light: var(--alert-light);
+    --color-alert-dark: var(--alert-dark);
+    --color-gray-50: var(--gray-50);
+    --color-gray-100: var(--gray-100);
+    --color-gray-200: var(--gray-200);
+    --color-gray-500: var(--gray-500);
+    --color-gray-600: var(--gray-600);
+    --color-gray-700: var(--gray-700);
+    --font-sans: var(--font-sans);
+    --radius-card: 24px;
+    --radius-button: 50px;
+    --radius-icon: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 20px;
+    --radius-3xl: 24px;
+  }
+  :root {
+    --primary: #165DFF;
+    --primary-hover: #0E4BD9;
+    --foreground: #080C1A;
+    --secondary: #6A7686;
+    --muted: #EFF2F7;
+    --border: #F3F4F3;
+    --card-grey: #F1F3F6;
+    --card-message: #C9E6FC;
+    --accent-blue: #C9E6FC;
+    --accent-teal: #82D9D7;
+    --accent-sky: #DBEAFE;
+    --success: #30B22D;
+    --success-light: #DCFCE7;
+    --success-dark: #166534;
+    --error: #ED6B60;
+    --error-light: #FEE2E2;
+    --error-lighter: #FEF2F2;
+    --error-dark: #991B1B;
+    --warning: #FED71F;
+    --warning-light: #FEF9C3;
+    --warning-dark: #854D0E;
+    --info: #165DFF;
+    --info-light: #DBEAFE;
+    --info-dark: #1E40AF;
+    --alert: #F97316;
+    --alert-light: #FFEDD5;
+    --alert-dark: #9A3412;
+    --gray-50: #F9FAFB;
+    --gray-100: #F1F3F6;
+    --gray-200: #E5E7EB;
+    --gray-500: #6A7686;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --font-sans: 'Lexend Deca', sans-serif;
+  }
+  select {
+    @apply appearance-none bg-no-repeat cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 10px center;
+    padding-right: 40px;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+<body class="font-sans bg-white min-h-screen overflow-x-hidden">
+
+<!-- Floating Top Navbar -->
+<nav class="fixed top-0 left-0 right-0 z-50 bg-white/95 backdrop-blur-sm border-b border-border">
+  <div class="flex items-center justify-between px-6 py-4">
+    <!-- Logo -->
+    <div class="flex items-center gap-3">
+      <div class="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+        <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+      </div>
+      <h1 class="font-semibold text-xl text-foreground">EduCampus</h1>
+    </div>
+    
+    <!-- Navigation Links -->
+    <div class="flex items-center gap-6">
+      <a href="#" class="cursor-pointer">
+        <span class="text-secondary hover:text-primary font-medium transition-colors">Help</span>
+      </a>
+      <a href="#" class="cursor-pointer">
+        <span class="text-secondary hover:text-primary font-medium transition-colors">Contact</span>
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- Main Layout -->
+<div class="flex min-h-screen pt-20">
+  <!-- Left Column - Image -->
+  <div class="hidden lg:flex lg:w-1/2 xl:w-3/5">
+    <img src="https://plus.unsplash.com/premium_photo-1691962723291-d5d82743fb4b?q=80&w=1287&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D" 
+         alt="Students studying in modern campus library" 
+         class="w-full h-full object-cover">
+  </div>
+  
+  <!-- Right Column - Login Form -->
+  <div class="flex-1 lg:w-1/2 xl:w-2/5 flex items-center justify-center p-6 lg:p-12">
+    <div class="w-full max-w-md">
+      <!-- Welcome Header -->
+      <div class="text-center mb-8">
+        <!-- Logo -->
+        <div class="flex items-center justify-center gap-3 mb-4">
+          <div class="w-12 h-12 bg-primary rounded-xl flex items-center justify-center">
+            <i data-lucide="graduation-cap" class="w-6 h-6 text-white"></i>
+          </div>
+          <h1 class="font-semibold text-2xl text-foreground">EduCampus</h1>
+        </div>
+        <h2 class="text-foreground text-2xl md:text-3xl font-bold mb-2">Welcome Back</h2>
+        <p class="text-secondary">Sign in to access your courses and resources</p>
+      </div>
+      
+      <!-- Login Card -->
+      <div class="bg-white rounded-card border border-border p-6 md:p-8">
+        <form id="loginForm" class="space-y-5">
+          <!-- Email Field -->
+          <div class="space-y-2">
+            <label for="email" class="block text-foreground text-sm font-medium">Email Address</label>
+            <input type="email" id="email" name="email" placeholder="your@email.com" required
+              class="w-full px-4 py-3 border border-border rounded-button text-foreground placeholder:text-gray-400 focus:outline-none focus:border-primary transition-all duration-200">
+          </div>
+          
+          <!-- Student/Staff ID -->
+          <div class="space-y-2">
+            <label for="studentId" class="block text-foreground text-sm font-medium">Student/Staff ID Number</label>
+            <input type="text" id="studentId" name="studentId" placeholder="Enter your ID number" required
+              class="w-full px-4 py-3 border border-border rounded-button text-foreground placeholder:text-gray-400 focus:outline-none focus:border-primary transition-all duration-200">
+          </div>
+          
+          <!-- Password Field -->
+          <div class="space-y-2">
+            <label for="password" class="block text-foreground text-sm font-medium">Password</label>
+            <div class="relative">
+              <input type="password" id="password" name="password" placeholder="••••••••" required
+                class="w-full px-4 py-3 pr-12 border border-border rounded-button text-foreground placeholder:text-gray-400 focus:outline-none focus:border-primary transition-all duration-200">
+              <button type="button" onclick="togglePassword('password')" class="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-foreground cursor-pointer" aria-label="Toggle password visibility">
+                <i data-lucide="eye" class="w-5 h-5"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Remember Me & Forgot Password -->
+          <div class="flex items-center justify-between">
+            <label class="flex items-center gap-2 cursor-pointer group">
+              <input type="checkbox" name="remember" class="w-4 h-4 rounded border-border text-primary focus:ring-primary cursor-pointer">
+              <span class="text-foreground text-sm group-hover:text-primary transition-colors">Remember me</span>
+            </label>
+            <a href="#" class="cursor-pointer">
+              <span class="text-primary text-sm hover:underline">Forgot password?</span>
+            </a>
+          </div>
+          
+          <!-- Sign In Button -->
+          <button type="submit" class="w-full px-4 py-3 bg-primary text-white rounded-button font-semibold hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+            Sign In
+          </button>
+          
+          <!-- Divider -->
+          <div class="relative my-6">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-border"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-4 bg-white text-secondary">Or continue with</span>
+            </div>
+          </div>
+          
+          <!-- Sign In with Google -->
+          <button type="button" class="w-full flex items-center justify-center gap-3 px-4 py-3 border border-border rounded-button text-foreground font-medium hover:border-primary hover:bg-card-grey transition-all duration-200 cursor-pointer">
+            <svg class="w-5 h-5" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Sign in with Google
+          </button>
+        </form>
+        
+        <!-- Create Account Link -->
+        <p class="text-center text-secondary text-sm mt-6">
+          Don't have an account?
+          <a href="#" class="cursor-pointer">
+            <span class="text-primary hover:underline font-medium">Create account</span>
+          </a>
+        </p>
+      </div>
+      
+      <!-- Footer Links -->
+      <div class="flex items-center justify-center gap-6 mt-8 text-sm text-secondary">
+        <a href="#" class="cursor-pointer">
+          <span class="hover:text-primary transition-colors">Privacy Policy</span>
+        </a>
+        <span>•</span>
+        <a href="#" class="cursor-pointer">
+          <span class="hover:text-primary transition-colors">Terms of Service</span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-success-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="check-circle" class="w-8 h-8 text-success"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Welcome Back!</h3>
+    <p class="text-secondary text-sm mb-6">You have successfully signed in to your account.</p>
+    <button onclick="closeSuccessModal()" class="w-full px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+      Continue to Dashboard
+    </button>
+  </div>
+</div>
+
+<!-- Error Modal -->
+<div id="errorModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-error-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="alert-circle" class="w-8 h-8 text-error"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Sign In Failed</h3>
+    <p class="text-secondary text-sm mb-6" id="errorMessage">Invalid email or password. Please try again.</p>
+    <button onclick="closeErrorModal()" class="w-full px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+      Try Again
+    </button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  lucide.createIcons();
+  
+  // Handle form submission
+  document.getElementById('loginForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('email').value.trim();
+    const studentId = document.getElementById('studentId').value.trim();
+    const password = document.getElementById('password').value.trim();
+    
+    // Basic validation
+    if (!email || !studentId || !password) {
+      showError('Please fill in all required fields.');
+      return;
+    }
+    
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      showError('Please enter a valid email address.');
+      return;
+    }
+    
+    // Simulate login process
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.textContent;
+    submitBtn.textContent = 'Signing in...';
+    submitBtn.disabled = true;
+    
+    setTimeout(() => {
+      // Simulate successful login (in real app, this would be an API call)
+      if (email === 'demo@educampus.com' && studentId === '12345' && password === 'password') {
+        document.getElementById('successModal').classList.remove('hidden');
+      } else {
+        showError('Invalid credentials. Try demo@educampus.com, ID: 12345, password: password');
+      }
+      
+      submitBtn.textContent = originalText;
+      submitBtn.disabled = false;
+    }, 1500);
+  });
+});
+
+function togglePassword(inputId) {
+  const input = document.getElementById(inputId);
+  const icon = input.nextElementSibling.querySelector('i');
+  if (input.type === 'password') {
+    input.type = 'text';
+    icon.setAttribute('data-lucide', 'eye-off');
+  } else {
+    input.type = 'password';
+    icon.setAttribute('data-lucide', 'eye');
+  }
+  lucide.createIcons();
+}
+
+function showError(message) {
+  document.getElementById('errorMessage').textContent = message;
+  document.getElementById('errorModal').classList.remove('hidden');
+}
+
+function closeErrorModal() {
+  document.getElementById('errorModal').classList.add('hidden');
+}
+
+function closeSuccessModal() {
+  document.getElementById('successModal').classList.add('hidden');
+  // In real app, redirect to dashboard
+  showToast('Redirecting to dashboard...', 'success');
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  const bgColor = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-error' : 'bg-primary';
+  toast.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-3 rounded-xl z-50 font-medium shadow-lg`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+</script>
+</body>
+</html>

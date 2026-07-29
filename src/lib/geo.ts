@@ -20,7 +20,9 @@ export function polygonAreaM2(geometry: GeoJSON.Geometry | null | undefined): nu
 export function closePolygon(points: [number, number][]): GeoJSON.Polygon | null {
   if (points.length < 3) return null;
   const [firstLng, firstLat] = points[0];
-  const ring = [...points, [firstLng, firstLat] as [number, number]];
+  const [lastLng, lastLat] = points[points.length - 1];
+  const isAlreadyClosed = firstLng === lastLng && firstLat === lastLat;
+  const ring = isAlreadyClosed ? points : [...points, [firstLng, firstLat] as [number, number]];
   return { type: 'Polygon', coordinates: [ring] };
 }
 

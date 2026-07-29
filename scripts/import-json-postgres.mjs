@@ -106,7 +106,12 @@ try {
     await upsert(client, 'asset_photos', 'id', photo, ['id', 'asset_id', 'photo_path', 'photo_url', 'caption', 'photo_type', 'is_primary', 'created_at']);
   }
 
+  const seenDocumentKeys = new Set();
   for (const document of readJson('asset_documents')) {
+    const key = `${document.asset_id}::${document.file_path}`;
+    if (seenDocumentKeys.has(key)) continue;
+    seenDocumentKeys.add(key);
+    await client.query('delete from asset_documents where asset_id = $1 and file_path = $2 and id <> $3', [document.asset_id, document.file_path, document.id]);
     await upsert(client, 'asset_documents', 'id', document, ['id', 'asset_id', 'document_name', 'document_type', 'file_path', 'created_at']);
   }
 

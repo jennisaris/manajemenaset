@@ -19,8 +19,9 @@ function buildSummary(assets: Asset[], utilizations: Utilization[], issues: Asse
 }
 
 function scopeDataForOperator(data: MvpData, universityName: string | null): MvpData {
-  if (!universityName) return { ...data, assets: [], utilizations: [], issues: [], summary: buildSummary([], [], []) };
-  const assets = data.assets.filter((asset) => asset.campus_name === universityName);
+  if (!universityName) return data;
+  const assets = data.assets.filter((asset) => !asset.campus_name || asset.campus_name === universityName || asset.campus_name === 'Kampus Utama');
+  if (assets.length === 0) return data;
   const assetIds = new Set(assets.map((asset) => asset.id));
   const utilizations = data.utilizations.filter((item) => assetIds.has(item.asset_id));
   const issues = data.issues.filter((issue) => assetIds.has(issue.asset_id));
@@ -28,11 +29,15 @@ function scopeDataForOperator(data: MvpData, universityName: string | null): Mvp
 }
 
 export async function GET() {
-  const user = await getSessionUser();
-  if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  const data = await getMvpDataFromDb();
-  if (user.role === 'Operator Kampus') {
-    return NextResponse.json(scopeDataForOperator(data, user.university_name));
+  try {
+    const user = await getSessionUser();
+    if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const data = await getMvpDataFromDb();
+    if (user.role === 'Operator Kampus') {
+      return NextResponse.json(scopeDataForOperator(data, user.university_name));
+    }
+    return NextResponse.json(data);
+  } catch (error) {
+    return NextResponse.json({ error: error instanceof Error ? error.message : 'Error fetching data' }, { status: 500 });
   }
-  return NextResponse.json(data);
 }

@@ -1,18 +1,17 @@
 import type { Asset, AssetIssue, DashboardSummary, Utilization } from './types';
 
-export const mockAssets: Asset[] = [
-  { id: 1, asset_code: 'BGN-UNIV-0008', asset_name: 'Gedung Laboratorium Teknik', asset_type: 'building', campus_name: 'Kampus Utama', faculty_or_unit: 'Fakultas Teknik', address: 'Area Timur Kampus Utama', ownership_status: 'Milik Universitas', condition_status: 'Baik', verification_status: 'terverifikasi', latitude: -6.2004, longitude: 106.8168, geometry_type: 'point', geometry_geojson: { type: 'Point', coordinates: [106.8168, -6.2004] }, has_active_issue: true, has_active_utilization: false },
-  { id: 2, asset_code: 'TNH-UNIV-0012', asset_name: 'Lahan Parkir Barat', asset_type: 'land', campus_name: 'Kampus Utama', faculty_or_unit: 'Biro Umum', address: 'Sisi Barat Kampus Utama', ownership_status: 'Milik Universitas', condition_status: 'Baik', verification_status: 'terverifikasi', latitude: -6.1997, longitude: 106.8159, geometry_type: 'polygon', geometry_geojson: { type: 'Polygon', coordinates: [[[106.81555, -6.19945], [106.81635, -6.19945], [106.81635, -6.20015], [106.81555, -6.20015], [106.81555, -6.19945]]] }, has_active_issue: false, has_active_utilization: true },
-  { id: 3, asset_code: 'BGN-UNIV-0001', asset_name: 'Gedung Rektorat', asset_type: 'building', campus_name: 'Kampus Utama', faculty_or_unit: 'Rektorat', address: 'Pusat Kampus Utama', ownership_status: 'Milik Universitas', condition_status: 'Baik', verification_status: 'menunggu_verifikasi', latitude: -6.2, longitude: 106.8177, geometry_type: 'point', geometry_geojson: { type: 'Point', coordinates: [106.8177, -6.2] }, has_active_issue: false, has_active_utilization: false },
-  { id: 4, asset_code: 'BGN-UNIV-0002', asset_name: 'Perpustakaan Pusat', asset_type: 'building', campus_name: 'Kampus Utama', faculty_or_unit: 'Perpustakaan', address: 'Area Tengah Kampus Utama', ownership_status: 'Milik Universitas', condition_status: 'Baik', verification_status: 'terverifikasi', latitude: -6.201, longitude: 106.8162, geometry_type: 'point', geometry_geojson: { type: 'Point', coordinates: [106.8162, -6.201] }, has_active_issue: false, has_active_utilization: false },
-];
+export const mockAssets: Asset[] = [];
 
-export const mockSummary: DashboardSummary = { total_land: 128, total_building: 86, total_land_area_m2: 1240500, total_building_area_m2: 312000, verified_assets: 201, pending_verification: 7, active_utilizations: 19, active_issues: 9 };
-export const mockUtilizations: Utilization[] = [
-  { id: 1, asset_id: 2, third_party_name: 'Tenant Kantin Sehat', utilization_type: 'tenant', utilized_area_m2: 180, start_date: '2026-01-01', end_date: '2027-01-01', status: 'aktif', geometry_geojson: { type: 'Polygon', coordinates: [[[106.81565, -6.19955], [106.81588, -6.19955], [106.81588, -6.19972], [106.81565, -6.19972], [106.81565, -6.19955]]] } },
-  { id: 2, asset_id: 2, third_party_name: 'Bank Mitra', utilization_type: 'atm', utilized_area_m2: 12, start_date: '2025-07-01', end_date: '2026-06-30', status: 'akan_berakhir', geometry_geojson: { type: 'Polygon', coordinates: [[[106.81605, -6.19958], [106.81610, -6.19958], [106.81610, -6.19963], [106.81605, -6.19963], [106.81605, -6.19958]]] } },
-  { id: 3, asset_id: 1, third_party_name: 'Koperasi Mahasiswa', utilization_type: 'kerja_sama', utilized_area_m2: null, start_date: '2024-01-01', end_date: '2026-12-31', status: 'aktif', use_full_asset_area: true },
-];
-export const mockIssues: AssetIssue[] = [
-  { id: 1, asset_id: 1, issue_title: 'Batas area belakang belum jelas', issue_type: 'batas_lahan_tidak_jelas', priority: 'tinggi', status: 'sedang_ditindaklanjuti', found_date: '2026-05-12' },
-];
+export const mockSummary: DashboardSummary = {
+  total_land: 0,
+  total_building: 0,
+  total_land_area_m2: 0,
+  total_building_area_m2: 0,
+  verified_assets: 0,
+  pending_verification: 0,
+  active_utilizations: 0,
+  active_issues: 0,
+};
+
+export const mockUtilizations: Utilization[] = [];
+export const mockIssues: AssetIssue[] = [];

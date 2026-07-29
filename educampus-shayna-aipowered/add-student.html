@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCampus - Add Student</title>
+<meta name="description" content="EduCampus add student multi-step form for registering new students with personal, academic, and contact information.">
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--primary-hover);
+    --color-foreground: var(--foreground);
+    --color-secondary: var(--secondary);
+    --color-muted: var(--muted);
+    --color-border: var(--border);
+    --color-card-grey: var(--card-grey);
+    --color-card-message: var(--card-message);
+    --color-accent-blue: var(--accent-blue);
+    --color-accent-teal: var(--accent-teal);
+    --color-accent-sky: var(--accent-sky);
+    --color-success: var(--success);
+    --color-success-light: var(--success-light);
+    --color-success-dark: var(--success-dark);
+    --color-error: var(--error);
+    --color-error-light: var(--error-light);
+    --color-error-lighter: var(--error-lighter);
+    --color-error-dark: var(--error-dark);
+    --color-warning: var(--warning);
+    --color-warning-light: var(--warning-light);
+    --color-warning-dark: var(--warning-dark);
+    --color-info: var(--info);
+    --color-info-light: var(--info-light);
+    --color-info-dark: var(--info-dark);
+    --color-alert: var(--alert);
+    --color-alert-light: var(--alert-light);
+    --color-alert-dark: var(--alert-dark);
+    --color-gray-50: var(--gray-50);
+    --color-gray-100: var(--gray-100);
+    --color-gray-200: var(--gray-200);
+    --color-gray-500: var(--gray-500);
+    --color-gray-600: var(--gray-600);
+    --color-gray-700: var(--gray-700);
+    --font-sans: var(--font-sans);
+    --radius-card: 24px;
+    --radius-button: 50px;
+    --radius-icon: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 20px;
+    --radius-3xl: 24px;
+  }
+  :root {
+    --primary: #165DFF;
+    --primary-hover: #0E4BD9;
+    --foreground: #080C1A;
+    --secondary: #6A7686;
+    --muted: #EFF2F7;
+    --border: #F3F4F3;
+    --card-grey: #F1F3F6;
+    --card-message: #C9E6FC;
+    --accent-blue: #C9E6FC;
+    --accent-teal: #82D9D7;
+    --accent-sky: #DBEAFE;
+    --success: #30B22D;
+    --success-light: #DCFCE7;
+    --success-dark: #166534;
+    --error: #ED6B60;
+    --error-light: #FEE2E2;
+    --error-lighter: #FEF2F2;
+    --error-dark: #991B1B;
+    --warning: #FED71F;
+    --warning-light: #FEF9C3;
+    --warning-dark: #854D0E;
+    --info: #165DFF;
+    --info-light: #DBEAFE;
+    --info-dark: #1E40AF;
+    --alert: #F97316;
+    --alert-light: #FFEDD5;
+    --alert-dark: #9A3412;
+    --gray-50: #F9FAFB;
+    --gray-100: #F1F3F6;
+    --gray-200: #E5E7EB;
+    --gray-500: #6A7686;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --font-sans: 'Lexend Deca', sans-serif;
+  }
+  select {
+    @apply appearance-none bg-no-repeat cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 10px center;
+    padding-right: 40px;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+<body class="font-sans bg-white min-h-screen overflow-x-hidden">
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/80 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+<div class="flex h-screen max-h-screen flex-1 bg-muted overflow-hidden">
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="flex flex-col w-[280px] shrink-0 h-screen fixed inset-y-0 left-0 z-50 bg-white border-r border-border transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-hidden">
+    <!-- Top Bar with logo and title -->
+    <div class="flex items-center justify-between border-b border-border h-[90px] px-5 gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-9 bg-primary rounded-xl flex items-center justify-center">
+          <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+        </div>
+        <h1 class="font-semibold text-xl">EduCampus</h1>
+      </div>
+      <div class="flex gap-2">
+        <button class="size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" aria-label="Search">
+          <i data-lucide="search" class="size-6 text-secondary"></i>
+        </button>
+        <button onclick="toggleSidebar()" aria-label="Close sidebar" class="lg:hidden size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+          <i data-lucide="x" class="size-6 text-secondary"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="flex flex-col p-5 pb-28 gap-6 overflow-y-auto flex-1">
+      <!-- Main Menu Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Main Menu</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="layout-dashboard" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Dashboard</span>
+            </div>
+          </a>
+          <!-- Active menu item -->
+          <a href="#" class="group active cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="users" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Students</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="user-check" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Lecturers</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="book-open" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Classes</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="calendar-check" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Attendance</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Management Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Management</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="bar-chart-3" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Reports</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="settings" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Settings</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Support Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Support</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="help-circle" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Help Center</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Help Card -->
+    <div class="absolute bottom-0 left-0 w-[280px]">
+      <div class="flex items-center justify-between border-t bg-white border-border p-5 gap-3">
+        <div class="min-w-0">
+          <p class="font-semibold text-foreground">Need help?</p>
+          <a href="#" class="cursor-pointer"><span class="text-sm text-secondary hover:text-primary hover:underline transition-all duration-300">Contact support</span></a>
+        </div>
+        <div class="size-11 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i data-lucide="message-circle-question" class="size-6 text-primary"></i>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 lg:ml-[280px] flex flex-col bg-white min-h-screen overflow-x-hidden">
+    <!-- Top Header Bar -->
+    <div class="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-border bg-white px-5 md:px-8">
+      <!-- Mobile hamburger -->
+      <button onclick="toggleSidebar()" aria-label="Open menu" class="lg:hidden size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+        <i data-lucide="menu" class="size-6 text-foreground"></i>
+      </button>
+      <!-- Page title (shown on desktop) -->
+      <h2 class="hidden lg:block font-bold text-2xl text-foreground">Add Student</h2>
+      <!-- Right actions -->
+      <div class="flex items-center gap-3">
+        <button class="size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer relative" aria-label="Notifications">
+          <i data-lucide="bell" class="size-6 text-secondary"></i>
+          <span class="absolute -top-1 -right-1 h-5 px-1.5 rounded-full bg-error text-white text-xs font-medium flex items-center justify-center">3</span>
+        </button>
+        <div class="hidden md:flex items-center gap-3 pl-3 border-l border-border">
+          <div class="text-right">
+            <p class="font-semibold text-foreground text-sm">Admin User</p>
+            <p class="text-secondary text-xs">Administrator</p>
+          </div>
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="Profile" class="size-11 rounded-full object-cover ring-2 ring-border">
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content Area -->
+    <div class="flex-1 overflow-y-auto p-5 md:p-8">
+      <!-- Page Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+        <div>
+          <h1 class="text-foreground text-2xl md:text-3xl font-bold mb-1">Add New Student</h1>
+          <p class="text-secondary text-sm md:text-base">Complete the form below to register a new student</p>
+        </div>
+        <div class="flex items-center gap-2 md:gap-3 ml-auto md:ml-0">
+          <button onclick="cancelForm()" class="flex items-center gap-2 px-6 py-3 ring-1 ring-border hover:ring-primary rounded-full text-foreground font-semibold transition-all duration-300 cursor-pointer">
+            <i data-lucide="x" class="w-5 h-5"></i>
+            <span>Cancel</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Progress Steps -->
+      <div class="flex flex-col rounded-2xl border border-border p-6 gap-6 bg-white mb-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center gap-4">
+            <div id="step1-indicator" class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-semibold">1</div>
+              <div class="hidden md:block">
+                <p class="font-semibold text-foreground">Personal Info</p>
+                <p class="text-sm text-secondary">Basic details</p>
+              </div>
+            </div>
+            <div class="w-12 h-0.5 bg-border"></div>
+            <div id="step2-indicator" class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-border text-secondary rounded-full flex items-center justify-center font-semibold">2</div>
+              <div class="hidden md:block">
+                <p class="font-semibold text-secondary">Academic Info</p>
+                <p class="text-sm text-secondary">Education details</p>
+              </div>
+            </div>
+            <div class="w-12 h-0.5 bg-border"></div>
+            <div id="step3-indicator" class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-border text-secondary rounded-full flex items-center justify-center font-semibold">3</div>
+              <div class="hidden md:block">
+                <p class="font-semibold text-secondary">Contact Info</p>
+                <p class="text-sm text-secondary">Guardian details</p>
+              </div>
+            </div>
+            <div class="w-12 h-0.5 bg-border"></div>
+            <div id="step4-indicator" class="flex items-center gap-3">
+              <div class="w-10 h-10 bg-border text-secondary rounded-full flex items-center justify-center font-semibold">4</div>
+              <div class="hidden md:block">
+                <p class="font-semibold text-secondary">Review</p>
+                <p class="text-sm text-secondary">Confirm details</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form Container -->
+      <div class="flex flex-col rounded-2xl border border-border bg-white overflow-hidden">
+        <!-- Step 1: Personal Information -->
+        <div id="step1" class="step-content p-6 md:p-8">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <i data-lucide="user" class="w-6 h-6 text-primary"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-xl text-foreground">Personal Information</h3>
+              <p class="text-secondary">Enter the student's basic personal details</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-foreground">First Name *</label>
+              <input type="text" id="firstName" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" placeholder="Enter first name" required>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-foreground">Last Name *</label>
+              <input type="text" id="lastName" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" placeholder="Enter last name" required>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-foreground">Student ID *</label>
+              <input type="text" id="studentId" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" placeholder="e.g., STU2024001" required>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-foreground">Gender *</label>
+              <select id="gender" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" required>
+                <option value="">Select gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-foreground">Date of Birth *</label>
+              <input type="date" id="birthDate" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" required>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-foreground">Nationality</label>
+              <input type="text" id="nationality" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" placeholder="Enter nationality">
+            </div>
+          </div>
+
+          <div class="flex justify-end mt-8">
+            <button onclick="nextStep()" class="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-full font-semibold hover:bg-primary-hover transition-all duration-300 cursor-pointer">
+              <span>Next</span>
+              <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 2: Academic Information -->
+        <div id="step2" class="step-content p-6 md:p-8 hidden">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <i data-lucide="graduation-cap" class="w-6 h-6 text-primary"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-xl text-foreground">Academic Information</h3>
+              <p class="text-secondary">Enter the student's academic and enrollment details</p>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-foreground">Faculty *</label>
+              <select id="faculty" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" required>
+                <option value="">Select faculty</option>
+                <option value="engineering">Faculty of Engineering</option>
+                <option value="science">Faculty of Science</option>
+                <option value="arts">Faculty of Arts</option>
+                <option value="business">Faculty of Business</option>
+                <option value="medicine">Faculty of Medicine</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-foreground">Major *</label>
+              <select id="major" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" required>
+                <option value="">Select major</option>
+                <option value="computer-science">Computer Science</option>
+                <option value="mathematics">Mathematics</option>
+                <option value="physics">Physics</option>
+                <option value="chemistry">Chemistry</option>
+                <option value="biology">Biology</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-foreground">Academic Year *</label>
+              <select id="academicYear" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" required>
+                <option value="">Select year</option>
+                <option value="1">Year 1</option>
+                <option value="2">Year 2</option>
+                <option value="3">Year 3</option>
+                <option value="4">Year 4</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-foreground">Enrollment Status *</label>
+              <select id="enrollmentStatus" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" required>
+                <option value="">Select status</option>
+                <option value="full-time">Full-time</option>
+                <option value="part-time">Part-time</option>
+                <option value="exchange">Exchange Student</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-foreground">Enrollment Date *</label>
+              <input type="date" id="enrollmentDate" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" required>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-sm font-medium text-foreground">Student Email</label>
+              <input type="email" id="studentEmail" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" placeholder="student@university.edu">
+            </div>
+          </div>
+
+          <div class="flex justify-between mt-8">
+            <button onclick="prevStep()" class="flex items-center gap-2 px-8 py-3 ring-1 ring-border hover:ring-primary rounded-full text-foreground font-semibold transition-all duration-300 cursor-pointer">
+              <i data-lucide="arrow-left" class="w-5 h-5"></i>
+              <span>Previous</span>
+            </button>
+            <button onclick="nextStep()" class="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-full font-semibold hover:bg-primary-hover transition-all duration-300 cursor-pointer">
+              <span>Next</span>
+              <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 3: Guardian & Contact Information -->
+        <div id="step3" class="step-content p-6 md:p-8 hidden">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <i data-lucide="phone" class="w-6 h-6 text-primary"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-xl text-foreground">Guardian & Contact Information</h3>
+              <p class="text-secondary">Enter guardian and emergency contact details</p>
+            </div>
+          </div>
+
+          <div class="space-y-8">
+            <!-- Student Contact -->
+            <div>
+              <h4 class="font-semibold text-lg text-foreground mb-4">Student Contact</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-foreground">Phone Number</label>
+                  <input type="tel" id="studentPhone" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" placeholder="+1 (555) 123-4567">
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-foreground">Address</label>
+                  <input type="text" id="studentAddress" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" placeholder="Enter address">
+                </div>
+              </div>
+            </div>
+
+            <!-- Guardian Information -->
+            <div>
+              <h4 class="font-semibold text-lg text-foreground mb-4">Guardian Information</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-foreground">Guardian Name *</label>
+                  <input type="text" id="guardianName" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" placeholder="Enter guardian name" required>
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-foreground">Relationship *</label>
+                  <select id="guardianRelationship" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" required>
+                    <option value="">Select relationship</option>
+                    <option value="father">Father</option>
+                    <option value="mother">Mother</option>
+                    <option value="guardian">Guardian</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-foreground">Guardian Phone *</label>
+                  <input type="tel" id="guardianPhone" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" placeholder="+1 (555) 123-4567" required>
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-foreground">Guardian Email</label>
+                  <input type="email" id="guardianEmail" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" placeholder="guardian@email.com">
+                </div>
+              </div>
+            </div>
+
+            <!-- Emergency Contact -->
+            <div>
+              <h4 class="font-semibold text-lg text-foreground mb-4">Emergency Contact</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-foreground">Emergency Contact Name</label>
+                  <input type="text" id="emergencyName" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" placeholder="Enter emergency contact name">
+                </div>
+                <div class="space-y-2">
+                  <label class="block text-sm font-medium text-foreground">Emergency Contact Phone</label>
+                  <input type="tel" id="emergencyPhone" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" placeholder="+1 (555) 123-4567">
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-between mt-8">
+            <button onclick="prevStep()" class="flex items-center gap-2 px-8 py-3 ring-1 ring-border hover:ring-primary rounded-full text-foreground font-semibold transition-all duration-300 cursor-pointer">
+              <i data-lucide="arrow-left" class="w-5 h-5"></i>
+              <span>Previous</span>
+            </button>
+            <button onclick="nextStep()" class="flex items-center gap-2 px-8 py-3 bg-primary text-white rounded-full font-semibold hover:bg-primary-hover transition-all duration-300 cursor-pointer">
+              <span>Next</span>
+              <i data-lucide="arrow-right" class="w-5 h-5"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Step 4: Review & Confirm -->
+        <div id="step4" class="step-content p-6 md:p-8 hidden">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center">
+              <i data-lucide="check-circle" class="w-6 h-6 text-primary"></i>
+            </div>
+            <div>
+              <h3 class="font-bold text-xl text-foreground">Review & Confirm</h3>
+              <p class="text-secondary">Please review all information before submitting</p>
+            </div>
+          </div>
+
+          <div class="space-y-6">
+            <!-- Personal Information Review -->
+            <div class="p-6 bg-muted/50 rounded-2xl">
+              <h4 class="font-semibold text-lg text-foreground mb-4">Personal Information</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p class="text-sm text-secondary">Name</p>
+                  <p class="font-medium" id="reviewName">-</p>
+                </div>
+                <div>
+                  <p class="text-sm text-secondary">Student ID</p>
+                  <p class="font-medium" id="reviewStudentId">-</p>
+                </div>
+                <div>
+                  <p class="text-sm text-secondary">Gender</p>
+                  <p class="font-medium" id="reviewGender">-</p>
+                </div>
+                <div>
+                  <p class="text-sm text-secondary">Date of Birth</p>
+                  <p class="font-medium" id="reviewBirthDate">-</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Academic Information Review -->
+            <div class="p-6 bg-muted/50 rounded-2xl">
+              <h4 class="font-semibold text-lg text-foreground mb-4">Academic Information</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p class="text-sm text-secondary">Faculty</p>
+                  <p class="font-medium" id="reviewFaculty">-</p>
+                </div>
+                <div>
+                  <p class="text-sm text-secondary">Major</p>
+                  <p class="font-medium" id="reviewMajor">-</p>
+                </div>
+                <div>
+                  <p class="text-sm text-secondary">Academic Year</p>
+                  <p class="font-medium" id="reviewYear">-</p>
+                </div>
+                <div>
+                  <p class="text-sm text-secondary">Enrollment Status</p>
+                  <p class="font-medium" id="reviewStatus">-</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- Contact Information Review -->
+            <div class="p-6 bg-muted/50 rounded-2xl">
+              <h4 class="font-semibold text-lg text-foreground mb-4">Contact Information</h4>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <p class="text-sm text-secondary">Guardian Name</p>
+                  <p class="font-medium" id="reviewGuardianName">-</p>
+                </div>
+                <div>
+                  <p class="text-sm text-secondary">Guardian Phone</p>
+                  <p class="font-medium" id="reviewGuardianPhone">-</p>
+                </div>
+                <div>
+                  <p class="text-sm text-secondary">Student Phone</p>
+                  <p class="font-medium" id="reviewStudentPhone">-</p>
+                </div>
+                <div>
+                  <p class="text-sm text-secondary">Student Email</p>
+                  <p class="font-medium" id="reviewStudentEmail">-</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-between mt-8">
+            <button onclick="prevStep()" class="flex items-center gap-2 px-8 py-3 ring-1 ring-border hover:ring-primary rounded-full text-foreground font-semibold transition-all duration-300 cursor-pointer">
+              <i data-lucide="arrow-left" class="w-5 h-5"></i>
+              <span>Previous</span>
+            </button>
+            <button onclick="submitForm()" class="flex items-center gap-2 px-8 py-3 bg-success text-white rounded-full font-semibold hover:bg-success-dark transition-all duration-300 cursor-pointer">
+              <i data-lucide="check" class="w-5 h-5"></i>
+              <span>Submit</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-success-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="check" class="w-8 h-8 text-success"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Student Added Successfully</h3>
+    <p class="text-gray-500 text-sm mb-6">The new student has been registered in the system.</p>
+    <button onclick="closeSuccessModal()" class="w-full px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+      Done
+    </button>
+  </div>
+</div>
+
+<!-- Page Not Found Modal -->
+<div id="page-not-found-modal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-warning-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="alert-triangle" class="w-8 h-8 text-warning-dark"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Page Not Available</h3>
+    <p class="text-gray-500 text-sm mb-6">This page hasn't been created yet. Generate it using the chat!</p>
+    <button onclick="closePageNotFoundModal()" class="w-full px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+      Got it
+    </button>
+  </div>
+</div>
+
+<script>
+let currentStep = 1;
+
+document.addEventListener('DOMContentLoaded', function() {
+  lucide.createIcons();
+
+  // Show modal when clicking any link
+  document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('page-not-found-modal').classList.remove('hidden');
+    });
+  });
+});
+
+function closePageNotFoundModal() {
+  document.getElementById('page-not-found-modal').classList.add('hidden');
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.toggle('-translate-x-full');
+  overlay.classList.toggle('hidden');
+  document.body.classList.toggle('overflow-hidden');
+}
+
+function nextStep() {
+  if (validateCurrentStep()) {
+    if (currentStep < 4) {
+      // Hide current step
+      document.getElementById(`step${currentStep}`).classList.add('hidden');
+      
+      // Update step indicator
+      updateStepIndicator(currentStep, 'completed');
+      
+      // Move to next step
+      currentStep++;
+      
+      // Show next step
+      document.getElementById(`step${currentStep}`).classList.remove('hidden');
+      
+      // Update step indicator
+      updateStepIndicator(currentStep, 'active');
+      
+      // Update review data if on step 4
+      if (currentStep === 4) {
+        updateReviewData();
+      }
+    }
+  }
+}
+
+function prevStep() {
+  if (currentStep > 1) {
+    // Hide current step
+    document.getElementById(`step${currentStep}`).classList.add('hidden');
+    
+    // Update step indicator
+    updateStepIndicator(currentStep, 'inactive');
+    
+    // Move to previous step
+    currentStep--;
+    
+    // Show previous step
+    document.getElementById(`step${currentStep}`).classList.remove('hidden');
+    
+    // Update step indicator
+    updateStepIndicator(currentStep, 'active');
+  }
+}
+
+function updateStepIndicator(step, status) {
+  const indicator = document.getElementById(`step${step}-indicator`);
+  const circle = indicator.querySelector('div');
+  const texts = indicator.querySelectorAll('p');
+  
+  if (status === 'active') {
+    circle.className = 'w-10 h-10 bg-primary text-white rounded-full flex items-center justify-center font-semibold';
+    texts.forEach(text => text.classList.remove('text-secondary'));
+    texts.forEach(text => text.classList.add('text-foreground'));
+  } else if (status === 'completed') {
+    circle.className = 'w-10 h-10 bg-success text-white rounded-full flex items-center justify-center font-semibold';
+    circle.innerHTML = '<i data-lucide="check" class="w-5 h-5"></i>';
+    lucide.createIcons();
+    texts.forEach(text => text.classList.remove('text-secondary'));
+    texts.forEach(text => text.classList.add('text-foreground'));
+  } else {
+    circle.className = 'w-10 h-10 bg-border text-secondary rounded-full flex items-center justify-center font-semibold';
+    circle.textContent = step;
+    texts.forEach(text => text.classList.remove('text-foreground'));
+    texts.forEach(text => text.classList.add('text-secondary'));
+  }
+}
+
+function validateCurrentStep() {
+  const requiredFields = {
+    1: ['firstName', 'lastName', 'studentId', 'gender', 'birthDate'],
+    2: ['faculty', 'major', 'academicYear', 'enrollmentStatus', 'enrollmentDate'],
+    3: ['guardianName', 'guardianRelationship', 'guardianPhone'],
+    4: []
+  };
+
+  const fields = requiredFields[currentStep];
+  let isValid = true;
+
+  fields.forEach(fieldId => {
+    const field = document.getElementById(fieldId);
+    if (!field.value.trim()) {
+      field.classList.add('ring-error');
+      field.classList.remove('ring-border');
+      isValid = false;
+    } else {
+      field.classList.remove('ring-error');
+      field.classList.add('ring-border');
+    }
+  });
+
+  if (!isValid) {
+    showToast('Please fill in all required fields', 'error');
+  }
+
+  return isValid;
+}
+
+function updateReviewData() {
+  // Personal Information
+  document.getElementById('reviewName').textContent = 
+    `${document.getElementById('firstName').value} ${document.getElementById('lastName').value}`;
+  document.getElementById('reviewStudentId').textContent = 
+    document.getElementById('studentId').value;
+  document.getElementById('reviewGender').textContent = 
+    document.getElementById('gender').value;
+  document.getElementById('reviewBirthDate').textContent = 
+    document.getElementById('birthDate').value;
+
+  // Academic Information
+  document.getElementById('reviewFaculty').textContent = 
+    document.getElementById('faculty').selectedOptions[0]?.text || '-';
+  document.getElementById('reviewMajor').textContent = 
+    document.getElementById('major').selectedOptions[0]?.text || '-';
+  document.getElementById('reviewYear').textContent = 
+    document.getElementById('academicYear').selectedOptions[0]?.text || '-';
+  document.getElementById('reviewStatus').textContent = 
+    document.getElementById('enrollmentStatus').selectedOptions[0]?.text || '-';
+
+  // Contact Information
+  document.getElementById('reviewGuardianName').textContent = 
+    document.getElementById('guardianName').value || '-';
+  document.getElementById('reviewGuardianPhone').textContent = 
+    document.getElementById('guardianPhone').value || '-';
+  document.getElementById('reviewStudentPhone').textContent = 
+    document.getElementById('studentPhone').value || '-';
+  document.getElementById('reviewStudentEmail').textContent = 
+    document.getElementById('studentEmail').value || '-';
+}
+
+function submitForm() {
+  // Simulate form submission
+  document.getElementById('successModal').classList.remove('hidden');
+}
+
+function closeSuccessModal() {
+  document.getElementById('successModal').classList.add('hidden');
+  // Reset form
+  resetForm();
+}
+
+function cancelForm() {
+  if (confirm('Are you sure you want to cancel? All entered data will be lost.')) {
+    resetForm();
+  }
+}
+
+function resetForm() {
+  // Reset to step 1
+  document.querySelectorAll('.step-content').forEach(step => step.classList.add('hidden'));
+  document.getElementById('step1').classList.remove('hidden');
+  currentStep = 1;
+  
+  // Reset step indicators
+  for (let i = 1; i <= 4; i++) {
+    updateStepIndicator(i, i === 1 ? 'active' : 'inactive');
+  }
+  
+  // Clear all form fields
+  document.querySelectorAll('input, select').forEach(field => {
+    field.value = '';
+    field.classList.remove('ring-error');
+    field.classList.add('ring-border');
+  });
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  const bgColor = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-error' : 'bg-primary';
+  toast.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-3 rounded-xl z-50 font-medium shadow-lg`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+</script>
+</body>
+</html>

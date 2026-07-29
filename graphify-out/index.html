@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Graphify - Visualisasi Arsitektur Sistem Manajemen Aset</title>
+  <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background: #0f172a; color: #f8fafc; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    header { background: #1e293b; padding: 16px 24px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
+    h1 { font-size: 1.25rem; font-weight: 600; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+    .badge { background: #0284c7; color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 9999px; }
+    .container { display: flex; flex: 1; height: calc(100vh - 65px); }
+    #network { flex: 1; height: 100%; background: #0b0f19; }
+    .sidebar { width: 340px; background: #1e293b; border-left: 1px solid #334155; padding: 20px; overflow-y: auto; }
+    .card { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
+    .card h3 { font-size: 0.95rem; color: #38bdf8; margin-bottom: 8px; }
+    .card p { font-size: 0.85rem; color: #94a3b8; line-height: 1.4; }
+    .legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; color: #cbd5e1; }
+    .legend-color { width: 14px; height: 14px; border-radius: 4px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1><span>🕸️ Graphify - Visualisator Arsitektur</span> <span class="badge">manajemenaset</span></h1>
+    <div style="font-size: 0.85rem; color: #94a3b8;">Sistem Manajemen Aset Universitas</div>
+  </header>
+
+  <div class="container">
+    <div id="network"></div>
+    <div class="sidebar">
+      <div class="card">
+        <h3>Detail Node</h3>
+        <div id="node-details">
+          <p style="font-style: italic;">Klik node pada graf di samping untuk melihat detail metadata arsitektur, sentralitas, dan relasinya.</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Komunitas & Subsistem</h3>
+        <div class="legend-item"><div class="legend-color" style="background: #3B82F6;"></div> Database & Persistensi</div>
+        <div class="legend-item"><div class="legend-color" style="background: #10B981;"></div> Server & Keamanan API</div>
+        <div class="legend-item"><div class="legend-color" style="background: #8B5CF6;"></div> Komponen Aplikasi Frontend</div>
+        <div class="legend-item"><div class="legend-color" style="background: #F59E0B;"></div> Utilitas & Tipe Data</div>
+      </div>
+
+      <div class="card">
+        <h3>Statistik Graf</h3>
+        <p><strong>Total Node:</strong> 14</p>
+        <p><strong>Total Edge (Relasi):</strong> 12</p>
+        <p><strong>God Nodes:</strong> 3 (`types.ts`, `asset-list.tsx`, `local-repository.ts`)</p>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const graphData = {
+      nodes: [
+        { id: 1, label: 'types.ts', group: 'utility', title: 'God Node / Definisi Tipe Domain Utama', shape: 'diamond', size: 30, color: '#F59E0B' },
+        { id: 2, label: 'asset-list.tsx', group: 'ui', title: 'God Node / Komponen UI Manajemen Aset', shape: 'dot', size: 35, color: '#8B5CF6' },
+        { id: 3, label: 'local-repository.ts', group: 'data', title: 'God Node / Akses Data PostgreSQL', shape: 'dot', size: 30, color: '#3B82F6' },
+        { id: 4, label: 'schema.sql', group: 'data', title: 'Skema Database Relasional (10 Tabel)', shape: 'database', size: 30, color: '#3B82F6' },
+        { id: 5, label: 'app-shell.tsx', group: 'ui', title: 'Layout Utama App Shell', shape: 'dot', size: 25, color: '#8B5CF6' },
+        { id: 6, label: 'dashboard.tsx', group: 'ui', title: 'Dasbor Eksekutif & Ringkasan Aset', shape: 'dot', size: 22, color: '#8B5CF6' },
+        { id: 7, label: 'location-picker.tsx', group: 'ui', title: 'Pemeta Koordinat & GeoJSON Leaflet', shape: 'dot', size: 22, color: '#8B5CF6' },
+        { id: 8, label: 'issue-manager.tsx', group: 'ui', title: 'Manajemen Masalah & Perbaikan Aset', shape: 'dot', size: 20, color: '#8B5CF6' },
+        { id: 9, label: 'utilization-manager.tsx', group: 'ui', title: 'Manajemen Pemanfaatan & Sewa Aset', shape: 'dot', size: 20, color: '#8B5CF6' },
+        { id: 10, label: 'user-role-manager.tsx', group: 'ui', title: 'Manajemen Pengguna & Peran (RBAC)', shape: 'dot', size: 20, color: '#8B5CF6' },
+        { id: 11, label: 'session.ts', group: 'server', title: 'Sesi Cookie JWT & Keamanan Auth', shape: 'triangle', size: 22, color: '#10B981' },
+        { id: 12, label: 'role-utils.ts', group: 'utility', title: 'Evaluasi Akses Pengguna', shape: 'diamond', size: 20, color: '#F59E0B' },
+        { id: 13, label: 'geo.ts', group: 'utility', title: 'Kalkulator GIS & Centroid', shape: 'diamond', size: 18, color: '#F59E0B' },
+        { id: 14, label: 'api/assets', group: 'server', title: 'Endpoint REST API Aset', shape: 'box', size: 22, color: '#10B981' }
+      ],
+      edges: [
+        { from: 5, to: 2, label: 'rendisi' },
+        { from: 5, to: 6, label: 'rendisi' },
+        { from: 5, to: 8, label: 'rendisi' },
+        { from: 5, to: 9, label: 'rendisi' },
+        { from: 5, to: 10, label: 'rendisi' },
+        { from: 2, to: 7, label: 'menggunakan' },
+        { from: 2, to: 1, label: 'mengimpor' },
+        { from: 2, to: 12, label: 'mengimpor' },
+        { from: 2, to: 14, label: 'mengambil data' },
+        { from: 14, to: 3, label: 'memanggil' },
+        { from: 14, to: 11, label: 'autentikasi' },
+        { from: 3, to: 4, label: 'query database' }
+      ]
+    };
+
+    const container = document.getElementById('network');
+    const data = {
+      nodes: new vis.DataSet(graphData.nodes),
+      edges: new vis.DataSet(graphData.edges)
+    };
+    const options = {
+      nodes: {
+        font: { color: '#ffffff', size: 14 },
+        borderWidth: 2
+      },
+      edges: {
+        color: { color: '#64748b', highlight: '#38bdf8' },
+        arrows: { to: { enabled: true, scaleFactor: 0.8 } },
+        smooth: { type: 'continuous' }
+      },
+      physics: {
+        barnesHut: { gravitationalConstant: -3000, centralGravity: 0.3, springLength: 95 }
+      }
+    };
+    const network = new vis.Network(container, data, options);
+
+    network.on('click', function(params) {
+      if (params.nodes.length > 0) {
+        const nodeId = params.nodes[0];
+        const node = graphData.nodes.find(n => n.id === nodeId);
+        const nodeDetails = document.getElementById('node-details');
+        nodeDetails.innerHTML = `
+          <strong style="font-size: 1rem; color: #f8fafc;">${node.label}</strong>
+          <p style="margin-top: 6px;"><strong>Tipe:</strong> ${node.title}</p>
+          <p style="margin-top: 4px;"><strong>Kelompok:</strong> ${node.group.toUpperCase()}</p>
+        `;
+      }
+    });
+  </script>
+</body>
+</html>

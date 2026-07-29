@@ -1,0 +1,1282 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCampus - Classes & Schedule</title>
+<meta name="description" content="EduCampus classes and schedule management for monitoring timetables and room usage.">
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--primary-hover);
+    --color-foreground: var(--foreground);
+    --color-secondary: var(--secondary);
+    --color-muted: var(--muted);
+    --color-border: var(--border);
+    --color-card-grey: var(--card-grey);
+    --color-card-message: var(--card-message);
+    --color-accent-blue: var(--accent-blue);
+    --color-accent-teal: var(--accent-teal);
+    --color-accent-sky: var(--accent-sky);
+    --color-success: var(--success);
+    --color-success-light: var(--success-light);
+    --color-success-dark: var(--success-dark);
+    --color-error: var(--error);
+    --color-error-light: var(--error-light);
+    --color-error-lighter: var(--error-lighter);
+    --color-error-dark: var(--error-dark);
+    --color-warning: var(--warning);
+    --color-warning-light: var(--warning-light);
+    --color-warning-dark: var(--warning-dark);
+    --color-info: var(--info);
+    --color-info-light: var(--info-light);
+    --color-info-dark: var(--info-dark);
+    --color-alert: var(--alert);
+    --color-alert-light: var(--alert-light);
+    --color-alert-dark: var(--alert-dark);
+    --color-gray-50: var(--gray-50);
+    --color-gray-100: var(--gray-100);
+    --color-gray-200: var(--gray-200);
+    --color-gray-500: var(--gray-500);
+    --color-gray-600: var(--gray-600);
+    --color-gray-700: var(--gray-700);
+    --font-sans: var(--font-sans);
+    --radius-card: 24px;
+    --radius-button: 50px;
+    --radius-icon: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 20px;
+    --radius-3xl: 24px;
+  }
+  :root {
+    --primary: #165DFF;
+    --primary-hover: #0E4BD9;
+    --foreground: #080C1A;
+    --secondary: #6A7686;
+    --muted: #EFF2F7;
+    --border: #F3F4F3;
+    --card-grey: #F1F3F6;
+    --card-message: #C9E6FC;
+    --accent-blue: #C9E6FC;
+    --accent-teal: #82D9D7;
+    --accent-sky: #DBEAFE;
+    --success: #30B22D;
+    --success-light: #DCFCE7;
+    --success-dark: #166534;
+    --error: #ED6B60;
+    --error-light: #FEE2E2;
+    --error-lighter: #FEF2F2;
+    --error-dark: #991B1B;
+    --warning: #FED71F;
+    --warning-light: #FEF9C3;
+    --warning-dark: #854D0E;
+    --info: #165DFF;
+    --info-light: #DBEAFE;
+    --info-dark: #1E40AF;
+    --alert: #F97316;
+    --alert-light: #FFEDD5;
+    --alert-dark: #9A3412;
+    --gray-50: #F9FAFB;
+    --gray-100: #F1F3F6;
+    --gray-200: #E5E7EB;
+    --gray-500: #6A7686;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --font-sans: 'Lexend Deca', sans-serif;
+  }
+  select {
+    @apply appearance-none bg-no-repeat cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 10px center;
+    padding-right: 40px;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+  .time-slot {
+    min-height: 80px;
+    border: 1px solid #F3F4F3;
+  }
+  .class-block {
+    min-height: 76px;
+    border-radius: 8px;
+    padding: 8px;
+    margin: 2px 0;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .class-block:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+</style>
+</head>
+<body class="font-sans bg-white min-h-screen overflow-x-hidden">
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/80 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+<div class="flex h-screen max-h-screen flex-1 bg-muted overflow-hidden">
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="flex flex-col w-[280px] shrink-0 h-screen fixed inset-y-0 left-0 z-50 bg-white border-r border-border transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-hidden">
+    <!-- Top Bar with logo and title -->
+    <div class="flex items-center justify-between border-b border-border h-[90px] px-5 gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-9 bg-primary rounded-xl flex items-center justify-center">
+          <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+        </div>
+        <h1 class="font-semibold text-xl">EduCampus</h1>
+      </div>
+      <div class="flex gap-2">
+        <button class="size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" aria-label="Search">
+          <i data-lucide="search" class="size-6 text-secondary"></i>
+        </button>
+        <button onclick="toggleSidebar()" aria-label="Close sidebar" class="lg:hidden size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+          <i data-lucide="x" class="size-6 text-secondary"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="flex flex-col p-5 pb-28 gap-6 overflow-y-auto flex-1">
+      <!-- Main Menu Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Main Menu</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="layout-dashboard" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Dashboard</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="users" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Students</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="user-check" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Lecturers</span>
+            </div>
+          </a>
+          <!-- Active menu item -->
+          <a href="#" class="group active cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="book-open" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Classes</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="calendar-check" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Attendance</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Management Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Management</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="bar-chart-3" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Reports</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="settings" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Settings</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Help Card -->
+    <div class="absolute bottom-0 left-0 w-[280px]">
+      <div class="flex items-center justify-between border-t bg-white border-border p-5 gap-3">
+        <div class="min-w-0">
+          <p class="font-semibold text-foreground">Need help?</p>
+          <a href="#" class="cursor-pointer"><span class="text-sm text-secondary hover:text-primary hover:underline transition-all duration-300">Contact support</span></a>
+        </div>
+        <div class="size-11 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i data-lucide="message-circle-question" class="size-6 text-primary"></i>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 lg:ml-[280px] flex flex-col bg-white min-h-screen overflow-x-hidden">
+    <!-- Top Header Bar -->
+    <div class="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-border bg-white px-5 md:px-8">
+      <!-- Mobile hamburger -->
+      <button onclick="toggleSidebar()" aria-label="Open menu" class="lg:hidden size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+        <i data-lucide="menu" class="size-6 text-foreground"></i>
+      </button>
+      <!-- Page title (shown on desktop) -->
+      <h2 class="hidden lg:block font-bold text-2xl text-foreground">Classes & Schedule</h2>
+      <!-- Right actions -->
+      <div class="flex items-center gap-3">
+        <button class="size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer relative" aria-label="Notifications">
+          <i data-lucide="bell" class="size-6 text-secondary"></i>
+          <span class="absolute -top-1 -right-1 h-5 px-1.5 rounded-full bg-error text-white text-xs font-medium flex items-center justify-center">2</span>
+        </button>
+        <div class="hidden md:flex items-center gap-3 pl-3 border-l border-border">
+          <div class="text-right">
+            <p class="font-semibold text-foreground text-sm">Admin User</p>
+            <p class="text-secondary text-xs">Administrator</p>
+          </div>
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="Profile" class="size-11 rounded-full object-cover ring-2 ring-border">
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content Area -->
+    <div class="flex-1 overflow-y-auto p-5 md:p-8">
+      <!-- Page Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+        <div>
+          <h1 class="text-foreground text-2xl md:text-3xl font-bold mb-1">Classes & Schedule</h1>
+          <p class="text-secondary text-sm md:text-base">Manage class schedules, room assignments, and timetables</p>
+        </div>
+        <div class="flex items-center gap-2 md:gap-3 ml-auto md:ml-0">
+          <button onclick="showAddClassModal()" class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:bg-primary-hover transition-all duration-300 cursor-pointer">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+            <span>Add Class</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- View Toggle -->
+      <div class="overflow-x-auto scrollbar-hide mb-6">
+        <div class="flex items-center gap-1 rounded-xl p-1 bg-muted w-fit min-w-max">
+          <button onclick="switchView('timetable')" class="view-btn px-4 md:px-6 py-2.5 rounded-xl bg-white text-foreground font-semibold transition-all duration-300 cursor-pointer whitespace-nowrap" data-view="timetable">
+            Timetable View
+          </button>
+          <button onclick="switchView('list')" class="view-btn px-4 md:px-6 py-2.5 rounded-xl text-secondary font-medium hover:bg-white transition-all duration-300 cursor-pointer whitespace-nowrap" data-view="list">
+            Class List
+          </button>
+          <button onclick="switchView('rooms')" class="view-btn px-4 md:px-6 py-2.5 rounded-xl text-secondary font-medium hover:bg-white transition-all duration-300 cursor-pointer whitespace-nowrap" data-view="rooms">
+            Room Usage
+          </button>
+        </div>
+      </div>
+
+      <!-- Timetable View -->
+      <div id="timetableView" class="view-content">
+        <!-- Week Navigation -->
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white mb-6">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <h3 class="font-bold text-lg text-foreground">Weekly Timetable</h3>
+            <div class="flex items-center gap-3">
+              <button onclick="previousWeek()" class="p-2 rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" aria-label="Previous week">
+                <i data-lucide="chevron-left" class="w-5 h-5 text-secondary"></i>
+              </button>
+              <span id="currentWeek" class="text-foreground font-semibold px-4">Dec 16 - Dec 22, 2024</span>
+              <button onclick="nextWeek()" class="p-2 rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" aria-label="Next week">
+                <i data-lucide="chevron-right" class="w-5 h-5 text-secondary"></i>
+              </button>
+            </div>
+          </div>
+          
+          <!-- Timetable Grid -->
+          <div class="overflow-x-auto scrollbar-hide">
+            <div class="min-w-[800px]">
+              <!-- Header Row -->
+              <div class="grid grid-cols-8 gap-1 mb-2">
+                <div class="p-3 text-center font-semibold text-secondary text-sm">Time</div>
+                <div class="p-3 text-center font-semibold text-foreground">Monday</div>
+                <div class="p-3 text-center font-semibold text-foreground">Tuesday</div>
+                <div class="p-3 text-center font-semibold text-foreground">Wednesday</div>
+                <div class="p-3 text-center font-semibold text-foreground">Thursday</div>
+                <div class="p-3 text-center font-semibold text-foreground">Friday</div>
+                <div class="p-3 text-center font-semibold text-foreground">Saturday</div>
+                <div class="p-3 text-center font-semibold text-foreground">Sunday</div>
+              </div>
+              
+              <!-- Time Slots -->
+              <div class="space-y-1" id="timetableGrid">
+                <!-- 8:00 AM -->
+                <div class="grid grid-cols-8 gap-1">
+                  <div class="time-slot flex items-center justify-center bg-muted text-secondary font-medium text-sm">8:00 AM</div>
+                  <div class="time-slot bg-white relative">
+                    <div class="class-block bg-primary/10 border-l-4 border-primary" onclick="viewClassDetails('CS101')">
+                      <div class="text-xs font-bold text-primary mb-1">CS101</div>
+                      <div class="text-xs text-foreground">Computer Science</div>
+                      <div class="text-xs text-secondary">Room A1</div>
+                    </div>
+                  </div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white">
+                    <div class="class-block bg-success/10 border-l-4 border-success" onclick="viewClassDetails('MATH201')">
+                      <div class="text-xs font-bold text-success mb-1">MATH201</div>
+                      <div class="text-xs text-foreground">Advanced Math</div>
+                      <div class="text-xs text-secondary">Room B2</div>
+                    </div>
+                  </div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white">
+                    <div class="class-block bg-warning/10 border-l-4 border-warning" onclick="viewClassDetails('ENG101')">
+                      <div class="text-xs font-bold text-warning-dark mb-1">ENG101</div>
+                      <div class="text-xs text-foreground">English Literature</div>
+                      <div class="text-xs text-secondary">Room C1</div>
+                    </div>
+                  </div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white"></div>
+                </div>
+                
+                <!-- 10:00 AM -->
+                <div class="grid grid-cols-8 gap-1">
+                  <div class="time-slot flex items-center justify-center bg-muted text-secondary font-medium text-sm">10:00 AM</div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white">
+                    <div class="class-block bg-info/10 border-l-4 border-info" onclick="viewClassDetails('PHY301')">
+                      <div class="text-xs font-bold text-info mb-1">PHY301</div>
+                      <div class="text-xs text-foreground">Physics Lab</div>
+                      <div class="text-xs text-secondary">Lab 1</div>
+                    </div>
+                  </div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white">
+                    <div class="class-block bg-error/10 border-l-4 border-error" onclick="viewClassDetails('CHEM101')">
+                      <div class="text-xs font-bold text-error mb-1">CHEM101</div>
+                      <div class="text-xs text-foreground">Chemistry</div>
+                      <div class="text-xs text-secondary">Room D1</div>
+                    </div>
+                  </div>
+                  <div class="time-slot bg-white">
+                    <div class="class-block bg-primary/10 border-l-4 border-primary" onclick="viewClassDetails('CS102')">
+                      <div class="text-xs font-bold text-primary mb-1">CS102</div>
+                      <div class="text-xs text-foreground">Programming</div>
+                      <div class="text-xs text-secondary">Lab 2</div>
+                    </div>
+                  </div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white"></div>
+                </div>
+                
+                <!-- 12:00 PM -->
+                <div class="grid grid-cols-8 gap-1">
+                  <div class="time-slot flex items-center justify-center bg-muted text-secondary font-medium text-sm">12:00 PM</div>
+                  <div class="time-slot bg-gray-100 flex items-center justify-center text-secondary text-xs">Lunch Break</div>
+                  <div class="time-slot bg-gray-100 flex items-center justify-center text-secondary text-xs">Lunch Break</div>
+                  <div class="time-slot bg-gray-100 flex items-center justify-center text-secondary text-xs">Lunch Break</div>
+                  <div class="time-slot bg-gray-100 flex items-center justify-center text-secondary text-xs">Lunch Break</div>
+                  <div class="time-slot bg-gray-100 flex items-center justify-center text-secondary text-xs">Lunch Break</div>
+                  <div class="time-slot bg-gray-100 flex items-center justify-center text-secondary text-xs">Lunch Break</div>
+                  <div class="time-slot bg-gray-100 flex items-center justify-center text-secondary text-xs">Lunch Break</div>
+                </div>
+                
+                <!-- 2:00 PM -->
+                <div class="grid grid-cols-8 gap-1">
+                  <div class="time-slot flex items-center justify-center bg-muted text-secondary font-medium text-sm">2:00 PM</div>
+                  <div class="time-slot bg-white">
+                    <div class="class-block bg-success/10 border-l-4 border-success" onclick="viewClassDetails('BIO201')">
+                      <div class="text-xs font-bold text-success mb-1">BIO201</div>
+                      <div class="text-xs text-foreground">Biology</div>
+                      <div class="text-xs text-secondary">Room E1</div>
+                    </div>
+                  </div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white">
+                    <div class="class-block bg-warning/10 border-l-4 border-warning" onclick="viewClassDetails('HIST101')">
+                      <div class="text-xs font-bold text-warning-dark mb-1">HIST101</div>
+                      <div class="text-xs text-foreground">World History</div>
+                      <div class="text-xs text-secondary">Room F1</div>
+                    </div>
+                  </div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white">
+                    <div class="class-block bg-info/10 border-l-4 border-info" onclick="viewClassDetails('ART101')">
+                      <div class="text-xs font-bold text-info mb-1">ART101</div>
+                      <div class="text-xs text-foreground">Fine Arts</div>
+                      <div class="text-xs text-secondary">Studio 1</div>
+                    </div>
+                  </div>
+                  <div class="time-slot bg-white"></div>
+                </div>
+                
+                <!-- 4:00 PM -->
+                <div class="grid grid-cols-8 gap-1">
+                  <div class="time-slot flex items-center justify-center bg-muted text-secondary font-medium text-sm">4:00 PM</div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white">
+                    <div class="class-block bg-error/10 border-l-4 border-error" onclick="viewClassDetails('ECON101')">
+                      <div class="text-xs font-bold text-error mb-1">ECON101</div>
+                      <div class="text-xs text-foreground">Economics</div>
+                      <div class="text-xs text-secondary">Room G1</div>
+                    </div>
+                  </div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white">
+                    <div class="class-block bg-primary/10 border-l-4 border-primary" onclick="viewClassDetails('CS201')">
+                      <div class="text-xs font-bold text-primary mb-1">CS201</div>
+                      <div class="text-xs text-foreground">Data Structures</div>
+                      <div class="text-xs text-secondary">Room A2</div>
+                    </div>
+                  </div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white"></div>
+                  <div class="time-slot bg-white"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Class List View -->
+      <div id="listView" class="view-content hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <!-- Class List -->
+          <div class="lg:col-span-2">
+            <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white">
+              <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                <h3 class="font-bold text-lg text-foreground">All Classes</h3>
+                <div class="flex items-center gap-3">
+                  <div class="relative">
+                    <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-secondary"></i>
+                    <input type="text" id="classSearch" placeholder="Search classes..." class="pl-10 pr-4 py-2 rounded-xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none text-sm font-medium transition-all duration-300">
+                  </div>
+                  <select id="statusFilter" class="px-3 py-2 rounded-xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none text-sm font-medium transition-all duration-300">
+                    <option value="all">All Status</option>
+                    <option value="active">Active</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="completed">Completed</option>
+                  </select>
+                </div>
+              </div>
+              
+              <!-- Class Items -->
+              <div class="space-y-3" id="classContainer">
+                <div class="class-item flex items-center justify-between p-4 rounded-2xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" data-class-id="CS101" data-status="active" data-searchable="CS101 Computer Science Fundamentals Dr. Sarah Johnson Room A1" onclick="viewClassDetails('CS101')">
+                  <div class="flex items-center gap-4 min-w-0 flex-1">
+                    <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <i data-lucide="monitor" class="w-6 h-6 text-primary"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h4 class="font-semibold text-foreground truncate" data-class-name>CS101 - Computer Science Fundamentals</h4>
+                      <p class="text-sm text-secondary truncate">Dr. Sarah Johnson • Mon, Wed, Fri 8:00 AM</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 flex-shrink-0">
+                    <span class="text-sm text-secondary">Room A1</span>
+                    <span class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full" data-status-badge>Active</span>
+                  </div>
+                </div>
+
+                <div class="class-item flex items-center justify-between p-4 rounded-2xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" data-class-id="MATH201" data-status="active" data-searchable="MATH201 Advanced Mathematics Dr. Michael Chen Room B2" onclick="viewClassDetails('MATH201')">
+                  <div class="flex items-center gap-4 min-w-0 flex-1">
+                    <div class="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <i data-lucide="calculator" class="w-6 h-6 text-success"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h4 class="font-semibold text-foreground truncate" data-class-name>MATH201 - Advanced Mathematics</h4>
+                      <p class="text-sm text-secondary truncate">Dr. Michael Chen • Tue, Thu 10:00 AM</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 flex-shrink-0">
+                    <span class="text-sm text-secondary">Room B2</span>
+                    <span class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full" data-status-badge>Active</span>
+                  </div>
+                </div>
+
+                <div class="class-item flex items-center justify-between p-4 rounded-2xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" data-class-id="PHY301" data-status="active" data-searchable="PHY301 Physics Laboratory Prof. Emily Davis Lab 1" onclick="viewClassDetails('PHY301')">
+                  <div class="flex items-center gap-4 min-w-0 flex-1">
+                    <div class="w-12 h-12 bg-info/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <i data-lucide="atom" class="w-6 h-6 text-info"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h4 class="font-semibold text-foreground truncate" data-class-name>PHY301 - Physics Laboratory</h4>
+                      <p class="text-sm text-secondary truncate">Prof. Emily Davis • Tue 10:00 AM - 12:00 PM</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 flex-shrink-0">
+                    <span class="text-sm text-secondary">Lab 1</span>
+                    <span class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full" data-status-badge>Active</span>
+                  </div>
+                </div>
+
+                <div class="class-item flex items-center justify-between p-4 rounded-2xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" data-class-id="ENG101" data-status="cancelled" data-searchable="ENG101 English Literature Dr. Amanda Wilson Room C1" onclick="viewClassDetails('ENG101')">
+                  <div class="flex items-center gap-4 min-w-0 flex-1">
+                    <div class="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <i data-lucide="book-open" class="w-6 h-6 text-warning-dark"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h4 class="font-semibold text-foreground truncate" data-class-name>ENG101 - English Literature</h4>
+                      <p class="text-sm text-secondary truncate">Dr. Amanda Wilson • Fri 8:00 AM</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 flex-shrink-0">
+                    <span class="text-sm text-secondary">Room C1</span>
+                    <span class="bg-error-light text-error-dark text-xs font-medium px-3 py-1 rounded-full" data-status-badge>Cancelled</span>
+                  </div>
+                </div>
+
+                <div class="class-item flex items-center justify-between p-4 rounded-2xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" data-class-id="CHEM101" data-status="completed" data-searchable="CHEM101 General Chemistry Dr. Robert Brown Room D1" onclick="viewClassDetails('CHEM101')">
+                  <div class="flex items-center gap-4 min-w-0 flex-1">
+                    <div class="w-12 h-12 bg-error/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                      <i data-lucide="flask-conical" class="w-6 h-6 text-error"></i>
+                    </div>
+                    <div class="min-w-0 flex-1">
+                      <h4 class="font-semibold text-foreground truncate" data-class-name>CHEM101 - General Chemistry</h4>
+                      <p class="text-sm text-secondary truncate">Dr. Robert Brown • Thu 10:00 AM</p>
+                    </div>
+                  </div>
+                  <div class="flex items-center gap-3 flex-shrink-0">
+                    <span class="text-sm text-secondary">Room D1</span>
+                    <span class="bg-gray-100 text-gray-600 text-xs font-medium px-3 py-1 rounded-full" data-status-badge>Completed</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- No Results -->
+              <div id="noResults" class="hidden text-center py-8">
+                <i data-lucide="search-x" class="w-12 h-12 text-secondary mx-auto mb-3"></i>
+                <p class="text-secondary">No classes found matching your criteria</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Class Details Panel -->
+          <div class="lg:col-span-1">
+            <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white sticky top-6">
+              <!-- Placeholder -->
+              <div id="classDetailsPlaceholder" class="text-center py-8">
+                <i data-lucide="book-open" class="w-12 h-12 text-secondary mx-auto mb-3"></i>
+                <p class="text-secondary">Select a class to view details</p>
+              </div>
+
+              <!-- Content -->
+              <div id="classDetailsContent" class="hidden space-y-4">
+                <div class="text-center">
+                  <div id="classIcon" class="w-16 h-16 bg-primary/10 rounded-xl flex items-center justify-center mx-auto mb-3">
+                    <i data-lucide="monitor" class="w-8 h-8 text-primary"></i>
+                  </div>
+                  <h4 id="detailClassName" class="font-bold text-lg text-foreground mb-1">CS101 - Computer Science</h4>
+                  <span id="classStatus" class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full">Active</span>
+                </div>
+                
+                <div class="space-y-3">
+                  <div class="flex justify-between items-center">
+                    <span class="text-secondary text-sm">Instructor</span>
+                    <span id="detailInstructor" class="font-medium text-foreground">Dr. Sarah Johnson</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-secondary text-sm">Room</span>
+                    <span id="detailRoom" class="font-medium text-foreground">Room A1</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-secondary text-sm">Schedule</span>
+                    <span id="classSchedule" class="font-medium text-foreground">Mon, Wed, Fri 8:00 AM</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-secondary text-sm">Students</span>
+                    <span id="classStudents" class="font-medium text-foreground">32</span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-secondary text-sm">Duration</span>
+                    <span id="classDuration" class="font-medium text-foreground">2 hours</span>
+                  </div>
+                </div>
+
+                <div class="pt-4 border-t border-border">
+                  <button onclick="editClass()" class="w-full px-4 py-2.5 bg-primary text-white rounded-full font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer mb-2">
+                    Edit Class
+                  </button>
+                  <button onclick="showDeleteClassModal()" class="w-full px-4 py-2.5 ring-1 ring-border text-error hover:ring-error rounded-full font-medium transition-all duration-200 cursor-pointer">
+                    Delete Class
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Room Usage View -->
+      <div id="roomsView" class="view-content hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Room Usage Stats -->
+          <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white">
+            <h3 class="font-bold text-lg text-foreground">Room Usage Statistics</h3>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-success/10 rounded-xl flex items-center justify-center">
+                    <i data-lucide="door-open" class="w-5 h-5 text-success"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-foreground">Room A1</h4>
+                    <p class="text-sm text-secondary">Computer Lab</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="font-bold text-success">85%</p>
+                  <p class="text-xs text-secondary">Utilization</p>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-warning/10 rounded-xl flex items-center justify-center">
+                    <i data-lucide="door-open" class="w-5 h-5 text-warning-dark"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-foreground">Room B2</h4>
+                    <p class="text-sm text-secondary">Lecture Hall</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="font-bold text-warning-dark">72%</p>
+                  <p class="text-xs text-secondary">Utilization</p>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-info/10 rounded-xl flex items-center justify-center">
+                    <i data-lucide="door-open" class="w-5 h-5 text-info"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-foreground">Lab 1</h4>
+                    <p class="text-sm text-secondary">Physics Lab</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="font-bold text-info">68%</p>
+                  <p class="text-xs text-secondary">Utilization</p>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-error/10 rounded-xl flex items-center justify-center">
+                    <i data-lucide="door-open" class="w-5 h-5 text-error"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-foreground">Room C1</h4>
+                    <p class="text-sm text-secondary">Classroom</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="font-bold text-error">45%</p>
+                  <p class="text-xs text-secondary">Utilization</p>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between p-4 rounded-xl bg-muted/50">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center">
+                    <i data-lucide="door-open" class="w-5 h-5 text-primary"></i>
+                  </div>
+                  <div>
+                    <h4 class="font-semibold text-foreground">Studio 1</h4>
+                    <p class="text-sm text-secondary">Art Studio</p>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <p class="font-bold text-primary">91%</p>
+                  <p class="text-xs text-secondary">Utilization</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Conflict Warnings -->
+          <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white">
+            <h3 class="font-bold text-lg text-foreground">Schedule Conflicts & Warnings</h3>
+            <div class="space-y-4">
+              <div class="p-4 bg-error-lighter rounded-xl border-l-4 border-error">
+                <div class="flex items-start gap-3">
+                  <i data-lucide="alert-triangle" class="w-5 h-5 text-error flex-shrink-0 mt-0.5"></i>
+                  <div>
+                    <h4 class="text-foreground text-sm font-semibold mb-1">Room Double Booking</h4>
+                    <p class="text-gray-500 text-xs mb-2">Room A1 is booked for two classes at the same time on Wednesday 10:00 AM</p>
+                    <div class="flex gap-2">
+                      <span class="text-xs bg-white px-2 py-1 rounded text-error font-medium">CS101</span>
+                      <span class="text-xs bg-white px-2 py-1 rounded text-error font-medium">CS102</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-4 bg-warning-light rounded-xl border-l-4 border-warning">
+                <div class="flex items-start gap-3">
+                  <i data-lucide="clock" class="w-5 h-5 text-warning-dark flex-shrink-0 mt-0.5"></i>
+                  <div>
+                    <h4 class="text-foreground text-sm font-semibold mb-1">Instructor Conflict</h4>
+                    <p class="text-gray-500 text-xs mb-2">Dr. Sarah Johnson has overlapping classes on Friday 2:00 PM</p>
+                    <div class="flex gap-2">
+                      <span class="text-xs bg-white px-2 py-1 rounded text-warning-dark font-medium">CS101</span>
+                      <span class="text-xs bg-white px-2 py-1 rounded text-warning-dark font-medium">CS201</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-4 bg-info-light rounded-xl border-l-4 border-info">
+                <div class="flex items-start gap-3">
+                  <i data-lucide="info" class="w-5 h-5 text-info-dark flex-shrink-0 mt-0.5"></i>
+                  <div>
+                    <h4 class="text-foreground text-sm font-semibold mb-1">Room Maintenance</h4>
+                    <p class="text-gray-500 text-xs mb-2">Lab 1 scheduled for maintenance on Monday 8:00 AM - 10:00 AM</p>
+                    <span class="text-xs bg-white px-2 py-1 rounded text-info-dark font-medium">Affects PHY301</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="p-4 bg-success-light rounded-xl border-l-4 border-success">
+                <div class="flex items-start gap-3">
+                  <i data-lucide="check-circle" class="w-5 h-5 text-success-dark flex-shrink-0 mt-0.5"></i>
+                  <div>
+                    <h4 class="text-foreground text-sm font-semibold mb-1">All Clear</h4>
+                    <p class="text-gray-500 text-xs">No scheduling conflicts detected for Tuesday and Thursday</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Add Class Modal -->
+<div id="addClassModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-md w-full max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-foreground text-xl font-bold">Add New Class</h3>
+      <button onclick="closeAddClassModal()" class="p-2 hover:bg-gray-100 rounded-full cursor-pointer" aria-label="Close modal">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    
+    <form class="space-y-4">
+      <div>
+        <label class="block text-foreground text-sm font-medium mb-2">Class Code <span class="text-error">*</span></label>
+        <input type="text" id="classCode" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium transition-all duration-300" placeholder="e.g., CS101" required>
+      </div>
+      
+      <div>
+        <label class="block text-foreground text-sm font-medium mb-2">Class Name <span class="text-error">*</span></label>
+        <input type="text" id="inputClassName" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium transition-all duration-300" placeholder="e.g., Computer Science Fundamentals" required>
+      </div>
+      
+      <div>
+        <label class="block text-foreground text-sm font-medium mb-2">Instructor <span class="text-error">*</span></label>
+        <select id="selectInstructor" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium transition-all duration-300" required>
+          <option value="">Select Instructor</option>
+          <option value="Dr. Sarah Johnson">Dr. Sarah Johnson</option>
+          <option value="Dr. Michael Chen">Dr. Michael Chen</option>
+          <option value="Prof. Emily Davis">Prof. Emily Davis</option>
+          <option value="Dr. Amanda Wilson">Dr. Amanda Wilson</option>
+          <option value="Dr. Robert Brown">Dr. Robert Brown</option>
+        </select>
+      </div>
+      
+      <div>
+        <label class="block text-foreground text-sm font-medium mb-2">Room <span class="text-error">*</span></label>
+        <select id="selectRoom" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium transition-all duration-300" required>
+          <option value="">Select Room</option>
+          <option value="Room A1">Room A1</option>
+          <option value="Room A2">Room A2</option>
+          <option value="Room B1">Room B1</option>
+          <option value="Room B2">Room B2</option>
+          <option value="Lab 1">Lab 1</option>
+          <option value="Lab 2">Lab 2</option>
+          <option value="Studio 1">Studio 1</option>
+        </select>
+      </div>
+      
+      <div class="grid grid-cols-2 gap-3">
+        <div>
+          <label class="block text-foreground text-sm font-medium mb-2">Start Time</label>
+          <input type="time" id="startTime" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium transition-all duration-300">
+        </div>
+        <div>
+          <label class="block text-foreground text-sm font-medium mb-2">End Time</label>
+          <input type="time" id="endTime" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium transition-all duration-300">
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-foreground text-sm font-medium mb-2">Days</label>
+        <div class="flex flex-wrap gap-2">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" value="monday" class="rounded border-border">
+            <span class="text-sm">Monday</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" value="tuesday" class="rounded border-border">
+            <span class="text-sm">Tuesday</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" value="wednesday" class="rounded border-border">
+            <span class="text-sm">Wednesday</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" value="thursday" class="rounded border-border">
+            <span class="text-sm">Thursday</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" value="friday" class="rounded border-border">
+            <span class="text-sm">Friday</span>
+          </label>
+        </div>
+      </div>
+    </form>
+    
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeAddClassModal()" class="flex-1 px-4 py-2.5 ring-1 ring-border text-foreground rounded-full font-medium hover:ring-primary transition-all duration-200 cursor-pointer">
+        Cancel
+      </button>
+      <button onclick="confirmAddClass()" class="flex-1 px-4 py-2.5 bg-primary text-white rounded-full font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+        Add Class
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Class Modal -->
+<div id="deleteClassModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-error-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="trash-2" class="w-8 h-8 text-error"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Delete Class</h3>
+    <p class="text-gray-500 text-sm mb-6">Are you sure you want to delete this class? This action cannot be undone.</p>
+    <div class="flex gap-3">
+      <button onclick="closeDeleteClassModal()" class="flex-1 px-4 py-2.5 ring-1 ring-border text-foreground rounded-full font-medium hover:ring-primary transition-all duration-200 cursor-pointer">
+        Cancel
+      </button>
+      <button onclick="confirmDeleteClass()" class="flex-1 px-4 py-2.5 bg-error text-white rounded-full font-medium hover:bg-error-dark transition-all duration-200 cursor-pointer">
+        Delete
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-success-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="check" class="w-8 h-8 text-success"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Success!</h3>
+    <p id="successMessage" class="text-gray-500 text-sm mb-6">Class has been added successfully.</p>
+    <button onclick="closeSuccessModal()" class="w-full px-4 py-2.5 bg-primary text-white rounded-full font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+      Got it
+    </button>
+  </div>
+</div>
+
+<!-- Page Not Found Modal -->
+<div id="page-not-found-modal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-warning-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="alert-triangle" class="w-8 h-8 text-warning-dark"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Page Not Available</h3>
+    <p class="text-gray-500 text-sm mb-6">This page hasn't been created yet. Generate it using the chat!</p>
+    <button onclick="closePageNotFoundModal()" class="w-full px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+      Got it
+    </button>
+  </div>
+</div>
+
+<script>
+// Class data
+const classesData = {
+  'CS101': { 
+    name: 'CS101 - Computer Science Fundamentals', 
+    instructor: 'Dr. Sarah Johnson', 
+    room: 'Room A1', 
+    schedule: 'Mon, Wed, Fri 8:00 AM',
+    students: '32',
+    duration: '2 hours',
+    status: 'active',
+    icon: 'monitor',
+    color: 'primary'
+  },
+  'MATH201': { 
+    name: 'MATH201 - Advanced Mathematics', 
+    instructor: 'Dr. Michael Chen', 
+    room: 'Room B2', 
+    schedule: 'Tue, Thu 10:00 AM',
+    students: '28',
+    duration: '1.5 hours',
+    status: 'active',
+    icon: 'calculator',
+    color: 'success'
+  },
+  'PHY301': { 
+    name: 'PHY301 - Physics Laboratory', 
+    instructor: 'Prof. Emily Davis', 
+    room: 'Lab 1', 
+    schedule: 'Tue 10:00 AM - 12:00 PM',
+    students: '24',
+    duration: '2 hours',
+    status: 'active',
+    icon: 'atom',
+    color: 'info'
+  },
+  'ENG101': { 
+    name: 'ENG101 - English Literature', 
+    instructor: 'Dr. Amanda Wilson', 
+    room: 'Room C1', 
+    schedule: 'Fri 8:00 AM',
+    students: '35',
+    duration: '1 hour',
+    status: 'cancelled',
+    icon: 'book-open',
+    color: 'warning'
+  },
+  'CHEM101': { 
+    name: 'CHEM101 - General Chemistry', 
+    instructor: 'Dr. Robert Brown', 
+    room: 'Room D1', 
+    schedule: 'Thu 10:00 AM',
+    students: '30',
+    duration: '2 hours',
+    status: 'completed',
+    icon: 'flask-conical',
+    color: 'error'
+  }
+};
+
+let selectedClassId = null;
+let classToDelete = null;
+
+document.addEventListener('DOMContentLoaded', function() {
+  lucide.createIcons();
+
+  // Show modal when clicking any link
+  document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('page-not-found-modal').classList.remove('hidden');
+    });
+  });
+
+  // Bind filter events
+  const classSearch = document.getElementById('classSearch');
+  const statusFilter = document.getElementById('statusFilter');
+  
+  if (classSearch) {
+    classSearch.addEventListener('input', applyFilters);
+  }
+  
+  if (statusFilter) {
+    statusFilter.addEventListener('change', applyFilters);
+  }
+});
+
+function closePageNotFoundModal() {
+  document.getElementById('page-not-found-modal').classList.add('hidden');
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.toggle('-translate-x-full');
+  overlay.classList.toggle('hidden');
+  document.body.classList.toggle('overflow-hidden');
+}
+
+// View switching
+function switchView(viewName) {
+  // Update tab buttons
+  document.querySelectorAll('.view-btn').forEach(btn => {
+    const isActive = btn.dataset.view === viewName;
+    btn.classList.toggle('bg-white', isActive);
+    btn.classList.toggle('text-foreground', isActive);
+    btn.classList.toggle('font-semibold', isActive);
+    btn.classList.toggle('text-secondary', !isActive);
+    btn.classList.toggle('font-medium', !isActive);
+  });
+
+  // Show/hide content
+  document.querySelectorAll('.view-content').forEach(content => {
+    content.classList.add('hidden');
+  });
+  
+  if (viewName === 'timetable') {
+    document.getElementById('timetableView').classList.remove('hidden');
+  } else if (viewName === 'list') {
+    document.getElementById('listView').classList.remove('hidden');
+  } else if (viewName === 'rooms') {
+    document.getElementById('roomsView').classList.remove('hidden');
+  }
+}
+
+// Week navigation
+function previousWeek() {
+  // In a real app, this would update the week data
+  showToast('Previous week loaded', 'success');
+}
+
+function nextWeek() {
+  // In a real app, this would update the week data
+  showToast('Next week loaded', 'success');
+}
+
+// Class details
+function viewClassDetails(classId) {
+  selectedClassId = classId;
+  const data = classesData[classId];
+  if (!data) return;
+
+  // Update class details panel
+  const iconColors = {
+    primary: 'text-primary bg-primary/10',
+    success: 'text-success bg-success/10',
+    info: 'text-info bg-info/10',
+    warning: 'text-warning-dark bg-warning/10',
+    error: 'text-error bg-error/10'
+  };
+
+  const statusStyles = {
+    active: 'bg-success-light text-success-dark',
+    cancelled: 'bg-error-light text-error-dark',
+    completed: 'bg-gray-100 text-gray-600'
+  };
+
+  const classIcon = document.getElementById('classIcon');
+  const detailClassName = document.getElementById('detailClassName');
+  const classStatus = document.getElementById('classStatus');
+  const detailInstructor = document.getElementById('detailInstructor');
+  const detailRoom = document.getElementById('detailRoom');
+  const classSchedule = document.getElementById('classSchedule');
+  const classStudents = document.getElementById('classStudents');
+  const classDuration = document.getElementById('classDuration');
+
+  if (classIcon) {
+    classIcon.className = `w-16 h-16 ${iconColors[data.color]} rounded-xl flex items-center justify-center mx-auto mb-3`;
+    classIcon.innerHTML = `<i data-lucide="${data.icon}" class="w-8 h-8 ${iconColors[data.color].split(' ')[0]}"></i>`;
+  }
+  
+  if (detailClassName) detailClassName.textContent = data.name;
+  
+  if (classStatus) {
+    classStatus.className = `${statusStyles[data.status]} text-xs font-medium px-3 py-1 rounded-full`;
+    classStatus.textContent = data.status.charAt(0).toUpperCase() + data.status.slice(1);
+  }
+  
+  if (detailInstructor) detailInstructor.textContent = data.instructor;
+  if (detailRoom) detailRoom.textContent = data.room;
+  if (classSchedule) classSchedule.textContent = data.schedule;
+  if (classStudents) classStudents.textContent = data.students;
+  if (classDuration) classDuration.textContent = data.duration;
+
+  // Toggle visibility
+  const placeholder = document.getElementById('classDetailsPlaceholder');
+  const content = document.getElementById('classDetailsContent');
+  
+  if (placeholder) placeholder.classList.add('hidden');
+  if (content) content.classList.remove('hidden');
+
+  // Re-initialize Lucide icons
+  lucide.createIcons();
+}
+
+// Filter functionality
+function applyFilters() {
+  const searchInput = document.getElementById('classSearch');
+  const statusSelect = document.getElementById('statusFilter');
+  
+  if (!searchInput || !statusSelect) return;
+  
+  const searchTerm = searchInput.value.toLowerCase().trim();
+  const statusValue = statusSelect.value;
+
+  const items = document.querySelectorAll('.class-item');
+  let visibleCount = 0;
+
+  items.forEach(item => {
+    const searchableText = (item.dataset.searchable || '').toLowerCase();
+    const itemName = item.querySelector('[data-class-name]')?.textContent.toLowerCase() || '';
+    const combinedText = searchableText + ' ' + itemName;
+
+    const matchesSearch = searchTerm === '' || combinedText.includes(searchTerm);
+    const matchesStatus = statusValue === 'all' || item.dataset.status === statusValue;
+
+    const isVisible = matchesSearch && matchesStatus;
+    item.style.display = isVisible ? '' : 'none';
+
+    if (isVisible) visibleCount++;
+  });
+
+  // Show/hide no results message
+  const noResults = document.getElementById('noResults');
+  if (noResults) {
+    noResults.classList.toggle('hidden', visibleCount > 0);
+  }
+}
+
+// Modal functions
+function showAddClassModal() {
+  const modal = document.getElementById('addClassModal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeAddClassModal() {
+  const modal = document.getElementById('addClassModal');
+  if (modal) {
+    modal.classList.add('hidden');
+    // Reset form
+    modal.querySelectorAll('input, select').forEach(field => {
+      if (field.type === 'checkbox') {
+        field.checked = false;
+      } else {
+        field.value = '';
+      }
+    });
+  }
+}
+
+function confirmAddClass() {
+  // Validate required fields
+  const classCodeInput = document.getElementById('classCode');
+  const classNameInput = document.getElementById('inputClassName');
+  const instructorSelect = document.getElementById('selectInstructor');
+  const roomSelect = document.getElementById('selectRoom');
+
+  if (!classCodeInput || !classNameInput || !instructorSelect || !roomSelect) {
+    showToast('Form elements not found', 'error');
+    return;
+  }
+
+  const classCode = classCodeInput.value.trim();
+  const className = classNameInput.value.trim();
+  const instructor = instructorSelect.value;
+  const room = roomSelect.value;
+
+  if (!classCode || !className || !instructor || !room) {
+    showToast('Please fill all required fields', 'error');
+    return;
+  }
+
+  // Add to classesData
+  classesData[classCode] = {
+    name: `${classCode} - ${className}`,
+    instructor: instructor,
+    room: room,
+    schedule: 'New Schedule',
+    students: '0',
+    duration: '2 hours',
+    status: 'active',
+    icon: 'book-open',
+    color: 'primary'
+  };
+
+  // Create new class item HTML
+  const newClassItem = document.createElement('div');
+  newClassItem.className = 'class-item flex items-center justify-between p-4 rounded-2xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer';
+  newClassItem.setAttribute('data-class-id', classCode);
+  newClassItem.setAttribute('data-status', 'active');
+  newClassItem.setAttribute('data-searchable', `${classCode} ${className} ${instructor} ${room}`);
+  newClassItem.setAttribute('onclick', `viewClassDetails('${classCode}')`);
+  newClassItem.innerHTML = `
+    <div class="flex items-center gap-4 min-w-0 flex-1">
+      <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+        <i data-lucide="book-open" class="w-6 h-6 text-primary"></i>
+      </div>
+      <div class="min-w-0 flex-1">
+        <h4 class="font-semibold text-foreground truncate" data-class-name>${classCode} - ${className}</h4>
+        <p class="text-sm text-secondary truncate">${instructor} • New Schedule</p>
+      </div>
+    </div>
+    <div class="flex items-center gap-3 flex-shrink-0">
+      <span class="text-sm text-secondary">${room}</span>
+      <span class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full" data-status-badge>Active</span>
+    </div>
+  `;
+
+  // Add to container
+  const container = document.getElementById('classContainer');
+  if (container) {
+    container.prepend(newClassItem);
+    lucide.createIcons();
+  }
+
+  // Close modal and show success
+  closeAddClassModal();
+  const successMessage = document.getElementById('successMessage');
+  if (successMessage) successMessage.textContent = 'Class has been added successfully.';
+  
+  const successModal = document.getElementById('successModal');
+  if (successModal) successModal.classList.remove('hidden');
+}
+
+function editClass() {
+  if (!selectedClassId) return;
+  showToast('Edit functionality would open here', 'info');
+}
+
+function showDeleteClassModal() {
+  if (!selectedClassId) return;
+  classToDelete = selectedClassId;
+  const modal = document.getElementById('deleteClassModal');
+  if (modal) modal.classList.remove('hidden');
+}
+
+function closeDeleteClassModal() {
+  const modal = document.getElementById('deleteClassModal');
+  if (modal) modal.classList.add('hidden');
+  classToDelete = null;
+}
+
+function confirmDeleteClass() {
+  if (!classToDelete) return;
+  
+  // In a real app, this would delete from database
+  const classItem = document.querySelector(`[data-class-id="${classToDelete}"]`);
+  if (classItem) {
+    classItem.remove();
+  }
+
+  closeDeleteClassModal();
+  
+  // Clear details panel if deleted class was selected
+  if (selectedClassId === classToDelete) {
+    const placeholder = document.getElementById('classDetailsPlaceholder');
+    const content = document.getElementById('classDetailsContent');
+    
+    if (placeholder) placeholder.classList.remove('hidden');
+    if (content) content.classList.add('hidden');
+    selectedClassId = null;
+  }
+  
+  showToast('Class deleted successfully', 'success');
+  classToDelete = null;
+}
+
+function closeSuccessModal() {
+  const modal = document.getElementById('successModal');
+  if (modal) modal.classList.add('hidden');
+}
+
+// Toast notifications
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  const bgColor = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-error' : type === 'info' ? 'bg-info' : 'bg-primary';
+  toast.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-3 rounded-xl z-50 font-medium shadow-lg`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+</script>
+</body>
+</html>

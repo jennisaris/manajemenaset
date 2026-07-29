@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCampus - Introduction to Computer Science</title>
+<meta name="description" content="EduCampus learning platform for managing and accessing course content and lessons.">
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--primary-hover);
+    --color-foreground: var(--foreground);
+    --color-secondary: var(--secondary);
+    --color-muted: var(--muted);
+    --color-border: var(--border);
+    --color-card-grey: var(--card-grey);
+    --color-card-message: var(--card-message);
+    --color-accent-blue: var(--accent-blue);
+    --color-accent-teal: var(--accent-teal);
+    --color-accent-sky: var(--accent-sky);
+    --color-success: var(--success);
+    --color-success-light: var(--success-light);
+    --color-success-dark: var(--success-dark);
+    --color-error: var(--error);
+    --color-error-light: var(--error-light);
+    --color-error-lighter: var(--error-lighter);
+    --color-error-dark: var(--error-dark);
+    --color-warning: var(--warning);
+    --color-warning-light: var(--warning-light);
+    --color-warning-dark: var(--warning-dark);
+    --color-info: var(--info);
+    --color-info-light: var(--info-light);
+    --color-info-dark: var(--info-dark);
+    --color-alert: var(--alert);
+    --color-alert-light: var(--alert-light);
+    --color-alert-dark: var(--alert-dark);
+    --color-gray-50: var(--gray-50);
+    --color-gray-100: var(--gray-100);
+    --color-gray-200: var(--gray-200);
+    --color-gray-500: var(--gray-500);
+    --color-gray-600: var(--gray-600);
+    --color-gray-700: var(--gray-700);
+    --font-sans: var(--font-sans);
+    --radius-card: 24px;
+    --radius-button: 50px;
+    --radius-icon: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 20px;
+    --radius-3xl: 24px;
+  }
+  :root {
+    --primary: #165DFF;
+    --primary-hover: #0E4BD9;
+    --foreground: #080C1A;
+    --secondary: #6A7686;
+    --muted: #EFF2F7;
+    --border: #F3F4F3;
+    --card-grey: #F1F3F6;
+    --card-message: #C9E6FC;
+    --accent-blue: #C9E6FC;
+    --accent-teal: #82D9D7;
+    --accent-sky: #DBEAFE;
+    --success: #30B22D;
+    --success-light: #DCFCE7;
+    --success-dark: #166534;
+    --error: #ED6B60;
+    --error-light: #FEE2E2;
+    --error-lighter: #FEF2F2;
+    --error-dark: #991B1B;
+    --warning: #FED71F;
+    --warning-light: #FEF9C3;
+    --warning-dark: #854D0E;
+    --info: #165DFF;
+    --info-light: #DBEAFE;
+    --info-dark: #1E40AF;
+    --alert: #F97316;
+    --alert-light: #FFEDD5;
+    --alert-dark: #9A3412;
+    --gray-50: #F9FAFB;
+    --gray-100: #F1F3F6;
+    --gray-200: #E5E7EB;
+    --gray-500: #6A7686;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --font-sans: 'Lexend Deca', sans-serif;
+  }
+  select {
+    @apply appearance-none bg-no-repeat cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 10px center;
+    padding-right: 40px;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+<body class="font-sans bg-white min-h-screen overflow-x-hidden">
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/80 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+<div class="flex h-screen max-h-screen flex-1 bg-muted overflow-hidden">
+  <!-- COURSE STRUCTURE SIDEBAR -->
+  <aside id="course-sidebar" class="flex flex-col w-[320px] shrink-0 h-screen fixed inset-y-0 left-0 z-50 bg-white border-r border-border transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-hidden">
+    <!-- Course Header -->
+    <div class="flex items-center justify-between border-b border-border h-[90px] px-5 gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-9 bg-primary rounded-xl flex items-center justify-center">
+          <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+        </div>
+        <div class="min-w-0">
+          <h1 class="font-semibold text-lg truncate">Computer Science</h1>
+          <p class="text-sm text-secondary truncate">CS101 • 3 Credits</p>
+        </div>
+      </div>
+      <button onclick="toggleSidebar()" aria-label="Close sidebar" class="lg:hidden size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+        <i data-lucide="x" class="size-6 text-secondary"></i>
+      </button>
+    </div>
+
+    <!-- Progress Overview -->
+    <div class="p-5 border-b border-border">
+      <div class="flex items-center justify-between mb-3">
+        <span class="text-sm font-medium text-secondary">Course Progress</span>
+        <span class="text-sm font-bold text-primary">68%</span>
+      </div>
+      <div class="w-full bg-muted rounded-full h-2">
+        <div class="bg-primary h-2 rounded-full" style="width: 68%"></div>
+      </div>
+      <div class="flex items-center justify-between mt-2 text-xs text-secondary">
+        <span>17 of 25 lessons completed</span>
+        <span>8 remaining</span>
+      </div>
+    </div>
+
+    <!-- Course Structure -->
+    <div class="flex-1 overflow-y-auto p-5 space-y-4">
+      <!-- Section 1: Introduction -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold text-foreground">1. Introduction</h3>
+          <span class="text-xs text-success font-medium">4/4</span>
+        </div>
+        <div class="space-y-1 ml-4">
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-success rounded-full flex items-center justify-center flex-shrink-0">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <span class="text-sm text-secondary">What is Computer Science?</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-success rounded-full flex items-center justify-center flex-shrink-0">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <span class="text-sm text-secondary">History of Computing</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-success rounded-full flex items-center justify-center flex-shrink-0">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <span class="text-sm text-secondary">Career Paths</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-success rounded-full flex items-center justify-center flex-shrink-0">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <span class="text-sm text-secondary">Course Overview</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Programming Fundamentals -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold text-foreground">2. Programming Fundamentals</h3>
+          <span class="text-xs text-warning font-medium">3/6</span>
+        </div>
+        <div class="space-y-1 ml-4">
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-success rounded-full flex items-center justify-center flex-shrink-0">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <span class="text-sm text-secondary">Variables and Data Types</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-success rounded-full flex items-center justify-center flex-shrink-0">
+              <i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <span class="text-sm text-secondary">Control Structures</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl bg-primary/10 border border-primary/20 cursor-pointer">
+            <div class="w-6 h-6 bg-primary rounded-full flex items-center justify-center flex-shrink-0">
+              <i data-lucide="play" class="w-3.5 h-3.5 text-white"></i>
+            </div>
+            <span class="text-sm text-primary font-medium">Functions and Methods</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-muted border-2 border-border rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-xs text-secondary font-bold">4</span>
+            </div>
+            <span class="text-sm text-secondary">Arrays and Lists</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-muted border-2 border-border rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-xs text-secondary font-bold">5</span>
+            </div>
+            <span class="text-sm text-secondary">Object-Oriented Programming</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-muted border-2 border-border rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-xs text-secondary font-bold">6</span>
+            </div>
+            <span class="text-sm text-secondary">Error Handling</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Data Structures -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold text-foreground">3. Data Structures</h3>
+          <span class="text-xs text-secondary font-medium">0/8</span>
+        </div>
+        <div class="space-y-1 ml-4">
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-muted border-2 border-border rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-xs text-secondary font-bold">1</span>
+            </div>
+            <span class="text-sm text-secondary">Introduction to Data Structures</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-muted border-2 border-border rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-xs text-secondary font-bold">2</span>
+            </div>
+            <span class="text-sm text-secondary">Stacks and Queues</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-muted border-2 border-border rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-xs text-secondary font-bold">3</span>
+            </div>
+            <span class="text-sm text-secondary">Linked Lists</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-muted border-2 border-border rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-xs text-secondary font-bold">4</span>
+            </div>
+            <span class="text-sm text-secondary">Trees and Graphs</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-muted border-2 border-border rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-xs text-secondary font-bold">5</span>
+            </div>
+            <span class="text-sm text-secondary">Hash Tables</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 4: Algorithms -->
+      <div class="space-y-2">
+        <div class="flex items-center justify-between">
+          <h3 class="font-semibold text-foreground">4. Algorithms</h3>
+          <span class="text-xs text-secondary font-medium">0/7</span>
+        </div>
+        <div class="space-y-1 ml-4">
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-muted border-2 border-border rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-xs text-secondary font-bold">1</span>
+            </div>
+            <span class="text-sm text-secondary">Algorithm Analysis</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-muted border-2 border-border rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-xs text-secondary font-bold">2</span>
+            </div>
+            <span class="text-sm text-secondary">Sorting Algorithms</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-muted border-2 border-border rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-xs text-secondary font-bold">3</span>
+            </div>
+            <span class="text-sm text-secondary">Search Algorithms</span>
+          </div>
+          <div class="flex items-center gap-3 p-2 rounded-xl hover:bg-card-grey transition-all duration-300 cursor-pointer">
+            <div class="w-6 h-6 bg-muted border-2 border-border rounded-full flex items-center justify-center flex-shrink-0">
+              <span class="text-xs text-secondary font-bold">4</span>
+            </div>
+            <span class="text-sm text-secondary">Dynamic Programming</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 lg:ml-[320px] flex flex-col bg-white min-h-screen overflow-x-hidden">
+    <!-- Top Header Bar -->
+    <div class="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-border bg-white px-5 md:px-8">
+      <!-- Mobile hamburger -->
+      <button onclick="toggleSidebar()" aria-label="Open menu" class="lg:hidden size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+        <i data-lucide="menu" class="size-6 text-foreground"></i>
+      </button>
+      
+      <!-- Lesson Info -->
+      <div class="hidden lg:flex items-center gap-4">
+        <div>
+          <h2 class="font-bold text-xl text-foreground">Functions and Methods</h2>
+          <p class="text-sm text-secondary">Introduction to Computer Science • Lesson 3 of 25</p>
+        </div>
+      </div>
+
+      <!-- Progress and Actions -->
+      <div class="flex items-center gap-3">
+        <div class="hidden md:flex items-center gap-2">
+          <span class="text-sm text-secondary">Progress:</span>
+          <div class="w-20 bg-muted rounded-full h-2">
+            <div class="bg-primary h-2 rounded-full" style="width: 68%"></div>
+          </div>
+          <span class="text-sm font-medium text-primary">68%</span>
+        </div>
+        <button class="size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" aria-label="Bookmark lesson">
+          <i data-lucide="bookmark" class="size-6 text-secondary"></i>
+        </button>
+        <button class="size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" aria-label="Settings">
+          <i data-lucide="settings" class="size-6 text-secondary"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Lesson Content Area -->
+    <div class="flex-1 overflow-y-auto">
+      <div class="max-w-4xl mx-auto p-5 md:p-8">
+        <!-- Mobile Lesson Title -->
+        <div class="lg:hidden mb-6">
+          <h1 class="font-bold text-2xl text-foreground mb-2">Functions and Methods</h1>
+          <p class="text-sm text-secondary">Introduction to Computer Science • Lesson 3 of 25</p>
+          <div class="flex items-center gap-2 mt-3">
+            <span class="text-sm text-secondary">Progress:</span>
+            <div class="flex-1 bg-muted rounded-full h-2">
+              <div class="bg-primary h-2 rounded-full" style="width: 68%"></div>
+            </div>
+            <span class="text-sm font-medium text-primary">68%</span>
+          </div>
+        </div>
+
+        <!-- Lesson Article Content -->
+        <article class="prose prose-lg max-w-none">
+          <!-- Introduction -->
+          <div class="mb-8">
+            <h2 class="text-2xl font-bold text-foreground mb-4">Introduction to Functions and Methods</h2>
+            <p class="text-secondary leading-relaxed mb-4">
+              Functions are one of the fundamental building blocks of programming. They allow us to organize code into reusable blocks, making our programs more modular, readable, and maintainable. In this lesson, we'll explore what functions are, how to create them, and best practices for using them effectively.
+            </p>
+            <div class="bg-info-light border-l-4 border-info p-4 rounded-r-xl mb-6">
+              <div class="flex items-start gap-3">
+                <i data-lucide="info" class="w-5 h-5 text-info flex-shrink-0 mt-0.5"></i>
+                <div>
+                  <h4 class="font-semibold text-info-dark mb-1">Learning Objectives</h4>
+                  <ul class="text-sm text-info-dark space-y-1">
+                    <li>• Understand what functions are and why they're important</li>
+                    <li>• Learn how to define and call functions</li>
+                    <li>• Explore parameters, arguments, and return values</li>
+                    <li>• Practice writing clean, reusable functions</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- What are Functions? -->
+          <div class="mb-8">
+            <h3 class="text-xl font-bold text-foreground mb-4">What are Functions?</h3>
+            <p class="text-secondary leading-relaxed mb-4">
+              A function is a named block of code that performs a specific task. Think of it as a mini-program within your larger program. Functions take input (called parameters), process that input, and often return a result.
+            </p>
+            
+            <div class="bg-card-grey rounded-2xl p-6 mb-6">
+              <h4 class="font-semibold text-foreground mb-3">Real-World Analogy</h4>
+              <p class="text-secondary leading-relaxed">
+                Imagine a coffee machine. You put in coffee beans and water (inputs), press a button (function call), and get coffee (output). The internal process of brewing is hidden from you - you just need to know how to use the machine.
+              </p>
+            </div>
+
+            <img src="https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=800&h=400&fit=crop" alt="Programming code on computer screen" class="w-full rounded-2xl mb-6 object-cover">
+          </div>
+
+          <!-- Function Syntax -->
+          <div class="mb-8">
+            <h3 class="text-xl font-bold text-foreground mb-4">Function Syntax</h3>
+            <p class="text-secondary leading-relaxed mb-4">
+              Here's the basic syntax for defining a function in most programming languages:
+            </p>
+            
+            <div class="bg-gray-900 text-white p-6 rounded-2xl mb-6 overflow-x-auto">
+              <pre class="text-sm"><code>function functionName(parameter1, parameter2) {
+    // Function body - code to execute
+    let result = parameter1 + parameter2;
+    return result; // Return statement (optional)
+}</code></pre>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              <div class="bg-success-light border border-success/20 p-4 rounded-2xl">
+                <h4 class="font-semibold text-success-dark mb-2">Function Name</h4>
+                <p class="text-sm text-success-dark">Choose descriptive names that explain what the function does</p>
+              </div>
+              <div class="bg-warning-light border border-warning/20 p-4 rounded-2xl">
+                <h4 class="font-semibold text-warning-dark mb-2">Parameters</h4>
+                <p class="text-sm text-warning-dark">Input values that the function can work with</p>
+              </div>
+              <div class="bg-info-light border border-info/20 p-4 rounded-2xl">
+                <h4 class="font-semibold text-info-dark mb-2">Function Body</h4>
+                <p class="text-sm text-info-dark">The code that gets executed when the function is called</p>
+              </div>
+              <div class="bg-error-light border border-error/20 p-4 rounded-2xl">
+                <h4 class="font-semibold text-error-dark mb-2">Return Value</h4>
+                <p class="text-sm text-error-dark">The result that the function sends back (optional)</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Practical Examples -->
+          <div class="mb-8">
+            <h3 class="text-xl font-bold text-foreground mb-4">Practical Examples</h3>
+            
+            <div class="space-y-6">
+              <div>
+                <h4 class="font-semibold text-foreground mb-3">Example 1: Simple Calculator Function</h4>
+                <div class="bg-gray-900 text-white p-6 rounded-2xl mb-4 overflow-x-auto">
+                  <pre class="text-sm"><code>function addNumbers(a, b) {
+    return a + b;
+}
+
+// Calling the function
+let sum = addNumbers(5, 3);
+console.log(sum); // Output: 8</code></pre>
+                </div>
+              </div>
+
+              <div>
+                <h4 class="font-semibold text-foreground mb-3">Example 2: Greeting Function</h4>
+                <div class="bg-gray-900 text-white p-6 rounded-2xl mb-4 overflow-x-auto">
+                  <pre class="text-sm"><code>function greetUser(name, timeOfDay) {
+    return `Good ${timeOfDay}, ${name}! Welcome back.`;
+}
+
+// Calling the function
+let message = greetUser("Alice", "morning");
+console.log(message); // Output: Good morning, Alice! Welcome back.</code></pre>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Embedded File Example -->
+          <div class="mb-8">
+            <h3 class="text-xl font-bold text-foreground mb-4">Interactive Code Example</h3>
+            <p class="text-secondary leading-relaxed mb-4">
+              Try running this interactive example to see functions in action:
+            </p>
+            
+            <div class="bg-white border-2 border-border rounded-2xl p-6 mb-6">
+              <div class="flex items-center gap-3 mb-4">
+                <div class="w-8 h-8 bg-primary/10 rounded-full flex items-center justify-center">
+                  <i data-lucide="play" class="w-4 h-4 text-primary"></i>
+                </div>
+                <h4 class="font-semibold text-foreground">Interactive Code Playground</h4>
+              </div>
+              <div class="bg-gray-50 p-4 rounded-xl border-2 border-dashed border-gray-300 text-center">
+                <i data-lucide="code" class="w-12 h-12 text-gray-400 mx-auto mb-2"></i>
+                <p class="text-gray-500 text-sm">Interactive code editor would be embedded here</p>
+                <p class="text-gray-400 text-xs mt-1">Click to open in new window</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Best Practices -->
+          <div class="mb-8">
+            <h3 class="text-xl font-bold text-foreground mb-4">Best Practices</h3>
+            
+            <div class="space-y-4">
+              <div class="flex gap-4 p-4 bg-success-light rounded-2xl">
+                <div class="w-8 h-8 bg-success rounded-full flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="check" class="w-4 h-4 text-white"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-success-dark mb-1">Keep Functions Small and Focused</h4>
+                  <p class="text-sm text-success-dark">Each function should do one thing well. If a function is getting long, consider breaking it into smaller functions.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 p-4 bg-info-light rounded-2xl">
+                <div class="w-8 h-8 bg-info rounded-full flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="lightbulb" class="w-4 h-4 text-white"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-info-dark mb-1">Use Descriptive Names</h4>
+                  <p class="text-sm text-info-dark">Function names should clearly describe what the function does. Use verbs like 'calculate', 'get', 'set', 'validate'.</p>
+                </div>
+              </div>
+
+              <div class="flex gap-4 p-4 bg-warning-light rounded-2xl">
+                <div class="w-8 h-8 bg-warning rounded-full flex items-center justify-center flex-shrink-0">
+                  <i data-lucide="alert-triangle" class="w-4 h-4 text-white"></i>
+                </div>
+                <div>
+                  <h4 class="font-semibold text-warning-dark mb-1">Avoid Global Variables</h4>
+                  <p class="text-sm text-warning-dark">Functions should rely on their parameters rather than global variables to make them more predictable and reusable.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- References and Further Reading -->
+          <div class="mb-8">
+            <h3 class="text-xl font-bold text-foreground mb-4">References and Further Reading</h3>
+            
+            <div class="bg-card-grey rounded-2xl p-6">
+              <h4 class="font-semibold text-foreground mb-4">Additional Resources</h4>
+              <div class="space-y-3">
+                <a href="#" class="cursor-pointer">
+                  <div class="flex items-center gap-3 p-3 bg-white rounded-xl hover:ring-1 hover:ring-primary transition-all duration-300">
+                    <i data-lucide="external-link" class="w-5 h-5 text-primary flex-shrink-0"></i>
+                    <div>
+                      <h5 class="font-medium text-foreground">MDN Web Docs: Functions</h5>
+                      <p class="text-sm text-secondary">Comprehensive guide to JavaScript functions</p>
+                    </div>
+                  </div>
+                </a>
+                
+                <a href="#" class="cursor-pointer">
+                  <div class="flex items-center gap-3 p-3 bg-white rounded-xl hover:ring-1 hover:ring-primary transition-all duration-300">
+                    <i data-lucide="book-open" class="w-5 h-5 text-primary flex-shrink-0"></i>
+                    <div>
+                      <h5 class="font-medium text-foreground">Clean Code Chapter 3</h5>
+                      <p class="text-sm text-secondary">Robert Martin's principles for writing clean functions</p>
+                    </div>
+                  </div>
+                </a>
+
+                <a href="#" class="cursor-pointer">
+                  <div class="flex items-center gap-3 p-3 bg-white rounded-xl hover:ring-1 hover:ring-primary transition-all duration-300">
+                    <i data-lucide="video" class="w-5 h-5 text-primary flex-shrink-0"></i>
+                    <div>
+                      <h5 class="font-medium text-foreground">Video: Function Best Practices</h5>
+                      <p class="text-sm text-secondary">15-minute video covering advanced function concepts</p>
+                    </div>
+                  </div>
+                </a>
+              </div>
+            </div>
+          </div>
+        </article>
+      </div>
+    </div>
+
+    <!-- Bottom Navigation -->
+    <div class="border-t border-border bg-white px-5 md:px-8 py-4">
+      <div class="max-w-4xl mx-auto flex items-center justify-between">
+        <button class="flex items-center gap-2 px-4 py-2.5 ring-1 ring-border hover:ring-primary rounded-full text-foreground font-medium transition-all duration-300 cursor-pointer">
+          <i data-lucide="chevron-left" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Control Structures</span>
+          <span class="sm:hidden">Previous</span>
+        </button>
+
+        <div class="flex items-center gap-2">
+          <button class="px-4 py-2.5 bg-success text-white rounded-full font-medium hover:bg-success-dark transition-all duration-300 cursor-pointer">
+            <i data-lucide="check" class="w-4 h-4 inline mr-2"></i>
+            Mark Complete
+          </button>
+        </div>
+
+        <button class="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-full font-medium hover:bg-primary-hover transition-all duration-300 cursor-pointer">
+          <span class="hidden sm:inline">Arrays and Lists</span>
+          <span class="sm:hidden">Next</span>
+          <i data-lucide="chevron-right" class="w-4 h-4"></i>
+        </button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Page Not Found Modal -->
+<div id="page-not-found-modal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-warning-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="alert-triangle" class="w-8 h-8 text-warning-dark"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Page Not Available</h3>
+    <p class="text-gray-500 text-sm mb-6">This page hasn't been created yet. Generate it using the chat!</p>
+    <button onclick="closePageNotFoundModal()" class="w-full px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+      Got it
+    </button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  lucide.createIcons();
+
+  // Show modal when clicking any link
+  document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('page-not-found-modal').classList.remove('hidden');
+    });
+  });
+});
+
+function closePageNotFoundModal() {
+  document.getElementById('page-not-found-modal').classList.add('hidden');
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('course-sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.toggle('-translate-x-full');
+  overlay.classList.toggle('hidden');
+  document.body.classList.toggle('overflow-hidden');
+}
+
+// Mark lesson as complete
+function markComplete() {
+  const button = event.target.closest('button');
+  button.innerHTML = '<i data-lucide="check" class="w-4 h-4 inline mr-2"></i>Completed';
+  button.classList.remove('bg-success', 'hover:bg-success-dark');
+  button.classList.add('bg-gray-400', 'cursor-not-allowed');
+  button.disabled = true;
+  
+  // Update progress (simulate)
+  const progressBars = document.querySelectorAll('.bg-primary');
+  progressBars.forEach(bar => {
+    bar.style.width = '72%';
+  });
+  
+  // Update progress text
+  const progressTexts = document.querySelectorAll('span');
+  progressTexts.forEach(span => {
+    if (span.textContent === '68%') {
+      span.textContent = '72%';
+    }
+    if (span.textContent === '17 of 25 lessons completed') {
+      span.textContent = '18 of 25 lessons completed';
+    }
+    if (span.textContent === '8 remaining') {
+      span.textContent = '7 remaining';
+    }
+  });
+
+  lucide.createIcons();
+  
+  // Show success message
+  const toast = document.createElement('div');
+  toast.className = 'fixed top-4 right-4 bg-success text-white px-4 py-3 rounded-xl z-50 font-medium shadow-lg';
+  toast.textContent = 'Lesson marked as complete!';
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+
+// Add click handler to mark complete button
+document.addEventListener('click', function(e) {
+  if (e.target.closest('button')?.textContent.includes('Mark Complete')) {
+    markComplete();
+  }
+});
+</script>
+</body>
+</html>

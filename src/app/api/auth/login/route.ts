@@ -12,7 +12,15 @@ export async function POST(request: Request) {
     if (!user || !verifyPassword(password, user.password_hash)) {
       return NextResponse.json({ error: 'Email atau password salah.' }, { status: 401 });
     }
-    if (user.status !== 'aktif') return NextResponse.json({ error: 'Akun nonaktif. Hubungi administrator.' }, { status: 403 });
+    if (user.status === 'menunggu_persetujuan') {
+      return NextResponse.json({ error: 'Pendaftaran akun Anda sedang dalam proses persetujuan (Pending Approval) oleh Administrator.' }, { status: 403 });
+    }
+    if (user.status === 'ditolak') {
+      return NextResponse.json({ error: `Pendaftaran akun Anda ditolak. Catatan: "${user.rejection_reason || 'Dokumen belum sesuai.'}"` }, { status: 403 });
+    }
+    if (user.status !== 'aktif') {
+      return NextResponse.json({ error: 'Akun nonaktif. Hubungi administrator.' }, { status: 403 });
+    }
 
     const sessionUser = {
       id: user.id,

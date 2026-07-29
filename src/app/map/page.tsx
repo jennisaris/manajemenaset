@@ -1,6 +1,7 @@
 import { FullPageMapShell } from '@/components/full-page-map-shell';
 import { getMvpDataFromDb } from '@/lib/server/local-repository';
 import { getSessionUser } from '@/lib/server/session';
+import Link from 'next/link';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
@@ -14,7 +15,7 @@ function numberParam(value: string | string[] | undefined) {
 export default async function MapPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
   const user = await getSessionUser();
   if (!user) {
-    return <main className="grid min-h-screen place-items-center bg-slate-950 p-6 text-white"><div className="rounded-3xl bg-white/10 p-8 text-center"><h1 className="text-2xl font-black">Session tidak aktif</h1><p className="mt-2 text-sm text-slate-300">Silakan login ulang dari dashboard untuk membuka peta.</p><a className="mt-4 inline-flex rounded-full bg-sky-500 px-5 py-3 text-sm font-black text-white" href="/">Login</a></div></main>;
+    return <main className="grid min-h-screen place-items-center bg-slate-950 p-6 text-white"><div className="rounded-3xl bg-white/10 p-8 text-center"><h1 className="text-2xl font-black">Session tidak aktif</h1><p className="mt-2 text-sm text-slate-300">Silakan login ulang dari dashboard untuk membuka peta.</p><Link className="mt-4 inline-flex rounded-full bg-sky-500 px-5 py-3 text-sm font-black text-white" href="/">Login</Link></div></main>;
   }
   const params = await searchParams;
   const data = await getMvpDataFromDb();

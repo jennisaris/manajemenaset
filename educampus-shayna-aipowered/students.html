@@ -1,0 +1,1071 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCampus - Students Management</title>
+<meta name="description" content="EduCampus students management dashboard for managing and monitoring student records.">
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--primary-hover);
+    --color-foreground: var(--foreground);
+    --color-secondary: var(--secondary);
+    --color-muted: var(--muted);
+    --color-border: var(--border);
+    --color-card-grey: var(--card-grey);
+    --color-card-message: var(--card-message);
+    --color-accent-blue: var(--accent-blue);
+    --color-accent-teal: var(--accent-teal);
+    --color-accent-sky: var(--accent-sky);
+    --color-success: var(--success);
+    --color-success-light: var(--success-light);
+    --color-success-dark: var(--success-dark);
+    --color-error: var(--error);
+    --color-error-light: var(--error-light);
+    --color-error-lighter: var(--error-lighter);
+    --color-error-dark: var(--error-dark);
+    --color-warning: var(--warning);
+    --color-warning-light: var(--warning-light);
+    --color-warning-dark: var(--warning-dark);
+    --color-info: var(--info);
+    --color-info-light: var(--info-light);
+    --color-info-dark: var(--info-dark);
+    --color-alert: var(--alert);
+    --color-alert-light: var(--alert-light);
+    --color-alert-dark: var(--alert-dark);
+    --color-gray-50: var(--gray-50);
+    --color-gray-100: var(--gray-100);
+    --color-gray-200: var(--gray-200);
+    --color-gray-500: var(--gray-500);
+    --color-gray-600: var(--gray-600);
+    --color-gray-700: var(--gray-700);
+    --font-sans: var(--font-sans);
+    --radius-card: 24px;
+    --radius-button: 50px;
+    --radius-icon: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 20px;
+    --radius-3xl: 24px;
+  }
+  :root {
+    --primary: #165DFF;
+    --primary-hover: #0E4BD9;
+    --foreground: #080C1A;
+    --secondary: #6A7686;
+    --muted: #EFF2F7;
+    --border: #F3F4F3;
+    --card-grey: #F1F3F6;
+    --card-message: #C9E6FC;
+    --accent-blue: #C9E6FC;
+    --accent-teal: #82D9D7;
+    --accent-sky: #DBEAFE;
+    --success: #30B22D;
+    --success-light: #DCFCE7;
+    --success-dark: #166534;
+    --error: #ED6B60;
+    --error-light: #FEE2E2;
+    --error-lighter: #FEF2F2;
+    --error-dark: #991B1B;
+    --warning: #FED71F;
+    --warning-light: #FEF9C3;
+    --warning-dark: #854D0E;
+    --info: #165DFF;
+    --info-light: #DBEAFE;
+    --info-dark: #1E40AF;
+    --alert: #F97316;
+    --alert-light: #FFEDD5;
+    --alert-dark: #9A3412;
+    --gray-50: #F9FAFB;
+    --gray-100: #F1F3F6;
+    --gray-200: #E5E7EB;
+    --gray-500: #6A7686;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --font-sans: 'Lexend Deca', sans-serif;
+  }
+  select {
+    @apply appearance-none bg-no-repeat cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 10px center;
+    padding-right: 40px;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+<body class="font-sans bg-white min-h-screen overflow-x-hidden">
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/80 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+<div class="flex h-screen max-h-screen flex-1 bg-muted overflow-hidden">
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="flex flex-col w-[280px] shrink-0 h-screen fixed inset-y-0 left-0 z-50 bg-white border-r border-border transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-hidden">
+    <!-- Top Bar with logo and title -->
+    <div class="flex items-center justify-between border-b border-border h-[90px] px-5 gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-9 bg-primary rounded-xl flex items-center justify-center">
+          <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+        </div>
+        <h1 class="font-semibold text-xl">EduCampus</h1>
+      </div>
+      <div class="flex gap-2">
+        <button class="size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" aria-label="Search">
+          <i data-lucide="search" class="size-6 text-secondary"></i>
+        </button>
+        <button onclick="toggleSidebar()" aria-label="Close sidebar" class="lg:hidden size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+          <i data-lucide="x" class="size-6 text-secondary"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="flex flex-col p-5 pb-28 gap-6 overflow-y-auto flex-1">
+      <!-- Main Menu Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Main Menu</h3>
+        <div class="flex flex-col gap-1">
+          <!-- Regular menu items -->
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="layout-dashboard" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Dashboard</span>
+            </div>
+          </a>
+          <!-- Active menu item -->
+          <a href="#" class="group active cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="users" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Students</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="user-check" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Lecturers</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="book-open" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Classes</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="calendar-check" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Attendance</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Management Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Management</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="bar-chart-3" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Reports</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="settings" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Settings</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Help Card -->
+    <div class="absolute bottom-0 left-0 w-[280px]">
+      <div class="flex items-center justify-between border-t bg-white border-border p-5 gap-3">
+        <div class="min-w-0">
+          <p class="font-semibold text-foreground">Need help?</p>
+          <a href="#" class="cursor-pointer"><span class="text-sm text-secondary hover:text-primary hover:underline transition-all duration-300">Contact support</span></a>
+        </div>
+        <div class="size-11 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i data-lucide="message-circle-question" class="size-6 text-primary"></i>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 lg:ml-[280px] flex flex-col bg-white min-h-screen overflow-x-hidden">
+    <!-- Top Header Bar -->
+    <div class="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-border bg-white px-5 md:px-8">
+      <!-- Mobile hamburger -->
+      <button onclick="toggleSidebar()" aria-label="Open menu" class="lg:hidden size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+        <i data-lucide="menu" class="size-6 text-foreground"></i>
+      </button>
+      <!-- Page title (shown on desktop) -->
+      <h2 class="hidden lg:block font-bold text-2xl text-foreground">Students Management</h2>
+      <!-- Right actions -->
+      <div class="flex items-center gap-3">
+        <button class="size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer relative" aria-label="Notifications">
+          <i data-lucide="bell" class="size-6 text-secondary"></i>
+          <span class="absolute -top-1 -right-1 h-5 px-1.5 rounded-full bg-error text-white text-xs font-medium flex items-center justify-center">3</span>
+        </button>
+        <div class="hidden md:flex items-center gap-3 pl-3 border-l border-border">
+          <div class="text-right">
+            <p class="font-semibold text-foreground text-sm">Admin User</p>
+            <p class="text-secondary text-xs">Administrator</p>
+          </div>
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="Profile" class="size-11 rounded-full object-cover ring-2 ring-border">
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content Area -->
+    <div class="flex-1 overflow-y-auto p-5 md:p-8">
+      <!-- Page Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+        <div>
+          <h1 class="text-foreground text-2xl md:text-3xl font-bold mb-1">Students Management</h1>
+          <p class="text-secondary text-sm md:text-base">Manage and monitor student records and information</p>
+        </div>
+        <div class="flex items-center gap-2 md:gap-3 ml-auto md:ml-0">
+          <button onclick="openBulkActionsModal()" class="flex items-center gap-2 px-6 py-3 ring-1 ring-border hover:ring-primary rounded-full text-foreground font-semibold transition-all duration-300 cursor-pointer">
+            <i data-lucide="download" class="w-5 h-5"></i>
+            <span>Export</span>
+          </button>
+          <button onclick="openAddStudentModal()" class="flex items-center gap-2 px-6 py-3 bg-primary text-white rounded-full font-bold hover:bg-primary-hover transition-all duration-300 cursor-pointer">
+            <i data-lucide="plus" class="w-5 h-5"></i>
+            <span>Add Student</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Stats Cards -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
+        <!-- Total Students -->
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+          <div class="flex items-center gap-[6px]">
+            <div class="size-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="users" class="size-6 text-primary"></i>
+            </div>
+            <p class="font-medium text-secondary">Total Students</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <p class="font-bold text-[32px] leading-10">2,847</p>
+            <span class="text-success text-sm font-semibold">+8%</span>
+          </div>
+        </div>
+
+        <!-- Active Students -->
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+          <div class="flex items-center gap-[6px]">
+            <div class="size-11 bg-success/10 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="user-check" class="size-6 text-success"></i>
+            </div>
+            <p class="font-medium text-secondary">Active Students</p>
+          </div>
+          <p class="font-bold text-[32px] leading-10">2,654</p>
+        </div>
+
+        <!-- Inactive Students -->
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+          <div class="flex items-center gap-[6px]">
+            <div class="size-11 bg-warning/10 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="user-x" class="size-6 text-warning-dark"></i>
+            </div>
+            <p class="font-medium text-secondary">Inactive Students</p>
+          </div>
+          <p class="font-bold text-[32px] leading-10">193</p>
+        </div>
+
+        <!-- New This Month -->
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+          <div class="flex items-center gap-[6px]">
+            <div class="size-11 bg-info/10 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="user-plus" class="size-6 text-info"></i>
+            </div>
+            <p class="font-medium text-secondary">New This Month</p>
+          </div>
+          <p class="font-bold text-[32px] leading-10">127</p>
+        </div>
+      </div>
+
+      <!-- Search & Filter Bar -->
+      <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white mb-6">
+        <div class="flex flex-col lg:flex-row lg:items-center gap-4">
+          <!-- Search Input -->
+          <div class="relative flex-1">
+            <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 size-6 text-secondary"></i>
+            <input type="text" id="searchInput" placeholder="Search students by name, ID, or email..." class="w-full h-12 pl-12 pr-4 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium transition-all duration-300">
+          </div>
+          <!-- Filter Dropdowns -->
+          <div class="flex flex-wrap items-center gap-3">
+            <select id="facultyFilter" class="px-4 py-2.5 border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:border-primary transition-all duration-200">
+              <option value="all">All Faculties</option>
+              <option value="engineering">Engineering</option>
+              <option value="business">Business</option>
+              <option value="medicine">Medicine</option>
+              <option value="arts">Arts & Sciences</option>
+            </select>
+            <select id="statusFilter" class="px-4 py-2.5 border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:border-primary transition-all duration-200">
+              <option value="all">All Status</option>
+              <option value="active">Active</option>
+              <option value="inactive">Inactive</option>
+              <option value="graduated">Graduated</option>
+            </select>
+            <select id="yearFilter" class="px-4 py-2.5 border border-border rounded-2xl text-sm text-foreground focus:outline-none focus:border-primary transition-all duration-200">
+              <option value="all">All Years</option>
+              <option value="1">Year 1</option>
+              <option value="2">Year 2</option>
+              <option value="3">Year 3</option>
+              <option value="4">Year 4</option>
+            </select>
+          </div>
+        </div>
+        <!-- Bulk Actions -->
+        <div class="flex flex-wrap items-center justify-between gap-3 pt-4 border-t border-border">
+          <div class="flex items-center gap-3">
+            <input type="checkbox" id="selectAll" onchange="toggleSelectAll()" class="w-4 h-4 text-primary border-border rounded focus:ring-primary">
+            <label for="selectAll" class="text-sm font-medium text-secondary cursor-pointer">Select All</label>
+            <span id="selectedCount" class="text-sm text-secondary">0 selected</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="bulkAction('activate')" class="px-4 py-2 bg-success text-white rounded-xl text-sm font-medium hover:bg-success-dark transition-all duration-200 cursor-pointer disabled:opacity-50" disabled>
+              Activate
+            </button>
+            <button onclick="bulkAction('deactivate')" class="px-4 py-2 bg-warning text-foreground rounded-xl text-sm font-medium hover:bg-warning-dark transition-all duration-200 cursor-pointer disabled:opacity-50" disabled>
+              Deactivate
+            </button>
+            <button onclick="bulkAction('delete')" class="px-4 py-2 bg-error text-white rounded-xl text-sm font-medium hover:bg-error-dark transition-all duration-200 cursor-pointer disabled:opacity-50" disabled>
+              Delete
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Students Table (Desktop) -->
+      <div class="hidden md:block">
+        <div class="flex flex-col rounded-2xl border border-border bg-white overflow-hidden">
+          <div class="flex items-center justify-between p-6 border-b border-border">
+            <h3 class="font-bold text-lg text-foreground">Students List</h3>
+            <span id="tableCount" class="text-secondary text-sm">Showing 1-10 of 2,847 students</span>
+          </div>
+          <div class="overflow-x-auto">
+            <table id="studentsTable" class="w-full">
+              <thead class="bg-muted/50">
+                <tr>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase w-[50px]">
+                    <input type="checkbox" class="w-4 h-4 text-primary border-border rounded">
+                  </th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase w-[250px]">Student</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase">Student ID</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase hidden lg:table-cell">Major</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase">Year</th>
+                  <th class="px-6 py-4 text-left text-xs font-semibold text-secondary uppercase">Status</th>
+                  <th class="px-6 py-4 text-right text-xs font-semibold text-secondary uppercase">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-border" data-searchable-container>
+                <tr class="hover:bg-muted/30 transition-all duration-300" data-student-id="1" data-status="active" data-faculty="engineering" data-year="3" data-searchable="Sarah Johnson sarah.johnson@university.edu STU001 Computer Science">
+                  <td class="px-6 py-4">
+                    <input type="checkbox" class="student-checkbox w-4 h-4 text-primary border-border rounded" onchange="updateSelectedCount()">
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop" alt="Sarah Johnson" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+                      <div class="min-w-0 flex-1">
+                        <p class="font-semibold text-foreground truncate">Sarah Johnson</p>
+                        <p class="text-secondary text-sm truncate">sarah.johnson@university.edu</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 font-medium">STU001</td>
+                  <td class="px-6 py-4 hidden lg:table-cell"><span class="truncate block">Computer Science</span></td>
+                  <td class="px-6 py-4">Year 3</td>
+                  <td class="px-6 py-4">
+                    <span class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap">Active</span>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button onclick="viewStudent('1')" class="px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-button hover:bg-primary-hover transition-all duration-200 cursor-pointer">View</button>
+                      <button onclick="editStudent('1')" class="px-3 py-1.5 border border-border text-foreground text-xs font-medium rounded-button hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer">Edit</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-muted/30 transition-all duration-300" data-student-id="2" data-status="active" data-faculty="business" data-year="2" data-searchable="Michael Chen michael.chen@university.edu STU002 Business Administration">
+                  <td class="px-6 py-4">
+                    <input type="checkbox" class="student-checkbox w-4 h-4 text-primary border-border rounded" onchange="updateSelectedCount()">
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" alt="Michael Chen" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+                      <div class="min-w-0 flex-1">
+                        <p class="font-semibold text-foreground truncate">Michael Chen</p>
+                        <p class="text-secondary text-sm truncate">michael.chen@university.edu</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 font-medium">STU002</td>
+                  <td class="px-6 py-4 hidden lg:table-cell"><span class="truncate block">Business Administration</span></td>
+                  <td class="px-6 py-4">Year 2</td>
+                  <td class="px-6 py-4">
+                    <span class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap">Active</span>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button onclick="viewStudent('2')" class="px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-button hover:bg-primary-hover transition-all duration-200 cursor-pointer">View</button>
+                      <button onclick="editStudent('2')" class="px-3 py-1.5 border border-border text-foreground text-xs font-medium rounded-button hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer">Edit</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-muted/30 transition-all duration-300" data-student-id="3" data-status="inactive" data-faculty="medicine" data-year="4" data-searchable="Emma Rodriguez emma.rodriguez@university.edu STU003 Medicine">
+                  <td class="px-6 py-4">
+                    <input type="checkbox" class="student-checkbox w-4 h-4 text-primary border-border rounded" onchange="updateSelectedCount()">
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop" alt="Emma Rodriguez" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+                      <div class="min-w-0 flex-1">
+                        <p class="font-semibold text-foreground truncate">Emma Rodriguez</p>
+                        <p class="text-secondary text-sm truncate">emma.rodriguez@university.edu</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 font-medium">STU003</td>
+                  <td class="px-6 py-4 hidden lg:table-cell"><span class="truncate block">Medicine</span></td>
+                  <td class="px-6 py-4">Year 4</td>
+                  <td class="px-6 py-4">
+                    <span class="bg-warning-light text-warning-dark text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap">Inactive</span>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button onclick="viewStudent('3')" class="px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-button hover:bg-primary-hover transition-all duration-200 cursor-pointer">View</button>
+                      <button onclick="editStudent('3')" class="px-3 py-1.5 border border-border text-foreground text-xs font-medium rounded-button hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer">Edit</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-muted/30 transition-all duration-300" data-student-id="4" data-status="active" data-faculty="arts" data-year="1" data-searchable="David Kim david.kim@university.edu STU004 Psychology">
+                  <td class="px-6 py-4">
+                    <input type="checkbox" class="student-checkbox w-4 h-4 text-primary border-border rounded" onchange="updateSelectedCount()">
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="David Kim" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+                      <div class="min-w-0 flex-1">
+                        <p class="font-semibold text-foreground truncate">David Kim</p>
+                        <p class="text-secondary text-sm truncate">david.kim@university.edu</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 font-medium">STU004</td>
+                  <td class="px-6 py-4 hidden lg:table-cell"><span class="truncate block">Psychology</span></td>
+                  <td class="px-6 py-4">Year 1</td>
+                  <td class="px-6 py-4">
+                    <span class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap">Active</span>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button onclick="viewStudent('4')" class="px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-button hover:bg-primary-hover transition-all duration-200 cursor-pointer">View</button>
+                      <button onclick="editStudent('4')" class="px-3 py-1.5 border border-border text-foreground text-xs font-medium rounded-button hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer">Edit</button>
+                    </div>
+                  </td>
+                </tr>
+                <tr class="hover:bg-muted/30 transition-all duration-300" data-student-id="5" data-status="active" data-faculty="engineering" data-year="2" data-searchable="Lisa Wang lisa.wang@university.edu STU005 Electrical Engineering">
+                  <td class="px-6 py-4">
+                    <input type="checkbox" class="student-checkbox w-4 h-4 text-primary border-border rounded" onchange="updateSelectedCount()">
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="flex items-center gap-3 min-w-0">
+                      <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=100&h=100&fit=crop" alt="Lisa Wang" class="w-12 h-12 rounded-full object-cover flex-shrink-0">
+                      <div class="min-w-0 flex-1">
+                        <p class="font-semibold text-foreground truncate">Lisa Wang</p>
+                        <p class="text-secondary text-sm truncate">lisa.wang@university.edu</p>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 font-medium">STU005</td>
+                  <td class="px-6 py-4 hidden lg:table-cell"><span class="truncate block">Electrical Engineering</span></td>
+                  <td class="px-6 py-4">Year 2</td>
+                  <td class="px-6 py-4">
+                    <span class="bg-success-light text-success-dark text-xs font-medium px-3 py-1 rounded-full whitespace-nowrap">Active</span>
+                  </td>
+                  <td class="px-6 py-4 text-right">
+                    <div class="flex items-center justify-end gap-2">
+                      <button onclick="viewStudent('5')" class="px-3 py-1.5 bg-primary text-white text-xs font-medium rounded-button hover:bg-primary-hover transition-all duration-200 cursor-pointer">View</button>
+                      <button onclick="editStudent('5')" class="px-3 py-1.5 border border-border text-foreground text-xs font-medium rounded-button hover:border-primary hover:text-primary transition-all duration-200 cursor-pointer">Edit</button>
+                    </div>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mobile Cards -->
+      <div class="md:hidden space-y-3">
+        <div class="bg-white rounded-2xl p-4 border border-border" data-student-id="1" data-status="active" data-faculty="engineering" data-year="3" data-searchable="Sarah Johnson sarah.johnson@university.edu STU001 Computer Science">
+          <div class="flex items-center gap-3 mb-3">
+            <input type="checkbox" class="student-checkbox w-4 h-4 text-primary border-border rounded" onchange="updateSelectedCount()">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" alt="Sarah Johnson" class="w-12 h-12 rounded-2xl object-cover flex-shrink-0">
+            <div class="flex-1 min-w-0">
+              <h4 class="text-foreground font-semibold truncate">Sarah Johnson</h4>
+              <p class="text-secondary text-xs truncate">STU001 • Computer Science • Year 3</p>
+            </div>
+            <span class="bg-success-light text-success-dark text-xs px-2 py-1 rounded-full whitespace-nowrap">Active</span>
+          </div>
+          <div class="flex gap-2 pt-3 border-t border-border">
+            <button onclick="viewStudent('1')" class="flex-1 text-center py-2 text-sm font-medium text-primary bg-primary/10 rounded-xl cursor-pointer">View</button>
+            <button onclick="editStudent('1')" class="flex-1 text-center py-2 text-sm font-medium text-foreground bg-muted rounded-xl cursor-pointer">Edit</button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 border border-border" data-student-id="2" data-status="active" data-faculty="business" data-year="2" data-searchable="Michael Chen michael.chen@university.edu STU002 Business Administration">
+          <div class="flex items-center gap-3 mb-3">
+            <input type="checkbox" class="student-checkbox w-4 h-4 text-primary border-border rounded" onchange="updateSelectedCount()">
+            <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop" alt="Michael Chen" class="w-12 h-12 rounded-2xl object-cover flex-shrink-0">
+            <div class="flex-1 min-w-0">
+              <h4 class="text-foreground font-semibold truncate">Michael Chen</h4>
+              <p class="text-secondary text-xs truncate">STU002 • Business Administration • Year 2</p>
+            </div>
+            <span class="bg-success-light text-success-dark text-xs px-2 py-1 rounded-full whitespace-nowrap">Active</span>
+          </div>
+          <div class="flex gap-2 pt-3 border-t border-border">
+            <button onclick="viewStudent('2')" class="flex-1 text-center py-2 text-sm font-medium text-primary bg-primary/10 rounded-xl cursor-pointer">View</button>
+            <button onclick="editStudent('2')" class="flex-1 text-center py-2 text-sm font-medium text-foreground bg-muted rounded-xl cursor-pointer">Edit</button>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl p-4 border border-border" data-student-id="3" data-status="inactive" data-faculty="medicine" data-year="4" data-searchable="Emma Rodriguez emma.rodriguez@university.edu STU003 Medicine">
+          <div class="flex items-center gap-3 mb-3">
+            <input type="checkbox" class="student-checkbox w-4 h-4 text-primary border-border rounded" onchange="updateSelectedCount()">
+            <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop" alt="Emma Rodriguez" class="w-12 h-12 rounded-2xl object-cover flex-shrink-0">
+            <div class="flex-1 min-w-0">
+              <h4 class="text-foreground font-semibold truncate">Emma Rodriguez</h4>
+              <p class="text-secondary text-xs truncate">STU003 • Medicine • Year 4</p>
+            </div>
+            <span class="bg-warning-light text-warning-dark text-xs px-2 py-1 rounded-full whitespace-nowrap">Inactive</span>
+          </div>
+          <div class="flex gap-2 pt-3 border-t border-border">
+            <button onclick="viewStudent('3')" class="flex-1 text-center py-2 text-sm font-medium text-primary bg-primary/10 rounded-xl cursor-pointer">View</button>
+            <button onclick="editStudent('3')" class="flex-1 text-center py-2 text-sm font-medium text-foreground bg-muted rounded-xl cursor-pointer">Edit</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="flex items-center justify-center gap-4 mt-6 pb-4">
+        <button class="p-[10px] rounded-xl border border-border bg-white hover:ring-1 hover:ring-primary transition-all duration-300 cursor-pointer disabled:opacity-50" aria-label="Previous">
+          <i data-lucide="chevron-left" class="size-6 text-secondary"></i>
+        </button>
+        <div class="flex items-center gap-2">
+          <button class="size-11 flex items-center justify-center rounded-xl bg-primary/10 border border-primary/20 font-semibold text-primary cursor-pointer">1</button>
+          <button class="size-11 flex items-center justify-center rounded-xl border border-border bg-white hover:bg-primary/10 hover:text-primary font-semibold transition-all duration-300 cursor-pointer">2</button>
+          <button class="size-11 flex items-center justify-center rounded-xl border border-border bg-white hover:bg-primary/10 hover:text-primary font-semibold transition-all duration-300 cursor-pointer">3</button>
+          <span class="px-2 text-secondary">...</span>
+          <button class="size-11 flex items-center justify-center rounded-xl border border-border bg-white hover:bg-primary/10 hover:text-primary font-semibold transition-all duration-300 cursor-pointer">28</button>
+        </div>
+        <button class="p-[10px] rounded-xl border border-border bg-white hover:ring-1 hover:ring-primary transition-all duration-300 cursor-pointer" aria-label="Next">
+          <i data-lucide="chevron-right" class="size-6 text-secondary"></i>
+        </button>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Student Detail Modal -->
+<div id="studentDetailModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-foreground text-xl font-bold">Student Details</h3>
+      <button onclick="closeStudentDetailModal()" class="p-2 hover:bg-muted rounded-xl cursor-pointer" aria-label="Close modal">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    
+    <div id="studentDetailContent" class="space-y-6">
+      <!-- Student info will be populated here -->
+    </div>
+  </div>
+</div>
+
+<!-- Add Student Modal -->
+<div id="addStudentModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-lg w-full">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-foreground text-xl font-bold">Add New Student</h3>
+      <button onclick="closeAddStudentModal()" class="p-2 hover:bg-muted rounded-xl cursor-pointer" aria-label="Close modal">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    
+    <form id="addStudentForm" class="space-y-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-foreground text-sm font-medium mb-2">First Name</label>
+          <input type="text" id="firstName" required class="w-full px-4 py-3 border border-border rounded-2xl focus:outline-none focus:border-primary transition-all duration-200">
+        </div>
+        <div>
+          <label class="block text-foreground text-sm font-medium mb-2">Last Name</label>
+          <input type="text" id="lastName" required class="w-full px-4 py-3 border border-border rounded-2xl focus:outline-none focus:border-primary transition-all duration-200">
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-foreground text-sm font-medium mb-2">Email</label>
+        <input type="email" id="email" required class="w-full px-4 py-3 border border-border rounded-2xl focus:outline-none focus:border-primary transition-all duration-200">
+      </div>
+      
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-foreground text-sm font-medium mb-2">Faculty</label>
+          <select id="faculty" required class="w-full px-4 py-3 border border-border rounded-2xl focus:outline-none focus:border-primary transition-all duration-200">
+            <option value="">Select Faculty</option>
+            <option value="engineering">Engineering</option>
+            <option value="business">Business</option>
+            <option value="medicine">Medicine</option>
+            <option value="arts">Arts & Sciences</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-foreground text-sm font-medium mb-2">Year</label>
+          <select id="year" required class="w-full px-4 py-3 border border-border rounded-2xl focus:outline-none focus:border-primary transition-all duration-200">
+            <option value="">Select Year</option>
+            <option value="1">Year 1</option>
+            <option value="2">Year 2</option>
+            <option value="3">Year 3</option>
+            <option value="4">Year 4</option>
+          </select>
+        </div>
+      </div>
+      
+      <div>
+        <label class="block text-foreground text-sm font-medium mb-2">Major</label>
+        <input type="text" id="major" required class="w-full px-4 py-3 border border-border rounded-2xl focus:outline-none focus:border-primary transition-all duration-200">
+      </div>
+      
+      <div class="flex gap-3 pt-4">
+        <button type="button" onclick="closeAddStudentModal()" class="flex-1 px-4 py-3 border border-border text-foreground rounded-2xl font-medium hover:border-primary transition-all duration-200 cursor-pointer">
+          Cancel
+        </button>
+        <button type="submit" class="flex-1 px-4 py-3 bg-primary text-white rounded-2xl font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+          Add Student
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Bulk Actions Modal -->
+<div id="bulkActionsModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-md w-full">
+    <div class="flex items-center justify-between mb-6">
+      <h3 class="text-foreground text-xl font-bold">Export Students</h3>
+      <button onclick="closeBulkActionsModal()" class="p-2 hover:bg-muted rounded-xl cursor-pointer" aria-label="Close modal">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    
+    <div class="space-y-4">
+      <p class="text-secondary">Choose export format:</p>
+      <div class="space-y-2">
+        <label class="flex items-center gap-3 p-3 border border-border rounded-xl hover:border-primary cursor-pointer">
+          <input type="radio" name="exportFormat" value="csv" class="text-primary">
+          <div>
+            <p class="font-medium text-foreground">CSV File</p>
+            <p class="text-sm text-secondary">Comma-separated values</p>
+          </div>
+        </label>
+        <label class="flex items-center gap-3 p-3 border border-border rounded-xl hover:border-primary cursor-pointer">
+          <input type="radio" name="exportFormat" value="excel" class="text-primary">
+          <div>
+            <p class="font-medium text-foreground">Excel File</p>
+            <p class="text-sm text-secondary">Microsoft Excel format</p>
+          </div>
+        </label>
+        <label class="flex items-center gap-3 p-3 border border-border rounded-xl hover:border-primary cursor-pointer">
+          <input type="radio" name="exportFormat" value="pdf" class="text-primary">
+          <div>
+            <p class="font-medium text-foreground">PDF Report</p>
+            <p class="text-sm text-secondary">Formatted document</p>
+          </div>
+        </label>
+      </div>
+      
+      <div class="flex gap-3 pt-4">
+        <button onclick="closeBulkActionsModal()" class="flex-1 px-4 py-3 border border-border text-foreground rounded-2xl font-medium hover:border-primary transition-all duration-200 cursor-pointer">
+          Cancel
+        </button>
+        <button onclick="confirmExport()" class="flex-1 px-4 py-3 bg-primary text-white rounded-2xl font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+          Export
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Confirmation Modal -->
+<div id="confirmationModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-3xl p-6 max-w-md w-full text-center">
+    <div class="w-16 h-16 bg-warning-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="alert-triangle" class="w-8 h-8 text-warning-dark"></i>
+    </div>
+    <h3 id="confirmTitle" class="text-foreground text-xl font-bold mb-2">Confirm Action</h3>
+    <p id="confirmMessage" class="text-secondary mb-6">Are you sure you want to proceed?</p>
+    <div class="flex gap-3">
+      <button onclick="closeConfirmationModal()" class="flex-1 px-4 py-3 border border-border text-foreground rounded-2xl font-medium hover:border-primary transition-all duration-200 cursor-pointer">
+        Cancel
+      </button>
+      <button id="confirmButton" onclick="executeConfirmedAction()" class="flex-1 px-4 py-3 bg-error text-white rounded-2xl font-medium hover:bg-error-dark transition-all duration-200 cursor-pointer">
+        Confirm
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Success Toast -->
+<div id="successToast" class="fixed top-4 right-4 bg-success text-white px-6 py-3 rounded-xl z-50 font-medium shadow-lg hidden">
+  <div class="flex items-center gap-2">
+    <i data-lucide="check-circle" class="w-5 h-5"></i>
+    <span id="toastMessage">Action completed successfully</span>
+  </div>
+</div>
+
+<!-- Page Not Found Modal -->
+<div id="page-not-found-modal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-warning-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="alert-triangle" class="w-8 h-8 text-warning-dark"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Page Not Available</h3>
+    <p class="text-gray-500 text-sm mb-6">This page hasn't been created yet. Generate it using the chat!</p>
+    <button onclick="closePageNotFoundModal()" class="w-full px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+      Got it
+    </button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  lucide.createIcons();
+
+  // Show modal when clicking any link
+  document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('page-not-found-modal').classList.remove('hidden');
+    });
+  });
+
+  // Initialize filters
+  document.getElementById('searchInput').addEventListener('input', applyFilters);
+  document.getElementById('facultyFilter').addEventListener('change', applyFilters);
+  document.getElementById('statusFilter').addEventListener('change', applyFilters);
+  document.getElementById('yearFilter').addEventListener('change', applyFilters);
+
+  // Add student form submission
+  document.getElementById('addStudentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    if (validateForm('addStudentForm')) {
+      closeAddStudentModal();
+      showToast('Student added successfully!', 'success');
+    }
+  });
+});
+
+function closePageNotFoundModal() {
+  document.getElementById('page-not-found-modal').classList.add('hidden');
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.toggle('-translate-x-full');
+  overlay.classList.toggle('hidden');
+  document.body.classList.toggle('overflow-hidden');
+}
+
+// Filter functionality
+function applyFilters() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+  const facultyValue = document.getElementById('facultyFilter').value;
+  const statusValue = document.getElementById('statusFilter').value;
+  const yearValue = document.getElementById('yearFilter').value;
+
+  const items = document.querySelectorAll('[data-student-id]');
+  let visibleCount = 0;
+
+  items.forEach(item => {
+    const searchableText = (item.dataset.searchable || '').toLowerCase();
+    const matchesSearch = searchTerm === '' || searchableText.includes(searchTerm);
+    const matchesFaculty = facultyValue === 'all' || item.dataset.faculty === facultyValue;
+    const matchesStatus = statusValue === 'all' || item.dataset.status === statusValue;
+    const matchesYear = yearValue === 'all' || item.dataset.year === yearValue;
+
+    const isVisible = matchesSearch && matchesFaculty && matchesStatus && matchesYear;
+    item.style.display = isVisible ? '' : 'none';
+
+    if (isVisible) visibleCount++;
+  });
+
+  // Update count display
+  const countDisplay = document.getElementById('tableCount');
+  if (countDisplay) {
+    countDisplay.textContent = `Showing ${Math.min(visibleCount, 10)} of ${visibleCount} students`;
+  }
+}
+
+// Student actions
+function viewStudent(id) {
+  const students = {
+    '1': {
+      name: 'Sarah Johnson',
+      id: 'STU001',
+      email: 'sarah.johnson@university.edu',
+      faculty: 'Engineering',
+      major: 'Computer Science',
+      year: '3',
+      status: 'Active',
+      phone: '+1 (555) 123-4567',
+      address: '123 University Ave, Campus City',
+      gpa: '3.85',
+      credits: '90'
+    },
+    '2': {
+      name: 'Michael Chen',
+      id: 'STU002',
+      email: 'michael.chen@university.edu',
+      faculty: 'Business',
+      major: 'Business Administration',
+      year: '2',
+      status: 'Active',
+      phone: '+1 (555) 234-5678',
+      address: '456 College St, Campus City',
+      gpa: '3.72',
+      credits: '60'
+    }
+  };
+
+  const student = students[id] || students['1'];
+  
+  document.getElementById('studentDetailContent').innerHTML = `
+    <div class="flex items-center gap-4 mb-6">
+      <img src="https://images.unsplash.com/photo-1494790108755-2616b612b786?w=100&h=100&fit=crop" alt="${student.name}" class="w-20 h-20 rounded-full object-cover">
+      <div>
+        <h4 class="text-xl font-bold text-foreground">${student.name}</h4>
+        <p class="text-secondary">${student.id} • ${student.major}</p>
+        <span class="bg-success-light text-success-dark text-xs px-3 py-1 rounded-full">${student.status}</span>
+      </div>
+    </div>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div class="space-y-4">
+        <h5 class="font-semibold text-foreground border-b border-border pb-2">Personal Information</h5>
+        <div class="space-y-3">
+          <div>
+            <label class="text-sm text-secondary">Email</label>
+            <p class="font-medium">${student.email}</p>
+          </div>
+          <div>
+            <label class="text-sm text-secondary">Phone</label>
+            <p class="font-medium">${student.phone}</p>
+          </div>
+          <div>
+            <label class="text-sm text-secondary">Address</label>
+            <p class="font-medium">${student.address}</p>
+          </div>
+        </div>
+      </div>
+      
+      <div class="space-y-4">
+        <h5 class="font-semibold text-foreground border-b border-border pb-2">Academic Information</h5>
+        <div class="space-y-3">
+          <div>
+            <label class="text-sm text-secondary">Faculty</label>
+            <p class="font-medium">${student.faculty}</p>
+          </div>
+          <div>
+            <label class="text-sm text-secondary">Year</label>
+            <p class="font-medium">Year ${student.year}</p>
+          </div>
+          <div>
+            <label class="text-sm text-secondary">GPA</label>
+            <p class="font-medium">${student.gpa}</p>
+          </div>
+          <div>
+            <label class="text-sm text-secondary">Credits Completed</label>
+            <p class="font-medium">${student.credits}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.getElementById('studentDetailModal').classList.remove('hidden');
+}
+
+function editStudent(id) {
+  showToast('Edit functionality would open here', 'info');
+}
+
+function closeStudentDetailModal() {
+  document.getElementById('studentDetailModal').classList.add('hidden');
+}
+
+// Add student modal
+function openAddStudentModal() {
+  document.getElementById('addStudentModal').classList.remove('hidden');
+}
+
+function closeAddStudentModal() {
+  document.getElementById('addStudentModal').classList.add('hidden');
+  document.getElementById('addStudentForm').reset();
+}
+
+// Bulk actions
+function openBulkActionsModal() {
+  document.getElementById('bulkActionsModal').classList.remove('hidden');
+}
+
+function closeBulkActionsModal() {
+  document.getElementById('bulkActionsModal').classList.add('hidden');
+}
+
+function confirmExport() {
+  const format = document.querySelector('input[name="exportFormat"]:checked');
+  if (!format) {
+    showToast('Please select an export format', 'error');
+    return;
+  }
+  
+  closeBulkActionsModal();
+  showToast(`Exporting students as ${format.value.toUpperCase()}...`, 'success');
+}
+
+// Selection management
+function toggleSelectAll() {
+  const selectAll = document.getElementById('selectAll');
+  const checkboxes = document.querySelectorAll('.student-checkbox');
+  
+  checkboxes.forEach(checkbox => {
+    checkbox.checked = selectAll.checked;
+  });
+  
+  updateSelectedCount();
+}
+
+function updateSelectedCount() {
+  const checkboxes = document.querySelectorAll('.student-checkbox:checked');
+  const count = checkboxes.length;
+  
+  document.getElementById('selectedCount').textContent = `${count} selected`;
+  
+  // Enable/disable bulk action buttons
+  const bulkButtons = document.querySelectorAll('button[onclick^="bulkAction"]');
+  bulkButtons.forEach(btn => {
+    btn.disabled = count === 0;
+  });
+}
+
+let pendingAction = null;
+let pendingActionData = null;
+
+function bulkAction(action) {
+  const selectedCount = document.querySelectorAll('.student-checkbox:checked').length;
+  if (selectedCount === 0) return;
+  
+  pendingAction = action;
+  pendingActionData = { count: selectedCount };
+  
+  const messages = {
+    'activate': `Are you sure you want to activate ${selectedCount} student(s)?`,
+    'deactivate': `Are you sure you want to deactivate ${selectedCount} student(s)?`,
+    'delete': `Are you sure you want to delete ${selectedCount} student(s)? This action cannot be undone.`
+  };
+  
+  document.getElementById('confirmTitle').textContent = `Confirm ${action.charAt(0).toUpperCase() + action.slice(1)}`;
+  document.getElementById('confirmMessage').textContent = messages[action];
+  document.getElementById('confirmationModal').classList.remove('hidden');
+}
+
+function closeConfirmationModal() {
+  document.getElementById('confirmationModal').classList.add('hidden');
+  pendingAction = null;
+  pendingActionData = null;
+}
+
+function executeConfirmedAction() {
+  if (!pendingAction) return;
+  
+  closeConfirmationModal();
+  
+  const messages = {
+    'activate': `${pendingActionData.count} student(s) activated successfully`,
+    'deactivate': `${pendingActionData.count} student(s) deactivated successfully`,
+    'delete': `${pendingActionData.count} student(s) deleted successfully`
+  };
+  
+  // Uncheck all checkboxes
+  document.querySelectorAll('.student-checkbox').forEach(cb => cb.checked = false);
+  document.getElementById('selectAll').checked = false;
+  updateSelectedCount();
+  
+  showToast(messages[pendingAction], 'success');
+  
+  pendingAction = null;
+  pendingActionData = null;
+}
+
+// Form validation
+function validateForm(formId) {
+  const form = document.getElementById(formId);
+  const requiredFields = form.querySelectorAll('[required]');
+  let isValid = true;
+  
+  requiredFields.forEach(field => {
+    if (!field.value.trim()) {
+      field.classList.add('ring-2', 'ring-error');
+      isValid = false;
+    } else {
+      field.classList.remove('ring-2', 'ring-error');
+    }
+  });
+  
+  if (!isValid) {
+    showToast('Please fill all required fields', 'error');
+  }
+  
+  return isValid;
+}
+
+// Toast notifications
+function showToast(message, type = 'success') {
+  const toast = document.getElementById('successToast');
+  const messageEl = document.getElementById('toastMessage');
+  
+  messageEl.textContent = message;
+  
+  // Update colors based on type
+  toast.className = `fixed top-4 right-4 px-6 py-3 rounded-xl z-50 font-medium shadow-lg flex items-center gap-2`;
+  
+  if (type === 'success') {
+    toast.classList.add('bg-success', 'text-white');
+  } else if (type === 'error') {
+    toast.classList.add('bg-error', 'text-white');
+  } else {
+    toast.classList.add('bg-primary', 'text-white');
+  }
+  
+  toast.classList.remove('hidden');
+  
+  setTimeout(() => {
+    toast.classList.add('hidden');
+  }, 3000);
+}
+</script>
+</body>
+</html>

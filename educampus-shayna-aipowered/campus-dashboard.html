@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduCampus - Dashboard</title>
+  <meta name="description" content="Kemdiktisaintek dashboard for managing and monitoring your campus data.">
+  <link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+  <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style type="text/tailwindcss">
+    @theme inline {
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--primary-hover);
+    --color-foreground: var(--foreground);
+    --color-secondary: var(--secondary);
+    --color-muted: var(--muted);
+    --color-border: var(--border);
+    --color-card-grey: var(--card-grey);
+    --color-card-message: var(--card-message);
+    --color-accent-blue: var(--accent-blue);
+    --color-accent-teal: var(--accent-teal);
+    --color-accent-sky: var(--accent-sky);
+    --color-success: var(--success);
+    --color-success-light: var(--success-light);
+    --color-success-dark: var(--success-dark);
+    --color-error: var(--error);
+    --color-error-light: var(--error-light);
+    --color-error-lighter: var(--error-lighter);
+    --color-error-dark: var(--error-dark);
+    --color-warning: var(--warning);
+    --color-warning-light: var(--warning-light);
+    --color-warning-dark: var(--warning-dark);
+    --color-info: var(--info);
+    --color-info-light: var(--info-light);
+    --color-info-dark: var(--info-dark);
+    --color-alert: var(--alert);
+    --color-alert-light: var(--alert-light);
+    --color-alert-dark: var(--alert-dark);
+    --color-gray-50: var(--gray-50);
+    --color-gray-100: var(--gray-100);
+    --color-gray-200: var(--gray-200);
+    --color-gray-500: var(--gray-500);
+    --color-gray-600: var(--gray-600);
+    --color-gray-700: var(--gray-700);
+    --font-sans: var(--font-sans);
+    --radius-card: 24px;
+    --radius-button: 50px;
+    --radius-icon: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 20px;
+    --radius-3xl: 24px;
+  }
+  :root {
+    --primary: #165DFF;
+    --primary-hover: #0E4BD9;
+    --foreground: #080C1A;
+    --secondary: #6A7686;
+    --muted: #EFF2F7;
+    --border: #F3F4F3;
+    --card-grey: #F1F3F6;
+    --card-message: #C9E6FC;
+    --accent-blue: #C9E6FC;
+    --accent-teal: #82D9D7;
+    --accent-sky: #DBEAFE;
+    --success: #30B22D;
+    --success-light: #DCFCE7;
+    --success-dark: #166534;
+    --error: #ED6B60;
+    --error-light: #FEE2E2;
+    --error-lighter: #FEF2F2;
+    --error-dark: #991B1B;
+    --warning: #FED71F;
+    --warning-light: #FEF9C3;
+    --warning-dark: #854D0E;
+    --info: #165DFF;
+    --info-light: #DBEAFE;
+    --info-dark: #1E40AF;
+    --alert: #F97316;
+    --alert-light: #FFEDD5;
+    --alert-dark: #9A3412;
+    --gray-50: #F9FAFB;
+    --gray-100: #F1F3F6;
+    --gray-200: #E5E7EB;
+    --gray-500: #6A7686;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --font-sans: 'Lexend Deca', sans-serif;
+  }
+  select {
+    @apply appearance-none bg-no-repeat cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 10px center;
+    padding-right: 40px;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+
+<body class="font-sans bg-white min-h-screen overflow-x-hidden">
+
+  <!-- Mobile Overlay -->
+  <div id="sidebar-overlay" class="fixed inset-0 bg-black/80 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+  <div class="flex h-screen max-h-screen flex-1 bg-muted overflow-hidden">
+    <!-- SIDEBAR -->
+    <aside id="sidebar"
+      class="flex flex-col w-[280px] shrink-0 h-screen fixed inset-y-0 left-0 z-50 bg-white border-r border-border transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-hidden">
+      <!-- Top Bar with logo and title -->
+      <div class="flex items-center justify-between border-b border-border h-[90px] px-5 gap-3">
+        <div class="flex items-center gap-3">
+          <div class="w-11 h-9 bg-primary rounded-xl flex items-center justify-center">
+            <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+          </div>
+          <h1 class="font-semibold text-xl">EduCampus</h1>
+        </div>
+        <div class="flex gap-2">
+          <button
+            class="size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer"
+            aria-label="Search">
+            <i data-lucide="search" class="size-6 text-secondary"></i>
+          </button>
+          <button onclick="toggleSidebar()" aria-label="Close sidebar"
+            class="lg:hidden size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+            <i data-lucide="x" class="size-6 text-secondary"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Navigation Menu -->
+      <div class="flex flex-col p-5 pb-28 gap-6 overflow-y-auto flex-1">
+        <!-- Main Menu Section -->
+        <div class="flex flex-col gap-4">
+          <h3 class="font-medium text-sm text-secondary">Main Menu</h3>
+          <div class="flex flex-col gap-1">
+            <!-- Active menu item -->
+            <a href="#" class="group active cursor-pointer">
+              <div
+                class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+                <i data-lucide="layout-dashboard"
+                  class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+                <span
+                  class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Dashboard</span>
+              </div>
+            </a>
+            <!-- Regular menu items -->
+            <a href="#" class="group cursor-pointer">
+              <div
+                class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+                <i data-lucide="users"
+                  class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+                <span
+                  class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Students</span>
+              </div>
+            </a>
+            <a href="#" class="group cursor-pointer">
+              <div
+                class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+                <i data-lucide="user-check"
+                  class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+                <span
+                  class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Lecturers</span>
+              </div>
+            </a>
+            <a href="#" class="group cursor-pointer">
+              <div
+                class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+                <i data-lucide="book-open"
+                  class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+                <span
+                  class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Classes</span>
+              </div>
+            </a>
+            <a href="#" class="group cursor-pointer">
+              <div
+                class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+                <i data-lucide="calendar-check"
+                  class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+                <span
+                  class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Attendance</span>
+              </div>
+            </a>
+          </div>
+        </div>
+
+        <!-- Management Section -->
+        <div class="flex flex-col gap-4">
+          <h3 class="font-medium text-sm text-secondary">Management</h3>
+          <div class="flex flex-col gap-1">
+            <a href="#" class="group cursor-pointer">
+              <div
+                class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+                <i data-lucide="bar-chart-3"
+                  class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+                <span
+                  class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Reports</span>
+              </div>
+            </a>
+            <a href="#" class="group cursor-pointer">
+              <div
+                class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+                <i data-lucide="settings"
+                  class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+                <span
+                  class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Settings</span>
+              </div>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Bottom Help Card -->
+      <div class="absolute bottom-0 left-0 w-[280px]">
+        <div class="flex items-center justify-between border-t bg-white border-border p-5 gap-3">
+          <div class="min-w-0">
+            <p class="font-semibold text-foreground">Need help?</p>
+            <a href="#" class="cursor-pointer"><span
+                class="text-sm text-secondary hover:text-primary hover:underline transition-all duration-300">Contact
+                support</span></a>
+          </div>
+          <div class="size-11 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+            <i data-lucide="message-circle-question" class="size-6 text-primary"></i>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 lg:ml-[280px] flex flex-col bg-white min-h-screen overflow-x-hidden">
+      <!-- Top Header Bar -->
+      <div
+        class="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-border bg-white px-5 md:px-8">
+        <!-- Mobile hamburger -->
+        <button onclick="toggleSidebar()" aria-label="Open menu"
+          class="lg:hidden size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+          <i data-lucide="menu" class="size-6 text-foreground"></i>
+        </button>
+        <!-- Page title (shown on desktop) -->
+        <h2 class="hidden lg:block font-bold text-2xl text-foreground">Dashboard</h2>
+        <!-- Right actions -->
+        <div class="flex items-center gap-3">
+          <button
+            class="size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer relative"
+            aria-label="Notifications">
+            <i data-lucide="bell" class="size-6 text-secondary"></i>
+            <span
+              class="absolute -top-1 -right-1 h-5 px-1.5 rounded-full bg-error text-white text-xs font-medium flex items-center justify-center">3</span>
+          </button>
+          <div class="hidden md:flex items-center gap-3 pl-3 border-l border-border">
+            <div class="text-right">
+              <p class="font-semibold text-foreground text-sm">Admin User</p>
+              <p class="text-secondary text-xs">Administrator</p>
+            </div>
+            <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="Profile"
+              class="size-11 rounded-full object-cover ring-2 ring-border">
+          </div>
+        </div>
+      </div>
+
+      <!-- Page Content Area -->
+      <div class="flex-1 overflow-y-auto p-5 md:p-8">
+        <!-- Page Header -->
+        <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+          <div>
+            <h1 class="text-foreground text-2xl md:text-3xl font-bold mb-1">Campus Dashboard</h1>
+            <p class="text-secondary text-sm md:text-base">Welcome back! Here's your campus overview for today.</p>
+          </div>
+          <div class="flex items-center gap-2 md:gap-3 ml-auto md:ml-0">
+            <button
+              class="flex items-center gap-2 px-4 py-2.5 ring-1 ring-border hover:ring-primary rounded-button text-foreground font-medium transition-all duration-200 cursor-pointer">
+              <i data-lucide="download" class="w-4 h-4"></i>
+              <span>Export Report</span>
+            </button>
+            <button
+              class="flex items-center gap-2 px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+              <span>Refresh</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Stats Cards -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
+          <!-- Total Students -->
+          <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+            <div class="flex items-center gap-[6px]">
+              <div class="size-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                <i data-lucide="users" class="size-6 text-primary"></i>
+              </div>
+              <p class="font-medium text-secondary">Total Students</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <p class="font-bold text-[32px] leading-10">2,847</p>
+              <span class="text-success text-sm font-semibold">+5%</span>
+            </div>
+          </div>
+
+          <!-- Total Lecturers -->
+          <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+            <div class="flex items-center gap-[6px]">
+              <div class="size-11 bg-success/10 rounded-xl flex items-center justify-center shrink-0">
+                <i data-lucide="user-check" class="size-6 text-success"></i>
+              </div>
+              <p class="font-medium text-secondary">Total Lecturers</p>
+            </div>
+            <p class="font-bold text-[32px] leading-10">142</p>
+          </div>
+
+          <!-- Active Classes -->
+          <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+            <div class="flex items-center gap-[6px]">
+              <div class="size-11 bg-warning/10 rounded-xl flex items-center justify-center shrink-0">
+                <i data-lucide="book-open" class="size-6 text-warning-dark"></i>
+              </div>
+              <p class="font-medium text-secondary">Active Classes</p>
+            </div>
+            <p class="font-bold text-[32px] leading-10">38</p>
+          </div>
+
+          <!-- Today's Attendance -->
+          <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+            <div class="flex items-center gap-[6px]">
+              <div class="size-11 bg-info/10 rounded-xl flex items-center justify-center shrink-0">
+                <i data-lucide="calendar-check" class="size-6 text-info"></i>
+              </div>
+              <p class="font-medium text-secondary">Today's Attendance</p>
+            </div>
+            <div class="flex items-center gap-3">
+              <p class="font-bold text-[32px] leading-10">89%</p>
+              <span class="text-success text-sm font-semibold">+2%</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+          <!-- Attendance Trend Chart -->
+          <div class="flex flex-col rounded-2xl border border-border p-6 gap-6 bg-white">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div class="flex flex-col gap-3">
+                <div class="flex items-center gap-[6px]">
+                  <div class="size-11 bg-success/10 rounded-xl flex items-center justify-center shrink-0">
+                    <i data-lucide="trending-up" class="size-6 text-success"></i>
+                  </div>
+                  <p class="font-medium text-secondary">Attendance Trend</p>
+                </div>
+                <p class="font-bold text-[32px] leading-10">87.5%</p>
+              </div>
+              <button
+                class="flex items-center rounded-3xl border border-border py-3 px-4 gap-2 bg-primary/10 w-fit cursor-pointer hover:bg-primary/20 transition-all duration-300">
+                <i data-lucide="calendar" class="size-5 text-primary"></i>
+                <p class="font-medium text-sm text-primary">Last 7 Days</p>
+              </button>
+            </div>
+            <div class="w-full overflow-x-auto">
+              <div class="min-w-[400px] h-[250px] md:h-[300px]">
+                <canvas id="attendanceChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <!-- Class Distribution Chart -->
+          <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              <h3 class="font-bold text-lg text-foreground">Class Distribution</h3>
+              <button
+                class="flex items-center rounded-3xl border border-border py-2 px-4 gap-2 bg-primary/10 w-fit cursor-pointer">
+                <i data-lucide="pie-chart" class="size-4 text-primary"></i>
+                <p class="font-medium text-sm text-primary">By Faculty</p>
+              </button>
+            </div>
+            <div class="w-full overflow-x-auto">
+              <div class="min-w-[400px] h-[250px] md:h-[300px]">
+                <canvas id="classChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Sections -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6 md:mb-8">
+          <!-- Recent Activities -->
+          <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <h3 class="font-bold text-lg text-foreground">Recent Activities</h3>
+              <a href="#" class="cursor-pointer"><span class="text-sm text-primary font-semibold hover:underline">View
+                  All</span></a>
+            </div>
+            <div class="space-y-4">
+              <div
+                class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3 border-b border-gray-100 last:border-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop"
+                    class="w-10 h-10 rounded-full object-cover flex-shrink-0" alt="Student profile">
+                  <div class="min-w-0 flex-1">
+                    <h4 class="text-foreground text-sm font-medium truncate">John Smith enrolled in Computer Science
+                    </h4>
+                    <p class="text-gray-500 text-xs truncate">New student registration • CS Department</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 pl-13 sm:pl-0 sm:flex-shrink-0">
+                  <span class="text-gray-500 text-xs whitespace-nowrap">2 hours ago</span>
+                  <span
+                    class="bg-success-light text-success-dark text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap">Enrolled</span>
+                </div>
+              </div>
+              <div
+                class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3 border-b border-gray-100 last:border-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <img src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop"
+                    class="w-10 h-10 rounded-full object-cover flex-shrink-0" alt="Lecturer profile">
+                  <div class="min-w-0 flex-1">
+                    <h4 class="text-foreground text-sm font-medium truncate">Dr. Sarah Johnson updated course materials
+                    </h4>
+                    <p class="text-gray-500 text-xs truncate">Mathematics 101 • Course update</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 pl-13 sm:pl-0 sm:flex-shrink-0">
+                  <span class="text-gray-500 text-xs whitespace-nowrap">4 hours ago</span>
+                  <span
+                    class="bg-info-light text-info-dark text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap">Updated</span>
+                </div>
+              </div>
+              <div
+                class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3 border-b border-gray-100 last:border-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop"
+                    class="w-10 h-10 rounded-full object-cover flex-shrink-0" alt="Admin profile">
+                  <div class="min-w-0 flex-1">
+                    <h4 class="text-foreground text-sm font-medium truncate">System backup completed successfully</h4>
+                    <p class="text-gray-500 text-xs truncate">Database backup • System maintenance</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 pl-13 sm:pl-0 sm:flex-shrink-0">
+                  <span class="text-gray-500 text-xs whitespace-nowrap">6 hours ago</span>
+                  <span
+                    class="bg-success-light text-success-dark text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap">Complete</span>
+                </div>
+              </div>
+              <div
+                class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3 border-b border-gray-100 last:border-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <img src="https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop"
+                    class="w-10 h-10 rounded-full object-cover flex-shrink-0" alt="Student profile">
+                  <div class="min-w-0 flex-1">
+                    <h4 class="text-foreground text-sm font-medium truncate">Emma Wilson submitted assignment</h4>
+                    <p class="text-gray-500 text-xs truncate">Physics 201 • Assignment submission</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 pl-13 sm:pl-0 sm:flex-shrink-0">
+                  <span class="text-gray-500 text-xs whitespace-nowrap">8 hours ago</span>
+                  <span
+                    class="bg-warning-light text-warning-dark text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap">Submitted</span>
+                </div>
+              </div>
+              <div
+                class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 py-3 border-b border-gray-100 last:border-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <img src="https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=100&h=100&fit=crop"
+                    class="w-10 h-10 rounded-full object-cover flex-shrink-0" alt="Lecturer profile">
+                  <div class="min-w-0 flex-1">
+                    <h4 class="text-foreground text-sm font-medium truncate">Prof. Michael Brown scheduled exam</h4>
+                    <p class="text-gray-500 text-xs truncate">Chemistry 301 • Final examination</p>
+                  </div>
+                </div>
+                <div class="flex items-center gap-2 pl-13 sm:pl-0 sm:flex-shrink-0">
+                  <span class="text-gray-500 text-xs whitespace-nowrap">1 day ago</span>
+                  <span
+                    class="bg-alert-light text-alert-dark text-xs font-medium px-2 py-1 rounded-full whitespace-nowrap">Scheduled</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Upcoming Schedules -->
+          <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white">
+            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+              <h3 class="font-bold text-lg text-foreground">Upcoming Schedules</h3>
+              <a href="#" class="cursor-pointer"><span class="text-sm text-primary font-semibold hover:underline">View
+                  All</span></a>
+            </div>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <div class="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="book-open" class="w-5 h-5 text-primary"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h4 class="text-foreground text-sm font-medium truncate">Mathematics 101</h4>
+                    <p class="text-gray-500 text-xs truncate">Room A-205 • Dr. Sarah Johnson</p>
+                  </div>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <p class="text-foreground text-sm font-semibold">09:00 AM</p>
+                  <span
+                    class="bg-success-light text-success-dark text-xs font-medium px-2 py-1 rounded-full">Today</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <div class="w-10 h-10 bg-warning/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="flask-conical" class="w-5 h-5 text-warning-dark"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h4 class="text-foreground text-sm font-medium truncate">Chemistry Lab</h4>
+                    <p class="text-gray-500 text-xs truncate">Lab B-102 • Prof. Michael Brown</p>
+                  </div>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <p class="text-foreground text-sm font-semibold">11:30 AM</p>
+                  <span
+                    class="bg-success-light text-success-dark text-xs font-medium px-2 py-1 rounded-full">Today</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <div class="w-10 h-10 bg-info/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="monitor" class="w-5 h-5 text-info"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h4 class="text-foreground text-sm font-medium truncate">Computer Science 201</h4>
+                    <p class="text-gray-500 text-xs truncate">Room C-301 • Dr. Lisa Anderson</p>
+                  </div>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <p class="text-foreground text-sm font-semibold">02:00 PM</p>
+                  <span class="bg-info-light text-info-dark text-xs font-medium px-2 py-1 rounded-full">Today</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <div class="w-10 h-10 bg-success/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="globe" class="w-5 h-5 text-success"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h4 class="text-foreground text-sm font-medium truncate">English Literature</h4>
+                    <p class="text-gray-500 text-xs truncate">Room D-105 • Prof. James Wilson</p>
+                  </div>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <p class="text-foreground text-sm font-semibold">10:00 AM</p>
+                  <span
+                    class="bg-warning-light text-warning-dark text-xs font-medium px-2 py-1 rounded-full">Tomorrow</span>
+                </div>
+              </div>
+              <div class="flex items-center justify-between py-3 border-b border-gray-100 last:border-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                  <div class="w-10 h-10 bg-alert/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                    <i data-lucide="calculator" class="w-5 h-5 text-alert"></i>
+                  </div>
+                  <div class="min-w-0 flex-1">
+                    <h4 class="text-foreground text-sm font-medium truncate">Statistics 301</h4>
+                    <p class="text-gray-500 text-xs truncate">Room A-108 • Dr. Robert Davis</p>
+                  </div>
+                </div>
+                <div class="text-right flex-shrink-0">
+                  <p class="text-foreground text-sm font-semibold">03:30 PM</p>
+                  <span
+                    class="bg-warning-light text-warning-dark text-xs font-medium px-2 py-1 rounded-full">Tomorrow</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Alerts Section -->
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white">
+          <h3 class="font-bold text-lg text-foreground">System Alerts</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div class="p-4 bg-warning-light rounded-card border-l-4 border-warning">
+              <div class="flex items-start gap-3">
+                <i data-lucide="alert-triangle" class="w-5 h-5 text-warning-dark flex-shrink-0 mt-0.5"></i>
+                <div>
+                  <h4 class="text-foreground text-sm font-medium">Low Attendance Alert</h4>
+                  <p class="text-gray-500 text-xs mt-1">Physics 201 class has attendance below 75% threshold</p>
+                </div>
+              </div>
+            </div>
+            <div class="p-4 bg-info-light rounded-card border-l-4 border-info">
+              <div class="flex items-start gap-3">
+                <i data-lucide="info" class="w-5 h-5 text-info-dark flex-shrink-0 mt-0.5"></i>
+                <div>
+                  <h4 class="text-foreground text-sm font-medium">System Maintenance</h4>
+                  <p class="text-gray-500 text-xs mt-1">Scheduled maintenance tonight from 11 PM to 2 AM</p>
+                </div>
+              </div>
+            </div>
+            <div class="p-4 bg-error-light rounded-card border-l-4 border-error">
+              <div class="flex items-start gap-3">
+                <i data-lucide="alert-circle" class="w-5 h-5 text-error-dark flex-shrink-0 mt-0.5"></i>
+                <div>
+                  <h4 class="text-foreground text-sm font-medium">Assignment Deadline</h4>
+                  <p class="text-gray-500 text-xs mt-1">15 assignments are due within the next 24 hours</p>
+                </div>
+              </div>
+            </div>
+            <div class="p-4 bg-success-light rounded-card border-l-4 border-success">
+              <div class="flex items-start gap-3">
+                <i data-lucide="check-circle" class="w-5 h-5 text-success-dark flex-shrink-0 mt-0.5"></i>
+                <div>
+                  <h4 class="text-foreground text-sm font-medium">Backup Complete</h4>
+                  <p class="text-gray-500 text-xs mt-1">Daily database backup completed successfully at 3:00 AM</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Page Not Found Modal -->
+  <div id="page-not-found-modal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+    <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+      <div class="w-16 h-16 bg-warning-light rounded-full flex items-center justify-center mx-auto mb-4">
+        <i data-lucide="alert-triangle" class="w-8 h-8 text-warning-dark"></i>
+      </div>
+      <h3 class="text-foreground text-xl font-bold mb-2">Page Not Available</h3>
+      <p class="text-gray-500 text-sm mb-6">This page hasn't been created yet. Generate it using the chat!</p>
+      <button onclick="closePageNotFoundModal()"
+        class="w-full px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+        Got it
+      </button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      lucide.createIcons();
+
+      // Show modal when clicking any link
+      document.querySelectorAll('a').forEach(link => {
+        link.addEventListener('click', function (e) {
+          e.preventDefault();
+          document.getElementById('page-not-found-modal').classList.remove('hidden');
+        });
+      });
+
+      // Initialize charts
+      initializeCharts();
+    });
+
+    function closePageNotFoundModal() {
+      document.getElementById('page-not-found-modal').classList.add('hidden');
+    }
+
+    function toggleSidebar() {
+      const sidebar = document.getElementById('sidebar');
+      const overlay = document.getElementById('sidebar-overlay');
+      sidebar.classList.toggle('-translate-x-full');
+      overlay.classList.toggle('hidden');
+      document.body.classList.toggle('overflow-hidden');
+    }
+
+    function initializeCharts() {
+      // Attendance Trend Chart
+      new Chart(document.getElementById('attendanceChart'), {
+        type: 'line',
+        data: {
+          labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+          datasets: [
+            {
+              label: 'This Week',
+              data: [85, 92, 78, 95, 88, 82, 90],
+              borderColor: '#165DFF',
+              backgroundColor: 'rgba(22, 93, 255, 0.1)',
+              fill: true,
+              tension: 0.4
+            },
+            {
+              label: 'Last Week',
+              data: [78, 85, 82, 88, 91, 75, 87],
+              borderColor: '#82D9D7',
+              backgroundColor: 'rgba(130, 217, 215, 0.1)',
+              fill: true,
+              tension: 0.4
+            }
+          ]
+        },
+        options: {
+          animation: false,
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              ticks: {
+                callback: function (value) {
+                  return value + '%';
+                }
+              }
+            }
+          }
+        }
+      });
+
+      // Class Distribution Chart
+      new Chart(document.getElementById('classChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Engineering', 'Science', 'Arts', 'Business'],
+          datasets: [{
+            data: [35, 28, 22, 15],
+            backgroundColor: ['#22C55E', '#C5E151', '#82D9D7', '#EAB308']
+          }]
+        },
+        options: {
+          animation: false,
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom'
+            }
+          }
+        }
+      });
+    }
+  </script>
+</body>
+
+</html>

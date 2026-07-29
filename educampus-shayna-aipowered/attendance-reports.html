@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EduCampus - Attendance Reports</title>
+<meta name="description" content="EduCampus attendance reports dashboard for monitoring student attendance across classes and departments.">
+<link href="https://fonts.googleapis.com/css2?family=Lexend+Deca:wght@100..900&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style type="text/tailwindcss">
+  @theme inline {
+    --color-primary: var(--primary);
+    --color-primary-hover: var(--primary-hover);
+    --color-foreground: var(--foreground);
+    --color-secondary: var(--secondary);
+    --color-muted: var(--muted);
+    --color-border: var(--border);
+    --color-card-grey: var(--card-grey);
+    --color-card-message: var(--card-message);
+    --color-accent-blue: var(--accent-blue);
+    --color-accent-teal: var(--accent-teal);
+    --color-accent-sky: var(--accent-sky);
+    --color-success: var(--success);
+    --color-success-light: var(--success-light);
+    --color-success-dark: var(--success-dark);
+    --color-error: var(--error);
+    --color-error-light: var(--error-light);
+    --color-error-lighter: var(--error-lighter);
+    --color-error-dark: var(--error-dark);
+    --color-warning: var(--warning);
+    --color-warning-light: var(--warning-light);
+    --color-warning-dark: var(--warning-dark);
+    --color-info: var(--info);
+    --color-info-light: var(--info-light);
+    --color-info-dark: var(--info-dark);
+    --color-alert: var(--alert);
+    --color-alert-light: var(--alert-light);
+    --color-alert-dark: var(--alert-dark);
+    --color-gray-50: var(--gray-50);
+    --color-gray-100: var(--gray-100);
+    --color-gray-200: var(--gray-200);
+    --color-gray-500: var(--gray-500);
+    --color-gray-600: var(--gray-600);
+    --color-gray-700: var(--gray-700);
+    --font-sans: var(--font-sans);
+    --radius-card: 24px;
+    --radius-button: 50px;
+    --radius-icon: 12px;
+    --radius-xl: 16px;
+    --radius-2xl: 20px;
+    --radius-3xl: 24px;
+  }
+  :root {
+    --primary: #165DFF;
+    --primary-hover: #0E4BD9;
+    --foreground: #080C1A;
+    --secondary: #6A7686;
+    --muted: #EFF2F7;
+    --border: #F3F4F3;
+    --card-grey: #F1F3F6;
+    --card-message: #C9E6FC;
+    --accent-blue: #C9E6FC;
+    --accent-teal: #82D9D7;
+    --accent-sky: #DBEAFE;
+    --success: #30B22D;
+    --success-light: #DCFCE7;
+    --success-dark: #166534;
+    --error: #ED6B60;
+    --error-light: #FEE2E2;
+    --error-lighter: #FEF2F2;
+    --error-dark: #991B1B;
+    --warning: #FED71F;
+    --warning-light: #FEF9C3;
+    --warning-dark: #854D0E;
+    --info: #165DFF;
+    --info-light: #DBEAFE;
+    --info-dark: #1E40AF;
+    --alert: #F97316;
+    --alert-light: #FFEDD5;
+    --alert-dark: #9A3412;
+    --gray-50: #F9FAFB;
+    --gray-100: #F1F3F6;
+    --gray-200: #E5E7EB;
+    --gray-500: #6A7686;
+    --gray-600: #4B5563;
+    --gray-700: #374151;
+    --font-sans: 'Lexend Deca', sans-serif;
+  }
+  select {
+    @apply appearance-none bg-no-repeat cursor-pointer;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-position: right 10px center;
+    padding-right: 40px;
+  }
+  .scrollbar-hide::-webkit-scrollbar { display: none; }
+  .scrollbar-hide { -ms-overflow-style: none; scrollbar-width: none; }
+</style>
+</head>
+<body class="font-sans bg-white min-h-screen overflow-x-hidden">
+
+<!-- Mobile Overlay -->
+<div id="sidebar-overlay" class="fixed inset-0 bg-black/80 z-40 lg:hidden hidden" onclick="toggleSidebar()"></div>
+
+<div class="flex h-screen max-h-screen flex-1 bg-muted overflow-hidden">
+  <!-- SIDEBAR -->
+  <aside id="sidebar" class="flex flex-col w-[280px] shrink-0 h-screen fixed inset-y-0 left-0 z-50 bg-white border-r border-border transform -translate-x-full lg:translate-x-0 transition-transform duration-300 overflow-hidden">
+    <!-- Top Bar with logo and title -->
+    <div class="flex items-center justify-between border-b border-border h-[90px] px-5 gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-11 h-9 bg-primary rounded-xl flex items-center justify-center">
+          <i data-lucide="graduation-cap" class="w-5 h-5 text-white"></i>
+        </div>
+        <h1 class="font-semibold text-xl">EduCampus</h1>
+      </div>
+      <div class="flex gap-2">
+        <button class="size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer" aria-label="Search">
+          <i data-lucide="search" class="size-6 text-secondary"></i>
+        </button>
+        <button onclick="toggleSidebar()" aria-label="Close sidebar" class="lg:hidden size-11 flex shrink-0 bg-white rounded-xl p-[10px] items-center justify-center ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+          <i data-lucide="x" class="size-6 text-secondary"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <div class="flex flex-col p-5 pb-28 gap-6 overflow-y-auto flex-1">
+      <!-- Main Menu Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Main Menu</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="layout-dashboard" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Dashboard</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="users" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Students</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="user-check" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Lecturers</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="book-open" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Classes</span>
+            </div>
+          </a>
+          <!-- Active menu item -->
+          <a href="#" class="group active cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="calendar-check" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Attendance</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Management Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Management</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="bar-chart-3" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Reports</span>
+            </div>
+          </a>
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="settings" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Settings</span>
+            </div>
+          </a>
+        </div>
+      </div>
+
+      <!-- Support Section -->
+      <div class="flex flex-col gap-4">
+        <h3 class="font-medium text-sm text-secondary">Support</h3>
+        <div class="flex flex-col gap-1">
+          <a href="#" class="group cursor-pointer">
+            <div class="flex items-center rounded-xl p-4 gap-3 bg-white group-[.active]:bg-muted group-hover:bg-muted transition-all duration-300">
+              <i data-lucide="help-circle" class="size-6 text-secondary group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300"></i>
+              <span class="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground transition-all duration-300">Help Center</span>
+            </div>
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Bottom Help Card -->
+    <div class="absolute bottom-0 left-0 w-[280px]">
+      <div class="flex items-center justify-between border-t bg-white border-border p-5 gap-3">
+        <div class="min-w-0">
+          <p class="font-semibold text-foreground">Need help?</p>
+          <a href="#" class="cursor-pointer"><span class="text-sm text-secondary hover:text-primary hover:underline transition-all duration-300">Contact support</span></a>
+        </div>
+        <div class="size-11 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
+          <i data-lucide="message-circle-question" class="size-6 text-primary"></i>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 lg:ml-[280px] flex flex-col bg-white min-h-screen overflow-x-hidden">
+    <!-- Top Header Bar -->
+    <div class="flex items-center justify-between w-full h-[90px] shrink-0 border-b border-border bg-white px-5 md:px-8">
+      <!-- Mobile hamburger -->
+      <button onclick="toggleSidebar()" aria-label="Open menu" class="lg:hidden size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer">
+        <i data-lucide="menu" class="size-6 text-foreground"></i>
+      </button>
+      <!-- Page title (shown on desktop) -->
+      <h2 class="hidden lg:block font-bold text-2xl text-foreground">Attendance Reports</h2>
+      <!-- Right actions -->
+      <div class="flex items-center gap-3">
+        <button class="size-11 flex items-center justify-center rounded-xl ring-1 ring-border hover:ring-primary transition-all duration-300 cursor-pointer relative" aria-label="Notifications">
+          <i data-lucide="bell" class="size-6 text-secondary"></i>
+          <span class="absolute -top-1 -right-1 h-5 px-1.5 rounded-full bg-error text-white text-xs font-medium flex items-center justify-center">3</span>
+        </button>
+        <div class="hidden md:flex items-center gap-3 pl-3 border-l border-border">
+          <div class="text-right">
+            <p class="font-semibold text-foreground text-sm">Admin User</p>
+            <p class="text-secondary text-xs">Administrator</p>
+          </div>
+          <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop" alt="Profile" class="size-11 rounded-full object-cover ring-2 ring-border">
+        </div>
+      </div>
+    </div>
+
+    <!-- Page Content Area -->
+    <div class="flex-1 overflow-y-auto p-5 md:p-8">
+      <!-- Page Header -->
+      <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+        <div>
+          <h1 class="text-foreground text-2xl md:text-3xl font-bold mb-1">Attendance Reports</h1>
+          <p class="text-secondary text-sm md:text-base">Monitor student attendance across classes and departments</p>
+        </div>
+        <div class="flex items-center gap-2 md:gap-3 ml-auto md:ml-0">
+          <button onclick="exportReport()" class="flex items-center gap-2 px-6 py-3 ring-1 ring-border hover:ring-primary rounded-full text-foreground font-semibold transition-all duration-300 cursor-pointer">
+            <i data-lucide="download" class="w-5 h-5"></i>
+            <span>Export</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Date Range Filter -->
+      <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white mb-6">
+        <h3 class="font-bold text-lg text-foreground">Filter Reports</h3>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-foreground">From Date</label>
+            <input type="date" id="fromDate" value="2024-01-01" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" onchange="applyFilters()">
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-foreground">To Date</label>
+            <input type="date" id="toDate" value="2024-01-31" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" onchange="applyFilters()">
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-foreground">Department</label>
+            <select id="departmentFilter" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" onchange="applyFilters()">
+              <option value="all">All Departments</option>
+              <option value="computer-science">Computer Science</option>
+              <option value="mathematics">Mathematics</option>
+              <option value="physics">Physics</option>
+              <option value="chemistry">Chemistry</option>
+            </select>
+          </div>
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-foreground">Class</label>
+            <select id="classFilter" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none transition-all duration-300" onchange="applyFilters()">
+              <option value="all">All Classes</option>
+              <option value="cs101">CS101 - Programming</option>
+              <option value="math201">MATH201 - Calculus</option>
+              <option value="phy101">PHY101 - Physics I</option>
+              <option value="chem101">CHEM101 - Chemistry</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary Stats -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 mb-6">
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+          <div class="flex items-center gap-[6px]">
+            <div class="size-11 bg-success/10 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="users" class="size-6 text-success"></i>
+            </div>
+            <p class="font-medium text-secondary">Total Students</p>
+          </div>
+          <p class="font-bold text-[32px] leading-10" id="totalStudents">1,245</p>
+        </div>
+
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+          <div class="flex items-center gap-[6px]">
+            <div class="size-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="check-circle" class="size-6 text-primary"></i>
+            </div>
+            <p class="font-medium text-secondary">Average Attendance</p>
+          </div>
+          <div class="flex items-center gap-3">
+            <p class="font-bold text-[32px] leading-10" id="avgAttendance">87%</p>
+            <span class="text-success text-sm font-semibold">+3%</span>
+          </div>
+        </div>
+
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+          <div class="flex items-center gap-[6px]">
+            <div class="size-11 bg-warning/10 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="alert-triangle" class="size-6 text-warning"></i>
+            </div>
+            <p class="font-medium text-secondary">Low Attendance</p>
+          </div>
+          <p class="font-bold text-[32px] leading-10" id="lowAttendance">23</p>
+        </div>
+
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-3 bg-white">
+          <div class="flex items-center gap-[6px]">
+            <div class="size-11 bg-error/10 rounded-xl flex items-center justify-center shrink-0">
+              <i data-lucide="x-circle" class="size-6 text-error"></i>
+            </div>
+            <p class="font-medium text-secondary">Absent Today</p>
+          </div>
+          <p class="font-bold text-[32px] leading-10" id="absentToday">45</p>
+        </div>
+      </div>
+
+      <!-- Charts Section -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-6 mb-6">
+        <!-- Attendance Trend Chart -->
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-6 bg-white">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div class="flex flex-col gap-3">
+              <div class="flex items-center gap-[6px]">
+                <div class="size-11 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                  <i data-lucide="trending-up" class="size-6 text-primary"></i>
+                </div>
+                <p class="font-medium text-secondary">Attendance Trend</p>
+              </div>
+              <p class="font-bold text-[32px] leading-10">Weekly Overview</p>
+            </div>
+            <button class="flex items-center rounded-3xl border border-border py-3 px-4 gap-2 bg-primary/10 w-fit cursor-pointer hover:bg-primary/20 transition-all duration-300">
+              <i data-lucide="calendar" class="size-5 text-primary"></i>
+              <p class="font-medium text-sm text-primary">Last 7 Days</p>
+            </button>
+          </div>
+          <div class="w-full overflow-x-auto">
+            <div class="min-w-[400px] h-[250px] md:h-[300px]">
+              <canvas id="attendanceTrendChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <!-- Department Breakdown -->
+        <div class="flex flex-col rounded-2xl border border-border p-6 gap-4 bg-white">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <h3 class="font-bold text-lg text-foreground">Department Breakdown</h3>
+            <button class="flex items-center rounded-3xl border border-border py-2 px-4 gap-2 bg-primary/10 w-fit cursor-pointer">
+              <i data-lucide="pie-chart" class="size-4 text-primary"></i>
+              <p class="font-medium text-sm text-primary">This Month</p>
+            </button>
+          </div>
+          <div class="w-full overflow-x-auto">
+            <div class="min-w-[300px] h-[250px] md:h-[300px]">
+              <canvas id="departmentChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Attendance Table -->
+      <div class="flex flex-col rounded-3xl border border-border bg-white overflow-hidden">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 p-6 border-b border-border">
+          <h3 class="font-bold text-lg text-foreground">Class Attendance Summary</h3>
+          <div class="flex items-center gap-3">
+            <div class="relative">
+              <i data-lucide="search" class="absolute left-4 top-1/2 -translate-y-1/2 size-5 text-secondary"></i>
+              <input type="text" id="searchInput" class="w-full md:w-64 h-10 pl-12 pr-4 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none font-medium transition-all duration-300" placeholder="Search classes..." oninput="applyFilters()">
+            </div>
+          </div>
+        </div>
+
+        <!-- Table Header -->
+        <div class="flex items-center gap-6 p-6 bg-muted/50">
+          <p class="font-semibold w-[200px] shrink-0">Class</p>
+          <p class="font-semibold w-[150px] shrink-0">Department</p>
+          <p class="font-semibold w-[120px] shrink-0">Total Students</p>
+          <p class="font-semibold w-[120px] shrink-0">Present</p>
+          <p class="font-semibold w-[120px] shrink-0">Absent</p>
+          <p class="font-semibold w-[120px] shrink-0">Attendance %</p>
+          <p class="font-semibold flex-1">Actions</p>
+        </div>
+
+        <!-- Table Data -->
+        <div id="attendanceTableContainer">
+          <div class="attendance-row flex items-center gap-6 p-6 border-t border-border hover:bg-muted/30 transition-all duration-300" data-item-id="cs101" data-department="computer-science" data-searchable="CS101 Programming Fundamentals Computer Science">
+            <div class="flex items-center gap-3 w-[200px] shrink-0">
+              <div class="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center shrink-0">
+                <i data-lucide="code" class="w-6 h-6 text-primary"></i>
+              </div>
+              <div class="flex flex-col gap-1 min-w-0">
+                <p class="font-semibold truncate">CS101</p>
+                <p class="text-sm text-secondary truncate">Programming Fundamentals</p>
+              </div>
+            </div>
+            <p class="w-[150px] shrink-0 truncate">Computer Science</p>
+            <p class="w-[120px] shrink-0 font-medium">45</p>
+            <p class="w-[120px] shrink-0 font-medium text-success">42</p>
+            <p class="w-[120px] shrink-0 font-medium text-error">3</p>
+            <div class="w-[120px] shrink-0">
+              <span class="rounded-full py-2 px-4 bg-success text-white font-bold text-sm">93%</span>
+            </div>
+            <div class="flex items-center gap-2 flex-1">
+              <button onclick="viewDetails('cs101')" class="px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-xl transition-all duration-300 cursor-pointer">
+                View Details
+              </button>
+            </div>
+          </div>
+
+          <div class="attendance-row flex items-center gap-6 p-6 border-t border-border hover:bg-muted/30 transition-all duration-300" data-item-id="math201" data-department="mathematics" data-searchable="MATH201 Calculus II Mathematics">
+            <div class="flex items-center gap-3 w-[200px] shrink-0">
+              <div class="w-12 h-12 bg-warning/10 rounded-xl flex items-center justify-center shrink-0">
+                <i data-lucide="calculator" class="w-6 h-6 text-warning"></i>
+              </div>
+              <div class="flex flex-col gap-1 min-w-0">
+                <p class="font-semibold truncate">MATH201</p>
+                <p class="text-sm text-secondary truncate">Calculus II</p>
+              </div>
+            </div>
+            <p class="w-[150px] shrink-0 truncate">Mathematics</p>
+            <p class="w-[120px] shrink-0 font-medium">38</p>
+            <p class="w-[120px] shrink-0 font-medium text-success">31</p>
+            <p class="w-[120px] shrink-0 font-medium text-error">7</p>
+            <div class="w-[120px] shrink-0">
+              <span class="rounded-full py-2 px-4 bg-warning text-foreground font-bold text-sm">82%</span>
+            </div>
+            <div class="flex items-center gap-2 flex-1">
+              <button onclick="viewDetails('math201')" class="px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-xl transition-all duration-300 cursor-pointer">
+                View Details
+              </button>
+            </div>
+          </div>
+
+          <div class="attendance-row flex items-center gap-6 p-6 border-t border-border hover:bg-muted/30 transition-all duration-300" data-item-id="phy101" data-department="physics" data-searchable="PHY101 Physics I Physics">
+            <div class="flex items-center gap-3 w-[200px] shrink-0">
+              <div class="w-12 h-12 bg-info/10 rounded-xl flex items-center justify-center shrink-0">
+                <i data-lucide="atom" class="w-6 h-6 text-info"></i>
+              </div>
+              <div class="flex flex-col gap-1 min-w-0">
+                <p class="font-semibold truncate">PHY101</p>
+                <p class="text-sm text-secondary truncate">Physics I</p>
+              </div>
+            </div>
+            <p class="w-[150px] shrink-0 truncate">Physics</p>
+            <p class="w-[120px] shrink-0 font-medium">52</p>
+            <p class="w-[120px] shrink-0 font-medium text-success">47</p>
+            <p class="w-[120px] shrink-0 font-medium text-error">5</p>
+            <div class="w-[120px] shrink-0">
+              <span class="rounded-full py-2 px-4 bg-success text-white font-bold text-sm">90%</span>
+            </div>
+            <div class="flex items-center gap-2 flex-1">
+              <button onclick="viewDetails('phy101')" class="px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-xl transition-all duration-300 cursor-pointer">
+                View Details
+              </button>
+            </div>
+          </div>
+
+          <div class="attendance-row flex items-center gap-6 p-6 border-t border-border hover:bg-muted/30 transition-all duration-300" data-item-id="chem101" data-department="chemistry" data-searchable="CHEM101 General Chemistry Chemistry">
+            <div class="flex items-center gap-3 w-[200px] shrink-0">
+              <div class="w-12 h-12 bg-success/10 rounded-xl flex items-center justify-center shrink-0">
+                <i data-lucide="flask-conical" class="w-6 h-6 text-success"></i>
+              </div>
+              <div class="flex flex-col gap-1 min-w-0">
+                <p class="font-semibold truncate">CHEM101</p>
+                <p class="text-sm text-secondary truncate">General Chemistry</p>
+              </div>
+            </div>
+            <p class="w-[150px] shrink-0 truncate">Chemistry</p>
+            <p class="w-[120px] shrink-0 font-medium">41</p>
+            <p class="w-[120px] shrink-0 font-medium text-success">35</p>
+            <p class="w-[120px] shrink-0 font-medium text-error">6</p>
+            <div class="w-[120px] shrink-0">
+              <span class="rounded-full py-2 px-4 bg-warning text-foreground font-bold text-sm">85%</span>
+            </div>
+            <div class="flex items-center gap-2 flex-1">
+              <button onclick="viewDetails('chem101')" class="px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-xl transition-all duration-300 cursor-pointer">
+                View Details
+              </button>
+            </div>
+          </div>
+
+          <div class="attendance-row flex items-center gap-6 p-6 border-t border-border hover:bg-muted/30 transition-all duration-300" data-item-id="eng101" data-department="english" data-searchable="ENG101 English Literature English">
+            <div class="flex items-center gap-3 w-[200px] shrink-0">
+              <div class="w-12 h-12 bg-error/10 rounded-xl flex items-center justify-center shrink-0">
+                <i data-lucide="book-open" class="w-6 h-6 text-error"></i>
+              </div>
+              <div class="flex flex-col gap-1 min-w-0">
+                <p class="font-semibold truncate">ENG101</p>
+                <p class="text-sm text-secondary truncate">English Literature</p>
+              </div>
+            </div>
+            <p class="w-[150px] shrink-0 truncate">English</p>
+            <p class="w-[120px] shrink-0 font-medium">35</p>
+            <p class="w-[120px] shrink-0 font-medium text-success">23</p>
+            <p class="w-[120px] shrink-0 font-medium text-error">12</p>
+            <div class="w-[120px] shrink-0">
+              <span class="rounded-full py-2 px-4 bg-error text-white font-bold text-sm">66%</span>
+            </div>
+            <div class="flex items-center gap-2 flex-1">
+              <button onclick="viewDetails('eng101')" class="px-4 py-2 text-sm font-medium text-primary hover:bg-primary/10 rounded-xl transition-all duration-300 cursor-pointer">
+                View Details
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- No Results Message -->
+        <div id="noResults" class="hidden text-center py-8">
+          <i data-lucide="search-x" class="w-12 h-12 text-secondary mx-auto mb-3"></i>
+          <p class="text-secondary">No classes found matching your criteria</p>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- Export Modal -->
+<div id="exportModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-md w-full">
+    <div class="flex items-center justify-between mb-4">
+      <h3 class="text-foreground text-xl font-bold">Export Report</h3>
+      <button onclick="closeExportModal()" class="p-2 hover:bg-gray-100 rounded-full cursor-pointer" aria-label="Close">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium text-foreground mb-2">Export Format</label>
+        <select id="exportFormat" class="w-full px-4 py-3 rounded-2xl ring-1 ring-border focus:ring-2 focus:ring-primary outline-none">
+          <option value="pdf">PDF Report</option>
+          <option value="excel">Excel Spreadsheet</option>
+          <option value="csv">CSV File</option>
+        </select>
+      </div>
+      <div>
+        <label class="block text-sm font-medium text-foreground mb-2">Include</label>
+        <div class="space-y-2">
+          <label class="flex items-center gap-2">
+            <input type="checkbox" id="includeSummary" checked class="rounded">
+            <span class="text-sm">Summary Statistics</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" id="includeCharts" checked class="rounded">
+            <span class="text-sm">Charts and Graphs</span>
+          </label>
+          <label class="flex items-center gap-2">
+            <input type="checkbox" id="includeDetails" checked class="rounded">
+            <span class="text-sm">Detailed Class Data</span>
+          </label>
+        </div>
+      </div>
+    </div>
+    <div class="flex gap-3 mt-6">
+      <button onclick="closeExportModal()" class="flex-1 px-4 py-2.5 border border-border rounded-button text-foreground font-medium hover:border-primary transition-all duration-200 cursor-pointer">
+        Cancel
+      </button>
+      <button onclick="confirmExport()" class="flex-1 px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+        Export
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Success Modal -->
+<div id="successModal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-success-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="check" class="w-8 h-8 text-success"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Export Successful</h3>
+    <p class="text-gray-500 text-sm mb-6">Your attendance report has been exported successfully.</p>
+    <button onclick="closeSuccessModal()" class="w-full px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+      Done
+    </button>
+  </div>
+</div>
+
+<!-- Page Not Found Modal -->
+<div id="page-not-found-modal" class="fixed inset-0 bg-black/50 z-[100] hidden flex items-center justify-center p-4">
+  <div class="bg-white rounded-card p-6 max-w-sm w-full text-center">
+    <div class="w-16 h-16 bg-warning-light rounded-full flex items-center justify-center mx-auto mb-4">
+      <i data-lucide="alert-triangle" class="w-8 h-8 text-warning-dark"></i>
+    </div>
+    <h3 class="text-foreground text-xl font-bold mb-2">Page Not Available</h3>
+    <p class="text-gray-500 text-sm mb-6">This page hasn't been created yet. Generate it using the chat!</p>
+    <button onclick="closePageNotFoundModal()" class="w-full px-4 py-2.5 bg-primary text-white rounded-button font-medium hover:bg-primary-hover transition-all duration-200 cursor-pointer">
+      Got it
+    </button>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  lucide.createIcons();
+
+  // Show modal when clicking any link
+  document.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', function(e) {
+      e.preventDefault();
+      document.getElementById('page-not-found-modal').classList.remove('hidden');
+    });
+  });
+
+  // Initialize charts
+  initializeCharts();
+});
+
+function closePageNotFoundModal() {
+  document.getElementById('page-not-found-modal').classList.add('hidden');
+}
+
+function toggleSidebar() {
+  const sidebar = document.getElementById('sidebar');
+  const overlay = document.getElementById('sidebar-overlay');
+  sidebar.classList.toggle('-translate-x-full');
+  overlay.classList.toggle('hidden');
+  document.body.classList.toggle('overflow-hidden');
+}
+
+function initializeCharts() {
+  // Attendance Trend Chart
+  const trendCtx = document.getElementById('attendanceTrendChart');
+  if (trendCtx) {
+    new Chart(trendCtx, {
+      type: 'line',
+      data: {
+        labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+        datasets: [
+          {
+            label: 'This Week',
+            data: [85, 92, 78, 88, 95, 82, 89],
+            borderColor: '#165DFF',
+            backgroundColor: 'rgba(22, 93, 255, 0.1)',
+            fill: true,
+            tension: 0.4
+          },
+          {
+            label: 'Last Week',
+            data: [78, 85, 82, 79, 88, 75, 83],
+            borderColor: '#82D9D7',
+            backgroundColor: 'rgba(130, 217, 215, 0.1)',
+            fill: true,
+            tension: 0.4
+          }
+        ]
+      },
+      options: {
+        animation: false,
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            max: 100,
+            ticks: {
+              callback: function(value) {
+                return value + '%';
+              }
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // Department Chart
+  const deptCtx = document.getElementById('departmentChart');
+  if (deptCtx) {
+    new Chart(deptCtx, {
+      type: 'doughnut',
+      data: {
+        labels: ['Computer Science', 'Mathematics', 'Physics', 'Chemistry'],
+        datasets: [{
+          data: [35, 25, 20, 20],
+          backgroundColor: ['#22C55E', '#C5E151', '#82D9D7', '#EAB308']
+        }]
+      },
+      options: {
+        animation: false,
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom'
+          }
+        }
+      }
+    });
+  }
+}
+
+function applyFilters() {
+  const searchTerm = document.getElementById('searchInput').value.toLowerCase().trim();
+  const departmentValue = document.getElementById('departmentFilter').value;
+  const classValue = document.getElementById('classFilter').value;
+
+  const rows = document.querySelectorAll('.attendance-row');
+  let visibleCount = 0;
+
+  rows.forEach(row => {
+    const searchableText = (row.dataset.searchable || '').toLowerCase();
+    const department = row.dataset.department || '';
+    const classId = row.dataset.itemId || '';
+
+    const matchesSearch = searchTerm === '' || searchableText.includes(searchTerm);
+    const matchesDepartment = departmentValue === 'all' || department === departmentValue;
+    const matchesClass = classValue === 'all' || classId === classValue;
+
+    const isVisible = matchesSearch && matchesDepartment && matchesClass;
+    row.style.display = isVisible ? '' : 'none';
+
+    if (isVisible) visibleCount++;
+  });
+
+  const noResults = document.getElementById('noResults');
+  if (noResults) {
+    noResults.classList.toggle('hidden', visibleCount > 0);
+  }
+}
+
+function exportReport() {
+  document.getElementById('exportModal').classList.remove('hidden');
+}
+
+function closeExportModal() {
+  document.getElementById('exportModal').classList.add('hidden');
+}
+
+function confirmExport() {
+  const format = document.getElementById('exportFormat').value;
+  const includeSummary = document.getElementById('includeSummary').checked;
+  const includeCharts = document.getElementById('includeCharts').checked;
+  const includeDetails = document.getElementById('includeDetails').checked;
+
+  // Simulate export process
+  closeExportModal();
+  document.getElementById('successModal').classList.remove('hidden');
+}
+
+function closeSuccessModal() {
+  document.getElementById('successModal').classList.add('hidden');
+}
+
+function viewDetails(classId) {
+  showToast(`Viewing details for ${classId.toUpperCase()}`, 'info');
+}
+
+function showToast(message, type = 'success') {
+  const toast = document.createElement('div');
+  const bgColor = type === 'success' ? 'bg-success' : type === 'error' ? 'bg-error' : 'bg-primary';
+  toast.className = `fixed top-4 right-4 ${bgColor} text-white px-4 py-3 rounded-xl z-50 font-medium shadow-lg`;
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  setTimeout(() => toast.remove(), 3000);
+}
+</script>
+</body>
+</html>

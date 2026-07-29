@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo } from 'react';
+import Link from 'next/link';
 import type { LatLngExpression } from 'leaflet';
 import { CircleMarker, MapContainer, Polygon, Popup, TileLayer, useMap } from 'react-leaflet';
 import type { Asset, AssetIssue, Utilization } from '@/lib/types';
@@ -55,7 +56,7 @@ export function FullPageMap({ assets, utilizations, issues, focusAssetId, focusU
           <div className="flex flex-wrap gap-2 text-xs font-black">
             {issue && <span className="rounded-full bg-rose-50 px-3 py-2 text-rose-600">Masalah: {issue.issue_title}</span>}
             {utilization && <span className="rounded-full bg-amber-50 px-3 py-2 text-amber-700">Pemanfaatan: {utilization.third_party_name}</span>}
-            <a href="/" className="rounded-full bg-slate-100 px-3 py-2 text-slate-600">Kembali ke Dashboard</a>
+            <Link href="/" className="rounded-full bg-slate-100 px-3 py-2 text-slate-600">Kembali ke Dashboard</Link>
           </div>
         </div>
       </section>
@@ -66,9 +67,9 @@ export function FullPageMap({ assets, utilizations, issues, focusAssetId, focusU
           {assets.map((asset) => {
             const color = asset.id === focusedAsset?.id ? '#7c3aed' : assetColor(asset);
             const polygon = polygonPositions(asset.geometry_geojson);
-            if (polygon) return <Polygon key={asset.id} positions={polygon} pathOptions={{ color, fillColor: color, fillOpacity: asset.id === focusedAsset?.id ? 0.34 : 0.18, weight: asset.id === focusedAsset?.id ? 4 : 2 }}><Popup><strong>{asset.asset_name}</strong><br />{asset.asset_code}<br />{asset.campus_name}<br />{asset.address}</Popup></Polygon>;
+            if (polygon) return <Polygon key={asset.id} positions={polygon} pathOptions={{ color, fillColor: color, fillOpacity: asset.id === focusedAsset?.id ? 0.34 : 0.18, weight: asset.id === focusedAsset?.id ? 4 : 2 }}><Popup><div className="p-1 text-xs"><strong className="block font-bold text-slate-900">{asset.asset_name}</strong><span className="text-slate-500 font-mono">{asset.asset_code}</span><br />{asset.campus_name}<br />{asset.address}<br /><Link href={`/#asset-list`} className="mt-2 inline-flex items-center gap-1 font-bold text-[#165DFF] hover:underline">👁️ Lihat Detail & Slideshow →</Link></div></Popup></Polygon>;
             if (asset.latitude === null || asset.longitude === null) return null;
-            return <CircleMarker key={asset.id} center={[asset.latitude, asset.longitude]} radius={asset.id === focusedAsset?.id ? 15 : 10} pathOptions={{ color: '#ffffff', weight: 3, fillColor: color, fillOpacity: 1 }}><Popup><strong>{asset.asset_name}</strong><br />{asset.asset_code}<br />Status: {asset.verification_status.replaceAll('_', ' ')}</Popup></CircleMarker>;
+            return <CircleMarker key={asset.id} center={[asset.latitude, asset.longitude]} radius={asset.id === focusedAsset?.id ? 15 : 10} pathOptions={{ color: '#ffffff', weight: 3, fillColor: color, fillOpacity: 1 }}><Popup><div className="p-1 text-xs"><strong className="block font-bold text-slate-900">{asset.asset_name}</strong><span className="text-slate-500 font-mono">{asset.asset_code}</span><br />Status: {asset.verification_status.replaceAll('_', ' ')}<br /><Link href={`/#asset-list`} className="mt-2 inline-flex items-center gap-1 font-bold text-[#165DFF] hover:underline">👁️ Lihat Detail & Slideshow →</Link></div></Popup></CircleMarker>;
           })}
           {utilizations.map((item) => {
             const polygon = polygonPositions(item.geometry_geojson);
