@@ -18,6 +18,7 @@ type SessionPayload = SessionUser & { exp: number; nonce: string };
 
 const cookieName = 'aset_session';
 const maxAgeSeconds = 60 * 60 * 8;
+const secureCookie = process.env.SESSION_COOKIE_SECURE === 'true';
 
 function b64url(input: Buffer | string) {
   return Buffer.from(input).toString('base64url');
@@ -68,7 +69,7 @@ export async function setSessionCookie(user: SessionUser) {
   store.set(cookieName, createSessionToken(user), {
     httpOnly: true,
     sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
+    secure: secureCookie,
     path: '/',
     maxAge: maxAgeSeconds,
   });
@@ -76,5 +77,5 @@ export async function setSessionCookie(user: SessionUser) {
 
 export async function clearSessionCookie() {
   const store = await cookies();
-  store.set(cookieName, '', { httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/', maxAge: 0 });
+  store.set(cookieName, '', { httpOnly: true, sameSite: 'lax', secure: secureCookie, path: '/', maxAge: 0 });
 }

@@ -3,7 +3,7 @@ import { getMvpDataFromDb } from '@/lib/server/local-repository';
 import { getSessionUser } from '@/lib/server/session';
 import type { Asset, AssetIssue, DashboardSummary, Utilization } from '@/lib/types';
 
-type MvpData = { assets: Asset[]; summary: DashboardSummary; utilizations: Utilization[]; issues: AssetIssue[] };
+type MvpData = { assets: Asset[]; summary: DashboardSummary; utilizations: Utilization[]; issues: AssetIssue[]; pagination?: { assets: { limit: number; offset: number; total: number; returned: number; hasMore: boolean } } };
 
 function buildSummary(assets: Asset[], utilizations: Utilization[], issues: AssetIssue[]): DashboardSummary {
   return {
@@ -36,14 +36,30 @@ function scopeDataForOperator(
   const assetIds = new Set(finalAssets.map((asset) => asset.id));
   const utilizations = data.utilizations.filter((item) => assetIds.has(item.asset_id));
   const issues = data.issues.filter((issue) => assetIds.has(issue.asset_id));
-  return { assets: finalAssets, utilizations, issues, summary: buildSummary(finalAssets, utilizations, issues) };
+  return {
+    assets: finalAssets,
+    utilizations,
+    issues,
+    summary: buildSummary(finalAssets, utilizations, issues),
+    pagination: { assets: { limit: finalAssets.length, offset: 0, total: finalAssets.length, returned: finalAssets.length, hasMore: false } },
+  };
 }
 
-export async function GET() {
+function parseBoundedInt(value: string | null, fallback: number, max: number) {
+  if (value === null || value.trim() === "") return fallback;
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(0, Math.min(Math.trunc(parsed), max));
+}
+
+export async function GET(request: Request) {
   try {
     const user = await getSessionUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    const data = await getMvpDataFromDb();
+    const url = new URL(request.url);
+    const assetLimit = Math.max(1, parseBoundedInt(url.searchParams.get("assetLimit"), 100, 1000));
+    const assetOffset = parseBoundedInt(url.searchParams.get("assetOffset"), 0, 1_000_000);
+    const data = await getMvpDataFromDb({ assetLimit, assetOffset });
     if (user.role === 'Operator Kampus') {
       return NextResponse.json(scopeDataForOperator(data, user.kode_satker, user.university_name));
     }

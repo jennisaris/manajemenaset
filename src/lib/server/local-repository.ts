@@ -5,6 +5,7 @@ export {
   parseJson,
   normalizeAsset,
   getAssetsFromDb,
+  getAssetCountFromDb,
   upsertAssetToDb,
   deleteAssetFromDb,
 } from '@/lib/server/repositories/asset-repository';

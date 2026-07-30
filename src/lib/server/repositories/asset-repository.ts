@@ -45,7 +45,16 @@ export function normalizeAsset(row: Record<string, unknown>): Asset {
   };
 }
 
-export async function getAssetsFromDb(): Promise<Asset[]> {
+export type AssetListOptions = { limit?: number; offset?: number };
+
+export async function getAssetCountFromDb(): Promise<number> {
+  const { rows } = await query('select count(*)::bigint as total from assets where coalesce(is_deleted, 0) = 0');
+  return Number(rows[0]?.total ?? 0);
+}
+
+export async function getAssetsFromDb(options: AssetListOptions = {}): Promise<Asset[]> {
+  const limit = Math.max(1, Math.min(options.limit ?? 300, 1000));
+  const offset = Math.max(0, options.offset ?? 0);
   const { rows } = await query(`
     select a.*,
       coalesce(array_remove(array_agg(distinct ap.photo_path), null), '{}') as photo_paths,
@@ -61,7 +70,8 @@ export async function getAssetsFromDb(): Promise<Asset[]> {
     where coalesce(a.is_deleted, 0) = 0
     group by a.id
     order by a.id asc
-  `);
+    limit $1 offset $2
+  `, [limit, offset]);
   return rows.map((row) => normalizeAsset(row));
 }
 

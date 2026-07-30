@@ -11,7 +11,7 @@ import { apiJson } from '@/lib/api-client';
 import type { Asset, AssetIssue, DashboardSummary, UserRole, Utilization } from '@/lib/types';
 
 type AuthState = 'checking' | 'login' | 'loading' | 'authenticated' | 'error';
-type MvpData = { assets: Asset[]; summary: DashboardSummary; utilizations: Utilization[]; issues: AssetIssue[] };
+type MvpData = { assets: Asset[]; summary: DashboardSummary; utilizations: Utilization[]; issues: AssetIssue[]; pagination?: { assets: { limit: number; offset: number; total: number; returned: number; hasMore: boolean } } };
 type SessionResponse = { user: { id: string; email: string; full_name: string; role: UserRole; university_name: string | null; status: 'aktif' | 'nonaktif' } | null };
 
 function emptySummary(): DashboardSummary {
@@ -49,7 +49,7 @@ export function AppShell() {
   async function loadDashboardData() {
     setIsDashboardLoading(true);
     try {
-      const nextData = await apiJson<MvpData>('/api/mvp-data');
+      const nextData = await apiJson<MvpData>('/api/mvp-data?assetLimit=100');
       setData(nextData);
     } finally {
       setIsDashboardLoading(false);
@@ -107,6 +107,22 @@ export function AppShell() {
     } catch (error) {
       setAuthState('error');
       setMessage(error instanceof Error ? error.message : 'Login gagal. Coba lagi.');
+    }
+  }
+
+
+  async function loadMoreAssets() {
+    const page = data.pagination?.assets;
+    if (!page?.hasMore || isDashboardLoading) return;
+    setIsDashboardLoading(true);
+    try {
+      const nextData = await apiJson<MvpData>(`/api/mvp-data?assetLimit=${page.limit}&assetOffset=${page.offset + page.returned}`);
+      setData({
+        ...nextData,
+        assets: [...data.assets, ...nextData.assets],
+      });
+    } finally {
+      setIsDashboardLoading(false);
     }
   }
 
@@ -358,17 +374,29 @@ export function AppShell() {
           </div>
         </main>
       ) : (
-        <Dashboard
-          assets={data.assets}
-          summary={data.summary}
-          utilizations={data.utilizations}
-          issues={data.issues}
-          currentRole={role}
-          fullName={fullName}
-          universityName={universityName}
-          onSignOut={handleSignOut}
-          onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
-        />
+        <>
+          <Dashboard
+            assets={data.assets}
+            summary={data.summary}
+            utilizations={data.utilizations}
+            issues={data.issues}
+            currentRole={role}
+            fullName={fullName}
+            universityName={universityName}
+            onSignOut={handleSignOut}
+            onOpenMobileSidebar={() => setIsMobileSidebarOpen(true)}
+          />
+          {data.pagination?.assets.hasMore && (
+            <button
+              type="button"
+              onClick={loadMoreAssets}
+              disabled={isDashboardLoading}
+              className="fixed bottom-24 right-5 z-40 rounded-full bg-primary px-5 py-3 text-xs font-bold text-white shadow-xl shadow-primary/30 transition hover:bg-primary-hover disabled:opacity-60 lg:bottom-6"
+            >
+              Muat aset berikutnya ({data.assets.length}/{data.pagination.assets.total})
+            </button>
+          )}
+        </>
       )}
     </div>
   );
