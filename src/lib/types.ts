@@ -4,6 +4,40 @@ export type UserRole = 'Superadmin' | 'Admin Aset' | 'Operator Kampus' | 'Pimpin
 
 export type UserStatus = 'aktif' | 'nonaktif' | 'menunggu_persetujuan' | 'ditolak';
 
+export type Satker = {
+  id?: number;
+  kode_satker: string;
+  nama_satker: string;
+};
+
+export type BmnCategoryType = 'alat_angkutan' | 'khusus_tik' | 'non_tik';
+
+export type BmnAssetItem = {
+  id: number;
+  jenis_bmn?: string | null;
+  kode_satker?: string | null;
+  nama_satker?: string | null;
+  kode_barang?: string | null;
+  nup?: string | null;
+  nama_barang: string;
+  status_bmn?: string | null;
+  merk?: string | null;
+  tipe?: string | null;
+  kondisi?: string | null;
+  umur_aset?: number | null;
+  intra_extra?: string | null;
+  henti_guna?: string | null;
+  status_sbsn?: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
+  alamat_lokasi?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+
+
+
 export type UserProfile = {
   id: string;
   full_name: string;
@@ -14,6 +48,7 @@ export type UserProfile = {
   university_name: string | null;
   nip?: string | null;
   satuan_kerja?: string | null;
+  kode_satker?: string | null;
   phone_number?: string | null;
   assignment_letter_name?: string | null;
   assignment_letter_path?: string | null;
@@ -26,6 +61,7 @@ export type UserRegistrationInput = {
   nip: string;
   full_name: string;
   satuan_kerja: string;
+  kode_satker?: string;
   email: string;
   phone_number: string;
   password: string;
@@ -199,4 +235,33 @@ export type IssueProgress = {
   document_name?: string | null;
   document_path?: string | null;
   document_url?: string | null;
+};
+
+export type BmnDisposalProposal = {
+  id: number;
+  kode_satker: string;
+  nama_satker: string;
+  no_surat_permohonan: string;
+  surat_permohonan_name?: string | null;
+  surat_permohonan_path?: string | null;
+  surat_permohonan_url?: string | null;
+  sptjm_name?: string | null;
+  sptjm_path?: string | null;
+  sptjm_url?: string | null;
+  lampiran_name?: string | null;
+  lampiran_path?: string | null;
+  lampiran_url?: string | null;
+  sk_tim_name?: string | null;
+  sk_tim_path?: string | null;
+  sk_tim_url?: string | null;
+  ba_penelitian_name?: string | null;
+  ba_penelitian_path?: string | null;
+  ba_penelitian_url?: string | null;
+  jumlah_barang: number;
+  jenis_barang: string | null;
+  nilai_perolehan: number;
+  status: 'menunggu_verifikasi' | 'disetujui' | 'ditolak';
+  catatan?: string | null;
+  created_at?: string | null;
+  updated_at?: string | null;
 };

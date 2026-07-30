@@ -538,7 +538,7 @@ export function AssetList({
               <div>
                 <h3 className="text-lg font-bold text-[#080C1A]">Data Aset Universitas</h3>
                 <p className="text-xs text-[#6A7686]">
-                  Kelola inventarisasi tanah, bangunan, dokumen legalitas, dan status verifikasi aset.
+                  Kelola inventarisasi tanah dan bangunan serta status verifikasi aset.
                 </p>
                 {isScopedRole && (
                   <p className="mt-1 text-xs font-semibold text-[#165DFF]">
@@ -599,9 +599,8 @@ export function AssetList({
                     type="button"
                     onClick={() => setViewMode('table')}
                     title="Tampilan Tabel"
-                    className={`flex h-7 w-7 items-center justify-center rounded-full transition ${
-                      viewMode === 'table' ? 'bg-[#165DFF] text-white shadow-xs' : 'text-[#6A7686] hover:text-[#080C1A]'
-                    }`}
+                    className={`flex h-7 w-7 items-center justify-center rounded-full transition ${viewMode === 'table' ? 'bg-[#165DFF] text-white shadow-xs' : 'text-[#6A7686] hover:text-[#080C1A]'
+                      }`}
                   >
                     <List className="h-4 w-4" />
                   </button>
@@ -609,9 +608,8 @@ export function AssetList({
                     type="button"
                     onClick={() => setViewMode('grid')}
                     title="Tampilan Grid Kartu"
-                    className={`flex h-7 w-7 items-center justify-center rounded-full transition ${
-                      viewMode === 'grid' ? 'bg-[#165DFF] text-white shadow-xs' : 'text-[#6A7686] hover:text-[#080C1A]'
-                    }`}
+                    className={`flex h-7 w-7 items-center justify-center rounded-full transition ${viewMode === 'grid' ? 'bg-[#165DFF] text-white shadow-xs' : 'text-[#6A7686] hover:text-[#080C1A]'
+                      }`}
                   >
                     <Grid className="h-4 w-4" />
                   </button>

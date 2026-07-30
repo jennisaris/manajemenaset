@@ -98,14 +98,14 @@ export function AssetTable({
                   <button
                     onClick={() => onMapClick ? onMapClick(asset) : onView(asset)}
                     title="Lihat Peta Lokasi Aset"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-50 text-sky-600 transition hover:bg-sky-600 hover:text-white"
+                    className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] cursor-pointer"
                   >
                     <MapPin className="h-4 w-4" />
                   </button>
                   <button
                     onClick={() => onView(asset)}
                     title="Lihat Detail Aset"
-                    className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF2F7] text-[#165DFF] transition hover:bg-[#165DFF] hover:text-white"
+                    className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] cursor-pointer"
                   >
                     <Eye className="h-4 w-4" />
                   </button>
@@ -114,14 +114,14 @@ export function AssetTable({
                       <button
                         onClick={() => onUpdateVerification(asset, 'terverifikasi')}
                         title="Verifikasi Aset"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-emerald-50 text-emerald-700 transition hover:bg-emerald-600 hover:text-white"
+                        className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-emerald-600 hover:text-white hover:border-emerald-600 cursor-pointer"
                       >
                         <ShieldCheck className="h-4 w-4" />
                       </button>
                       <button
                         onClick={() => onUpdateVerification(asset, 'revisi')}
                         title="Minta Revisi"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-amber-50 text-amber-700 transition hover:bg-amber-600 hover:text-white"
+                        className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-amber-600 hover:text-white hover:border-amber-600 cursor-pointer"
                       >
                         <RotateCcw className="h-4 w-4" />
                       </button>
@@ -132,7 +132,7 @@ export function AssetTable({
                       <button
                         onClick={() => onEdit(asset)}
                         title="Edit Aset"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-[#EFF2F7] text-[#6A7686] transition hover:bg-[#165DFF] hover:text-white"
+                        className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] cursor-pointer"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
@@ -140,7 +140,7 @@ export function AssetTable({
                         onClick={() => onDelete(asset)}
                         disabled={deletingAssetId === asset.id}
                         title="Hapus Aset"
-                        className="flex h-8 w-8 items-center justify-center rounded-lg bg-rose-50 text-rose-600 transition hover:bg-rose-600 hover:text-white disabled:opacity-50"
+                        className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-rose-600 hover:text-white hover:border-rose-600 cursor-pointer disabled:opacity-50"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -239,7 +239,7 @@ export function AssetTable({
                       <button
                         onClick={() => onMapClick ? onMapClick(asset) : onView(asset)}
                         title="Lihat Peta Lokasi Aset (Layar Besar)"
-                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-sky-50 text-sky-600 transition hover:bg-sky-600 hover:text-white"
+                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] cursor-pointer"
                       >
                         <MapPin className="h-4 w-4" />
                       </button>
@@ -247,7 +247,7 @@ export function AssetTable({
                       <button
                         onClick={() => onView(asset)}
                         title="Lihat Detail Aset"
-                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#EFF2F7] text-[#165DFF] transition hover:bg-[#165DFF] hover:text-white"
+                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] cursor-pointer"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
@@ -257,14 +257,14 @@ export function AssetTable({
                           <button
                             onClick={() => onUpdateVerification(asset, 'terverifikasi')}
                             title="Setujui Verifikasi Aset"
-                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-emerald-50 text-emerald-700 transition hover:bg-emerald-600 hover:text-white"
+                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-emerald-600 hover:text-white hover:border-emerald-600 cursor-pointer"
                           >
                             <ShieldCheck className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => onUpdateVerification(asset, 'revisi')}
                             title="Minta Revisi Aset"
-                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-amber-50 text-amber-700 transition hover:bg-amber-600 hover:text-white"
+                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-amber-600 hover:text-white hover:border-amber-600 cursor-pointer"
                           >
                             <RotateCcw className="h-4 w-4" />
                           </button>
@@ -276,7 +276,7 @@ export function AssetTable({
                           <button
                             onClick={() => onEdit(asset)}
                             title="Edit Aset"
-                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#EFF2F7] text-[#6A7686] transition hover:bg-[#165DFF] hover:text-white"
+                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] cursor-pointer"
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
@@ -284,7 +284,7 @@ export function AssetTable({
                             onClick={() => onDelete(asset)}
                             disabled={deletingAssetId === asset.id}
                             title="Hapus Aset"
-                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-rose-50 text-rose-600 transition hover:bg-rose-600 hover:text-white disabled:opacity-50"
+                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-rose-600 hover:text-white hover:border-rose-600 cursor-pointer disabled:opacity-50"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>

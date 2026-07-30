@@ -10,6 +10,7 @@ export type SessionUser = {
   full_name: string;
   role: UserRole;
   university_name: string | null;
+  kode_satker?: string | null;
   status: 'aktif' | 'nonaktif';
 };
 
@@ -52,6 +53,7 @@ export function parseSessionToken(token: string | undefined): SessionUser | null
     full_name: payload.full_name,
     role: payload.role,
     university_name: payload.university_name,
+    kode_satker: payload.kode_satker ?? null,
     status: payload.status,
   };
 }

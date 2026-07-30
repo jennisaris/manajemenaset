@@ -33,6 +33,9 @@ import { IssueManager } from './issue-manager';
 import { MapCard } from './map-card';
 import { UtilizationManager } from './utilization-manager';
 import { UserRoleManager } from './user-role-manager';
+import { BmnManager } from './bmn/bmn-manager';
+import { BmnDisposalManager } from './bmn-disposal-manager';
+
 
 const nf = new Intl.NumberFormat('id-ID');
 
@@ -212,11 +215,21 @@ export function Dashboard({
       case '#dashboard':
         return 'Dashboard';
       case '#asset-list':
-        return 'Data Aset Universitas';
+      case '#asset-bangunan-tanah':
+        return 'Data Aset - Bangunan / Tanah';
+      case '#asset-alat-angkutan':
+        return 'Data Aset - Alat Angkut Bermotor';
+      case '#asset-khusus-tik':
+        return 'Data Aset - Mesin Khusus TIK';
+      case '#asset-non-tik':
+        return 'Data Aset - Mesin Peralatan Non TIK';
       case '#verification':
         return 'Verifikasi Aset';
+
       case '#utilization':
         return 'Pemanfaatan Aset';
+      case '#disposal':
+        return 'Penghapusan BMN';
       case '#issues':
         return 'Permasalahan Aset';
       case '#reports':
@@ -471,8 +484,8 @@ export function Dashboard({
           </>
         )}
 
-        {/* Asset List & Verification */}
-        {['#asset-list', '#verification'].includes(pageHash) && (
+        {/* Sub-Menu 1: Bangunan / Tanah & Verifikasi */}
+        {['#asset-list', '#asset-bangunan-tanah', '#verification'].includes(pageHash) && (
           <section className="mt-6" id={pageHash === '#verification' ? 'verification' : 'asset-list'}>
             <AssetList
               key={`assets-${effectiveUniversity || 'all'}-${pageHash}`}
@@ -484,6 +497,43 @@ export function Dashboard({
           </section>
         )}
 
+        {/* Sub-Menu 2: Alat Angkut Bermotor */}
+        {pageHash === '#asset-alat-angkutan' && (
+          <section className="mt-6">
+            <BmnManager
+              category="alat_angkutan"
+              categoryTitle="Data Aset - Alat Angkut Bermotor"
+              defaultJenisBmn="ALAT ANGKUTAN BERMOTOR"
+              isOperator={role === 'Operator Kampus'}
+            />
+          </section>
+        )}
+
+        {/* Sub-Menu 3: Mesin Khusus TIK */}
+        {pageHash === '#asset-khusus-tik' && (
+          <section className="mt-6">
+            <BmnManager
+              category="khusus_tik"
+              categoryTitle="Data Aset - Mesin Khusus TIK"
+              defaultJenisBmn="MESIN PERALATAN KHUSUS TIK"
+              isOperator={role === 'Operator Kampus'}
+            />
+          </section>
+        )}
+
+        {/* Sub-Menu 4: Mesin Peralatan Non TIK */}
+        {pageHash === '#asset-non-tik' && (
+          <section className="mt-6">
+            <BmnManager
+              category="non_tik"
+              categoryTitle="Data Aset - Mesin Peralatan Non TIK"
+              defaultJenisBmn="MESIN PERALATAN NON TIK"
+              isOperator={role === 'Operator Kampus'}
+            />
+          </section>
+        )}
+
+
         {/* Utilization Manager */}
         {pageHash === '#utilization' && (
           <section className="mt-6" id="utilization">
@@ -493,6 +543,16 @@ export function Dashboard({
               utilizations={scopedUtilizations}
               canManage={canManage}
               onUtilizationsChange={handleUtilizationsChange}
+            />
+          </section>
+        )}
+
+        {/* BMN Disposal Manager */}
+        {pageHash === '#disposal' && (
+          <section className="mt-6" id="disposal">
+            <BmnDisposalManager
+              currentRole={role}
+              universityName={universityName}
             />
           </section>
         )}

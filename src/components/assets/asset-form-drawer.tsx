@@ -3,6 +3,8 @@ import dynamic from 'next/dynamic';
 import { Eye, FileText, ImageIcon, UploadCloud, X } from 'lucide-react';
 import type { Asset, AssetType, VerificationStatus } from '@/lib/types';
 import { ImageSlideshow, SlideshowItem } from './image-slideshow';
+import { SatkerAutocompleteInput } from '@/components/satker-autocomplete-input';
+
 
 export type AssetFormErrors = Partial<Record<'asset_code' | 'latitude' | 'longitude' | 'coordinates', string>>;
 
@@ -206,6 +208,29 @@ export function AssetFormDrawer({
             { value: 'land', label: 'Tanah' },
           ]}
         />
+        <SatkerAutocompleteInput
+          label="Satuan Kerja (Satker)"
+          value={
+            editingAsset.kode_satker && editingAsset.nama_satker
+              ? `${editingAsset.kode_satker} - ${editingAsset.nama_satker}`
+              : editingAsset.kode_satker || editingAsset.nama_satker || editingAsset.campus_name || ''
+          }
+          onChange={(val, item) => {
+            if (item) {
+              onUpdateDraft({
+                kode_satker: item.kode_satker,
+                nama_satker: item.nama_satker,
+                campus_name: item.nama_satker,
+              });
+            } else {
+              onUpdateDraft({
+                kode_satker: val,
+                nama_satker: val,
+              });
+            }
+          }}
+          compact
+        />
         <TextField
           label="Universitas/Kampus"
           value={editingAsset.campus_name ?? ''}
@@ -217,6 +242,7 @@ export function AssetFormDrawer({
           value={editingAsset.faculty_or_unit ?? ''}
           onChange={(value) => onUpdateDraft({ faculty_or_unit: value })}
         />
+
         <SelectField<VerificationStatus>
           label="Status Verifikasi"
           value={isOperator ? 'menunggu_verifikasi' : editingAsset.verification_status}

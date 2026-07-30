@@ -1,0 +1,570 @@
+[
+  {
+    "kode_satker": "693432",
+    "nama_satker": "UNIVERSITAS NEGERI PAPUA"
+  },
+  {
+    "kode_satker": "693494",
+    "nama_satker": "AKADEMI KOMUNITAS NEGERI ACEH BARAT"
+  },
+  {
+    "kode_satker": "693493",
+    "nama_satker": "AKADEMI KOMUNITAS NEGERI PACITAN"
+  },
+  {
+    "kode_satker": "693506",
+    "nama_satker": "AKADEMI KOMUNITAS NEGERI PUTRA SANG FAJAR BLITAR"
+  },
+  {
+    "kode_satker": "693495",
+    "nama_satker": "AKADEMI KOMUNITAS NEGERI REJANG LEBONG"
+  },
+  {
+    "kode_satker": "693508",
+    "nama_satker": "AKADEMI KOMUNITAS NEGERI SENI DAN BUDAYA YOGYAKARTA"
+  },
+  {
+    "kode_satker": "693320",
+    "nama_satker": "DIREKTORAT JENDERAL RISET DAN PENGEMBANGAN"
+  },
+  {
+    "kode_satker": "693321",
+    "nama_satker": "DIREKTORAT JENDERAL SAINS DAN TEKNOLOGI"
+  },
+  {
+    "kode_satker": "693438",
+    "nama_satker": "DIREKTORAT PEMBELAJARAN DAN KEMAHASISWAAN"
+  },
+  {
+    "kode_satker": "693440",
+    "nama_satker": "DIREKTORAT SUMBER DAYA"
+  },
+  {
+    "kode_satker": "693441",
+    "nama_satker": "UNIVERSITAS ANDALAS"
+  },
+  {
+    "kode_satker": "693443",
+    "nama_satker": "UNIVERSITAS BRAWIJAYA"
+  },
+  {
+    "kode_satker": "693444",
+    "nama_satker": "UNIVERSITAS NEGERI PADANG"
+  },
+  {
+    "kode_satker": "693449",
+    "nama_satker": "UNIVERSITAS NEGERI SEMARANG"
+  },
+  {
+    "kode_satker": "693448",
+    "nama_satker": "UNIVERSITAS NEGERI SURABAYA"
+  },
+  {
+    "kode_satker": "693437",
+    "nama_satker": "UNIVERSITAS SEBELAS MARET"
+  },
+  {
+    "kode_satker": "693450",
+    "nama_satker": "UNIVERSITAS TERBUKA"
+  },
+  {
+    "kode_satker": "693319",
+    "nama_satker": "INSPEKTORAT JENDERAL"
+  },
+  {
+    "kode_satker": "693400",
+    "nama_satker": "INSTITUT SENI BUDAYA INDONESIA ACEH"
+  },
+  {
+    "kode_satker": "693403",
+    "nama_satker": "INSTITUT SENI BUDAYA INDONESIA BANDUNG"
+  },
+  {
+    "kode_satker": "693405",
+    "nama_satker": "INSTITUT SENI BUDAYA INDONESIA TANAH PAPUA"
+  },
+  {
+    "kode_satker": "693406",
+    "nama_satker": "INSTITUT SENI INDONESIA DENPASAR"
+  },
+  {
+    "kode_satker": "693399",
+    "nama_satker": "INSTITUT SENI INDONESIA PADANGPANJANG"
+  },
+  {
+    "kode_satker": "693404",
+    "nama_satker": "INSTITUT SENI INDONESIA SURAKARTA"
+  },
+  {
+    "kode_satker": "693401",
+    "nama_satker": "INSTITUT SENI INDONESIA YOGYAKARTA"
+  },
+  {
+    "kode_satker": "693446",
+    "nama_satker": "INSTITUT TEKNOLOGI BACHARUDDIN JUSUF HABIBIE"
+  },
+  {
+    "kode_satker": "693412",
+    "nama_satker": "INSTITUT TEKNOLOGI BANDUNG"
+  },
+  {
+    "kode_satker": "693436",
+    "nama_satker": "INSTITUT TEKNOLOGI KALIMANTAN"
+  },
+  {
+    "kode_satker": "693416",
+    "nama_satker": "INSTITUT TEKNOLOGI SEPULUH NOPEMBER"
+  },
+  {
+    "kode_satker": "693402",
+    "nama_satker": "INSTITUT TEKNOLOGI SUMATERA"
+  },
+  {
+    "kode_satker": "693203",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH I MEDAN"
+  },
+  {
+    "kode_satker": "693204",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH II PALEMBANG"
+  },
+  {
+    "kode_satker": "693205",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH III DKI JAKARTA"
+  },
+  {
+    "kode_satker": "693206",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH IV BANDUNG"
+  },
+  {
+    "kode_satker": "693211",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH IX MAKASSAR"
+  },
+  {
+    "kode_satker": "693207",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH V YOGYAKARTA"
+  },
+  {
+    "kode_satker": "693208",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH VI SEMARANG"
+  },
+  {
+    "kode_satker": "693209",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH VII SURABAYA"
+  },
+  {
+    "kode_satker": "693210",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH VIII DENPASAR"
+  },
+  {
+    "kode_satker": "693212",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH X PADANG"
+  },
+  {
+    "kode_satker": "693213",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH XI BANJARMASIN"
+  },
+  {
+    "kode_satker": "693214",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH XII AMBON"
+  },
+  {
+    "kode_satker": "693215",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH XIII BANDA ACEH"
+  },
+  {
+    "kode_satker": "693216",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH XIV BIAK"
+  },
+  {
+    "kode_satker": "693217",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH XV KUPANG"
+  },
+  {
+    "kode_satker": "693218",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH XVI GORONTALO"
+  },
+  {
+    "kode_satker": "693200",
+    "nama_satker": "LEMBAGA LAYANAN PENDIDIKAN TINGGI WILAYAH XVII RIAU"
+  },
+  {
+    "kode_satker": "693472",
+    "nama_satker": "POLITEKNIK ELEKTRONIKA NEGERI SURABAYA"
+  },
+  {
+    "kode_satker": "693470",
+    "nama_satker": "POLITEKNIK MANUFAKTUR NEGERI BANDUNG"
+  },
+  {
+    "kode_satker": "693487",
+    "nama_satker": "POLITEKNIK MANUFAKTUR NEGERI BANGKA BELITUNG"
+  },
+  {
+    "kode_satker": "693491",
+    "nama_satker": "POLITEKNIK MARITIM NEGERI INDONESIA"
+  },
+  {
+    "kode_satker": "693485",
+    "nama_satker": "POLITEKNIK NEGERI AMBON"
+  },
+  {
+    "kode_satker": "693476",
+    "nama_satker": "POLITEKNIK NEGERI BALI"
+  },
+  {
+    "kode_satker": "693492",
+    "nama_satker": "POLITEKNIK NEGERI BALIKPAPAN"
+  },
+  {
+    "kode_satker": "693469",
+    "nama_satker": "POLITEKNIK NEGERI BANDUNG"
+  },
+  {
+    "kode_satker": "693478",
+    "nama_satker": "POLITEKNIK NEGERI BANJARMASIN"
+  },
+  {
+    "kode_satker": "693460",
+    "nama_satker": "POLITEKNIK NEGERI BANYUWANGI"
+  },
+  {
+    "kode_satker": "693488",
+    "nama_satker": "POLITEKNIK NEGERI BATAM"
+  },
+  {
+    "kode_satker": "693505",
+    "nama_satker": "POLITEKNIK NEGERI BENGKALIS"
+  },
+  {
+    "kode_satker": "693497",
+    "nama_satker": "POLITEKNIK NEGERI CILACAP"
+  },
+  {
+    "kode_satker": "693503",
+    "nama_satker": "POLITEKNIK NEGERI FAKFAK"
+  },
+  {
+    "kode_satker": "693496",
+    "nama_satker": "POLITEKNIK NEGERI INDRAMAYU"
+  },
+  {
+    "kode_satker": "693468",
+    "nama_satker": "POLITEKNIK NEGERI JAKARTA"
+  },
+  {
+    "kode_satker": "693475",
+    "nama_satker": "POLITEKNIK NEGERI JEMBER"
+  },
+  {
+    "kode_satker": "693461",
+    "nama_satker": "POLITEKNIK NEGERI KETAPANG"
+  },
+  {
+    "kode_satker": "693483",
+    "nama_satker": "POLITEKNIK NEGERI KUPANG"
+  },
+  {
+    "kode_satker": "693467",
+    "nama_satker": "POLITEKNIK NEGERI LAMPUNG"
+  },
+  {
+    "kode_satker": "693462",
+    "nama_satker": "POLITEKNIK NEGERI LHOKSEUMAWE"
+  },
+  {
+    "kode_satker": "693500",
+    "nama_satker": "POLITEKNIK NEGERI MADIUN"
+  },
+  {
+    "kode_satker": "693499",
+    "nama_satker": "POLITEKNIK NEGERI MADURA"
+  },
+  {
+    "kode_satker": "693474",
+    "nama_satker": "POLITEKNIK NEGERI MALANG"
+  },
+  {
+    "kode_satker": "693486",
+    "nama_satker": "POLITEKNIK NEGERI MANADO"
+  },
+  {
+    "kode_satker": "693463",
+    "nama_satker": "POLITEKNIK NEGERI MEDAN"
+  },
+  {
+    "kode_satker": "693490",
+    "nama_satker": "POLITEKNIK NEGERI MEDIA KREATIF"
+  },
+  {
+    "kode_satker": "693507",
+    "nama_satker": "POLITEKNIK NEGERI NUNUKAN"
+  },
+  {
+    "kode_satker": "693504",
+    "nama_satker": "POLITEKNIK NEGERI NUSA UTARA"
+  },
+  {
+    "kode_satker": "693464",
+    "nama_satker": "POLITEKNIK NEGERI PADANG"
+  },
+  {
+    "kode_satker": "693477",
+    "nama_satker": "POLITEKNIK NEGERI PONTIANAK"
+  },
+  {
+    "kode_satker": "693480",
+    "nama_satker": "POLITEKNIK NEGERI SAMARINDA"
+  },
+  {
+    "kode_satker": "693501",
+    "nama_satker": "POLITEKNIK NEGERI SAMBAS"
+  },
+  {
+    "kode_satker": "693471",
+    "nama_satker": "POLITEKNIK NEGERI SEMARANG"
+  },
+  {
+    "kode_satker": "693466",
+    "nama_satker": "POLITEKNIK NEGERI SRIWIJAYA"
+  },
+  {
+    "kode_satker": "693498",
+    "nama_satker": "POLITEKNIK NEGERI SUBANG"
+  },
+  {
+    "kode_satker": "693502",
+    "nama_satker": "POLITEKNIK NEGERI TANAH LAUT"
+  },
+  {
+    "kode_satker": "693481",
+    "nama_satker": "POLITEKNIK NEGERI UJUNG PANDANG"
+  },
+  {
+    "kode_satker": "693489",
+    "nama_satker": "POLITEKNIK PERIKANAN NEGERI TUAL"
+  },
+  {
+    "kode_satker": "693473",
+    "nama_satker": "POLITEKNIK PERKAPALAN NEGERI SURABAYA"
+  },
+  {
+    "kode_satker": "693484",
+    "nama_satker": "POLITEKNIK PERTANIAN NEGERI KUPANG"
+  },
+  {
+    "kode_satker": "693482",
+    "nama_satker": "POLITEKNIK PERTANIAN NEGERI PANGKAJENE KEPULAUAN"
+  },
+  {
+    "kode_satker": "693465",
+    "nama_satker": "POLITEKNIK PERTANIAN NEGERI PAYAKUMBUH"
+  },
+  {
+    "kode_satker": "693479",
+    "nama_satker": "POLITEKNIK PERTANIAN NEGERI SAMARINDA"
+  },
+  {
+    "kode_satker": "694365",
+    "nama_satker": "PUSAT PEMBIAYAAN DAN ASESMEN PENDIDIKAN TINGGI"
+  },
+  {
+    "kode_satker": "693371",
+    "nama_satker": "SEKRETARIAT DIREKTORAT JENDERAL PENDIDIKAN TINGGI"
+  },
+  {
+    "kode_satker": "693318",
+    "nama_satker": "SEKRETARIAT JENDERAL"
+  },
+  {
+    "kode_satker": "693411",
+    "nama_satker": "UNIVERSITAS AIRLANGGA"
+  },
+  {
+    "kode_satker": "693395",
+    "nama_satker": "UNIVERSITAS BANGKA BELITUNG"
+  },
+  {
+    "kode_satker": "693392",
+    "nama_satker": "UNIVERSITAS BENGKULU"
+  },
+  {
+    "kode_satker": "693396",
+    "nama_satker": "UNIVERSITAS BORNEO TARAKAN"
+  },
+  {
+    "kode_satker": "693431",
+    "nama_satker": "UNIVERSITAS CENDERAWASIH"
+  },
+  {
+    "kode_satker": "693414",
+    "nama_satker": "UNIVERSITAS DIPONEGORO"
+  },
+  {
+    "kode_satker": "693377",
+    "nama_satker": "UNIVERSITAS HALU OLEO"
+  },
+  {
+    "kode_satker": "693407",
+    "nama_satker": "UNIVERSITAS INDONESIA"
+  },
+  {
+    "kode_satker": "693426",
+    "nama_satker": "UNIVERSITAS JAMBI"
+  },
+  {
+    "kode_satker": "693424",
+    "nama_satker": "UNIVERSITAS JEMBER"
+  },
+  {
+    "kode_satker": "693420",
+    "nama_satker": "UNIVERSITAS JENDERAL SOEDIRMAN"
+  },
+  {
+    "kode_satker": "693394",
+    "nama_satker": "UNIVERSITAS KHAIRUN"
+  },
+  {
+    "kode_satker": "693381",
+    "nama_satker": "UNIVERSITAS LAMBUNG MANGKURAT"
+  },
+  {
+    "kode_satker": "693379",
+    "nama_satker": "UNIVERSITAS LAMPUNG"
+  },
+  {
+    "kode_satker": "693435",
+    "nama_satker": "UNIVERSITAS MALIKUSSALEH"
+  },
+  {
+    "kode_satker": "693398",
+    "nama_satker": "UNIVERSITAS MARITIM RAJA ALI HAJI"
+  },
+  {
+    "kode_satker": "693390",
+    "nama_satker": "UNIVERSITAS MATARAM"
+  },
+  {
+    "kode_satker": "693428",
+    "nama_satker": "UNIVERSITAS MULAWARMAN"
+  },
+  {
+    "kode_satker": "693434",
+    "nama_satker": "UNIVERSITAS MUSAMUS"
+  },
+  {
+    "kode_satker": "693384",
+    "nama_satker": "UNIVERSITAS NEGERI GORONTALO"
+  },
+  {
+    "kode_satker": "693386",
+    "nama_satker": "UNIVERSITAS NEGERI MAKASSAR"
+  },
+  {
+    "kode_satker": "693383",
+    "nama_satker": "UNIVERSITAS NEGERI MANADO"
+  },
+  {
+    "kode_satker": "693387",
+    "nama_satker": "UNIVERSITAS NEGERI MEDAN"
+  },
+  {
+    "kode_satker": "693391",
+    "nama_satker": "UNIVERSITAS NUSA CENDANA"
+  },
+  {
+    "kode_satker": "693413",
+    "nama_satker": "UNIVERSITAS PADJADJARAN"
+  },
+  {
+    "kode_satker": "693427",
+    "nama_satker": "UNIVERSITAS PALANGKA RAYA"
+  },
+  {
+    "kode_satker": "693388",
+    "nama_satker": "UNIVERSITAS PATTIMURA"
+  },
+  {
+    "kode_satker": "693372",
+    "nama_satker": "UNIVERSITAS PEMBANGUNAN NASIONAL VETERAN JAKARTA"
+  },
+  {
+    "kode_satker": "693376",
+    "nama_satker": "UNIVERSITAS PEMBANGUNAN NASIONAL VETERAN JAWA TIMUR"
+  },
+  {
+    "kode_satker": "693375",
+    "nama_satker": "UNIVERSITAS PEMBANGUNAN NASIONAL VETERAN YOGYAKARTA"
+  },
+  {
+    "kode_satker": "693393",
+    "nama_satker": "UNIVERSITAS PENDIDIKAN GANESHA"
+  },
+  {
+    "kode_satker": "693409",
+    "nama_satker": "UNIVERSITAS PENDIDIKAN INDONESIA"
+  },
+  {
+    "kode_satker": "693425",
+    "nama_satker": "UNIVERSITAS RIAU"
+  },
+  {
+    "kode_satker": "693382",
+    "nama_satker": "UNIVERSITAS SAM RATULANGI"
+  },
+  {
+    "kode_satker": "693429",
+    "nama_satker": "UNIVERSITAS SAMUDRA"
+  },
+  {
+    "kode_satker": "693421",
+    "nama_satker": "UNIVERSITAS SEMBILANBELAS NOVEMBER KOLAKA"
+  },
+  {
+    "kode_satker": "693374",
+    "nama_satker": "UNIVERSITAS SILIWANGI"
+  },
+  {
+    "kode_satker": "693373",
+    "nama_satker": "UNIVERSITAS SINGAPERBANGSA KARAWANG"
+  },
+  {
+    "kode_satker": "693378",
+    "nama_satker": "UNIVERSITAS SRIWIJAYA"
+  },
+  {
+    "kode_satker": "693423",
+    "nama_satker": "UNIVERSITAS SULAWESI BARAT"
+  },
+  {
+    "kode_satker": "693433",
+    "nama_satker": "UNIVERSITAS SULTAN AGENG TIRTAYASA"
+  },
+  {
+    "kode_satker": "693385",
+    "nama_satker": "UNIVERSITAS TADULAKO"
+  },
+  {
+    "kode_satker": "693380",
+    "nama_satker": "UNIVERSITAS TANJUNGPURA"
+  },
+  {
+    "kode_satker": "693430",
+    "nama_satker": "UNIVERSITAS TEUKU UMAR"
+  },
+  {
+    "kode_satker": "693418",
+    "nama_satker": "UNIVERSITAS TIDAR"
+  },
+  {
+    "kode_satker": "693422",
+    "nama_satker": "UNIVERSITAS TIMOR"
+  },
+  {
+    "kode_satker": "693397",
+    "nama_satker": "UNIVERSITAS TRUNODJOYO MADURA"
+  },
+  {
+    "kode_satker": "693389",
+    "nama_satker": "UNIVERSITAS UDAYANA"
+  }
+]

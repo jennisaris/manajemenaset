@@ -18,14 +18,25 @@ function buildSummary(assets: Asset[], utilizations: Utilization[], issues: Asse
   };
 }
 
-function scopeDataForOperator(data: MvpData, universityName: string | null): MvpData {
-  if (!universityName) return data;
-  const assets = data.assets.filter((asset) => !asset.campus_name || asset.campus_name === universityName || asset.campus_name === 'Kampus Utama');
-  if (assets.length === 0) return data;
-  const assetIds = new Set(assets.map((asset) => asset.id));
+function scopeDataForOperator(
+  data: MvpData,
+  kodeSatker?: string | null,
+  universityName?: string | null
+): MvpData {
+  if (!kodeSatker && !universityName) return data;
+
+  const assets = data.assets.filter((asset) => {
+    if (kodeSatker && asset.kode_satker === kodeSatker) return true;
+    if (universityName && (asset.campus_name === universityName || asset.nama_satker === universityName)) return true;
+    if (kodeSatker && asset.asset_code && asset.asset_code.includes(kodeSatker)) return true;
+    return false;
+  });
+
+  const finalAssets = assets.length > 0 ? assets : data.assets;
+  const assetIds = new Set(finalAssets.map((asset) => asset.id));
   const utilizations = data.utilizations.filter((item) => assetIds.has(item.asset_id));
   const issues = data.issues.filter((issue) => assetIds.has(issue.asset_id));
-  return { assets, utilizations, issues, summary: buildSummary(assets, utilizations, issues) };
+  return { assets: finalAssets, utilizations, issues, summary: buildSummary(finalAssets, utilizations, issues) };
 }
 
 export async function GET() {
@@ -34,7 +45,7 @@ export async function GET() {
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const data = await getMvpDataFromDb();
     if (user.role === 'Operator Kampus') {
-      return NextResponse.json(scopeDataForOperator(data, user.university_name));
+      return NextResponse.json(scopeDataForOperator(data, user.kode_satker, user.university_name));
     }
     return NextResponse.json(data);
   } catch (error) {

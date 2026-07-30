@@ -523,7 +523,7 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
                         type="button"
                         onClick={() => openUtilizationMap(item)}
                         title="Lihat Peta Pemanfaatan"
-                        className="grid h-9 w-9 place-items-center rounded-xl bg-success-light text-success-dark transition hover:bg-success-light/80"
+                        className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF]"
                       >
                         <MapPinned className="h-4 w-4" />
                       </button>
@@ -531,7 +531,7 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
                         onClick={() => openEdit(item)}
                         disabled={!canManage}
                         title="Edit Pemanfaatan"
-                        className="grid h-9 w-9 place-items-center rounded-xl bg-info-light text-primary transition hover:bg-info-light/80 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                        className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
@@ -539,7 +539,7 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
                         onClick={() => deleteSelectedUtilization(item)}
                         disabled={!canManage || deletingId === item.id}
                         title={deletingId === item.id ? 'Sedang Menghapus...' : 'Hapus Pemanfaatan'}
-                        className="grid h-9 w-9 place-items-center rounded-xl bg-error-light text-error-dark transition hover:bg-error-light/80 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                        className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-rose-600 hover:text-white hover:border-rose-600 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>

@@ -573,10 +573,9 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
                 </div>
                 <div className="flex shrink-0 flex-wrap justify-end gap-2">
                   <button
-                    type="button"
                     onClick={() => openIssueMap(issue)}
-                    title="Lihat Peta Masalah"
-                    className="grid h-9 w-9 place-items-center rounded-xl bg-success-light text-success-dark transition hover:bg-success-light/80"
+                    title="Lihat Lokasi Masalah di Peta"
+                    className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF]"
                   >
                     <MapPinned className="h-4 w-4" />
                   </button>
@@ -584,7 +583,7 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
                     onClick={() => openProgress(issue)}
                     disabled={!canManage}
                     title="Catat Progress Masalah"
-                    className="grid h-9 w-9 place-items-center rounded-xl bg-info-light text-primary transition hover:bg-info-light/80 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                    className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
                   >
                     <Plus className="h-4 w-4" />
                   </button>
@@ -592,7 +591,7 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
                     onClick={() => openEdit(issue)}
                     disabled={!canManage}
                     title="Edit Masalah"
-                    className="grid h-9 w-9 place-items-center rounded-xl bg-info-light text-primary transition hover:bg-info-light/80 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                    className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
                   >
                     <Pencil className="h-4 w-4" />
                   </button>
@@ -600,7 +599,7 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
                     onClick={() => deleteSelectedIssue(issue)}
                     disabled={!canManage || deletingId === issue.id}
                     title={deletingId === issue.id ? 'Sedang Menghapus...' : 'Hapus Masalah'}
-                    className="grid h-9 w-9 place-items-center rounded-xl bg-error-light text-error-dark transition hover:bg-error-light/80 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                    className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-rose-600 hover:text-white hover:border-rose-600 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
                   >
                     <Trash2 className="h-4 w-4" />
                   </button>

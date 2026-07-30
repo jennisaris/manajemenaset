@@ -14,6 +14,7 @@ export async function POST(request: Request) {
     let nip = '';
     let full_name = '';
     let satuan_kerja = '';
+    let kode_satker = '';
     let email = '';
     let phone_number = '';
     let password = '';
@@ -26,13 +27,22 @@ export async function POST(request: Request) {
       nip = String(formData.get('nip') ?? '').trim();
       full_name = String(formData.get('full_name') ?? '').trim();
       satuan_kerja = String(formData.get('satuan_kerja') ?? '').trim();
+      kode_satker = String(formData.get('kode_satker') ?? '').trim();
       email = String(formData.get('email') ?? '').trim();
       phone_number = String(formData.get('phone_number') ?? '').trim();
       password = String(formData.get('password') ?? '').trim();
 
       const file = formData.get('assignment_letter');
       if (file instanceof File && file.size > 0) {
+        if (!file.name.toLowerCase().endsWith('.pdf') && file.type !== 'application/pdf') {
+          return NextResponse.json({ error: 'File Surat Penunjukan Operator harus berformat PDF (.pdf).' }, { status: 400 });
+        }
+        if (file.size > 5 * 1024 * 1024) {
+          return NextResponse.json({ error: 'Ukuran file Surat Penunjukan Operator melebihi batas maksimal 5MB.' }, { status: 400 });
+        }
+
         assignment_letter_name = file.name;
+
         const extension = file.name.includes('.') ? `.${file.name.split('.').pop()?.toLowerCase()}` : '';
         const filename = `${Date.now()}-${safePart(nip || 'user')}-${safePart(file.name.replace(/\.[^.]+$/, ''))}${extension}`;
         const relativePath = safePart(path.posix.join('assignment_letters', filename));
@@ -50,12 +60,18 @@ export async function POST(request: Request) {
       nip = String(json.nip ?? '').trim();
       full_name = String(json.full_name ?? '').trim();
       satuan_kerja = String(json.satuan_kerja ?? '').trim();
+      kode_satker = String(json.kode_satker ?? '').trim();
       email = String(json.email ?? '').trim();
       phone_number = String(json.phone_number ?? '').trim();
       password = String(json.password ?? '').trim();
       assignment_letter_name = json.assignment_letter_name;
       assignment_letter_path = json.assignment_letter_path;
       assignment_letter_url = json.assignment_letter_url;
+    }
+
+    if (!kode_satker && satuan_kerja) {
+      const match = satuan_kerja.match(/^(\d{6})/);
+      if (match) kode_satker = match[1];
     }
 
     if (!nip || !full_name || !satuan_kerja || !email || !phone_number || !password) {
@@ -66,6 +82,7 @@ export async function POST(request: Request) {
       nip,
       full_name,
       satuan_kerja,
+      kode_satker: kode_satker || undefined,
       email,
       phone_number,
       password,

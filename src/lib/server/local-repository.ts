@@ -38,6 +38,25 @@ export {
   rejectUserRegistration,
 } from '@/lib/server/repositories/user-repository';
 
+export {
+  getSatkerListFromDb,
+} from '@/lib/server/repositories/satker-repository';
+
+export {
+  getBmnAssetsFromDb,
+  upsertBmnAssetToDb,
+  deleteBmnAssetFromDb,
+} from '@/lib/server/repositories/bmn-repository';
+
+export {
+  getDisposalsFromDb,
+  createDisposalInDb,
+  deleteDisposalFromDb,
+  parseLampiranRecap,
+} from '@/lib/server/repositories/disposal-repository';
+
+
+
 // Domain Services
 export {
   fetchAllAssets,

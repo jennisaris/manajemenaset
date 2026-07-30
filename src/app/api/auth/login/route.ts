@@ -28,6 +28,7 @@ export async function POST(request: Request) {
       full_name: user.full_name,
       role: user.role,
       university_name: user.university_name,
+      kode_satker: user.kode_satker,
       status: user.status,
     };
     await setSessionCookie(sessionUser);

@@ -10,6 +10,7 @@ export type LoginUser = {
   full_name: string;
   status: UserStatus;
   university_name: string | null;
+  kode_satker: string | null;
   role: UserRole;
   password_hash: string | null;
   rejection_reason?: string | null;
@@ -18,6 +19,7 @@ export type LoginUser = {
 export async function ensureUserProfileColumns() {
   await query('alter table profiles add column if not exists nip text');
   await query('alter table profiles add column if not exists satuan_kerja text');
+  await query('alter table profiles add column if not exists kode_satker text');
   await query('alter table profiles add column if not exists phone_number text');
   await query('alter table profiles add column if not exists assignment_letter_name text');
   await query('alter table profiles add column if not exists assignment_letter_path text');
@@ -42,6 +44,7 @@ export function normalizeUserProfile(row: Record<string, unknown>): UserProfile 
     status,
     nip: (row.nip as string) ?? null,
     satuan_kerja: (row.satuan_kerja as string) ?? null,
+    kode_satker: (row.kode_satker as string) ?? null,
     phone_number: (row.phone_number as string) ?? null,
     assignment_letter_name: (row.assignment_letter_name as string) ?? null,
     assignment_letter_path: (row.assignment_letter_path as string) ?? null,
@@ -54,7 +57,7 @@ export function normalizeUserProfile(row: Record<string, unknown>): UserProfile 
 export async function findUserForLogin(email: string): Promise<LoginUser | null> {
   await ensureUserProfileColumns();
   const { rows } = await query(`
-    select p.id, p.email, p.full_name, p.status, p.university_name, p.password_hash, p.rejection_reason, r.name as role_name
+    select p.id, p.email, p.full_name, p.status, p.university_name, p.kode_satker, p.password_hash, p.rejection_reason, r.name as role_name
     from profiles p
     left join roles r on r.id = p.role_id
     where lower(p.email) = lower($1)
@@ -68,6 +71,7 @@ export async function findUserForLogin(email: string): Promise<LoginUser | null>
     full_name: String(row.full_name ?? row.email ?? email),
     status: (row.status as UserStatus) ?? 'aktif',
     university_name: row.university_name as string | null,
+    kode_satker: (row.kode_satker as string) ?? null,
     role: resolveUserRole(row.role_name),
     password_hash: row.password_hash as string | null,
     rejection_reason: (row.rejection_reason as string) ?? null,
@@ -83,8 +87,8 @@ export async function createPendingUserRegistration(input: UserRegistrationInput
   const defaultRoleId = roleRes.rows[0]?.id ?? null;
 
   const { rows } = await query(`
-    insert into profiles (full_name, email, password_hash, status, university_name, nip, satuan_kerja, phone_number, assignment_letter_name, assignment_letter_path, assignment_letter_url, role_id)
-    values ($1, lower($2), $3, 'menunggu_persetujuan', $4, $5, $6, $7, $8, $9, $10, $11)
+    insert into profiles (full_name, email, password_hash, status, university_name, nip, satuan_kerja, kode_satker, phone_number, assignment_letter_name, assignment_letter_path, assignment_letter_url, role_id)
+    values ($1, lower($2), $3, 'menunggu_persetujuan', $4, $5, $6, $7, $8, $9, $10, $11, $12)
     returning *
   `, [
     input.full_name,
@@ -93,6 +97,7 @@ export async function createPendingUserRegistration(input: UserRegistrationInput
     input.satuan_kerja, // Defaults campus/unit to satuan_kerja
     input.nip,
     input.satuan_kerja,
+    input.kode_satker ?? null,
     input.phone_number,
     input.assignment_letter_name ?? null,
     input.assignment_letter_path ?? null,

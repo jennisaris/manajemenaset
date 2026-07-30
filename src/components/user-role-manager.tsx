@@ -339,6 +339,7 @@ export function UserRoleManager({
                       </div>
 
                       <div className="font-semibold text-slate-700">
+                        {pUser.kode_satker && <span className="font-bold text-sky-700 mr-1">[{pUser.kode_satker}]</span>}
                         {pUser.satuan_kerja || pUser.university_name || '-'}
                       </div>
 

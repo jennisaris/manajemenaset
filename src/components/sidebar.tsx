@@ -3,21 +3,27 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import {
+  Archive,
   BadgeCheck,
   BarChart3,
   BookOpen,
   Building2,
+  Car,
+  ChevronDown,
+  ChevronRight,
   CircleAlert,
   FileText,
   GraduationCap,
   Handshake,
   KeyRound,
   Landmark,
+  Laptop,
   LayoutDashboard,
   MessageCircleQuestion,
   Search,
   UserCheck,
   Users,
+  Wrench,
 } from 'lucide-react';
 import { canManageUsers, canViewExecutiveAnalytics } from '@/lib/auth';
 import type { UserRole } from '@/lib/types';
@@ -48,18 +54,33 @@ export function Sidebar({ currentRole, isOpenMobile, onCloseMobile }: SidebarPro
     onCloseMobile?.();
   };
 
+  const [isAssetMenuOpen, setIsAssetMenuOpen] = useState(true);
+
+  useEffect(() => {
+    if (
+      activeHash === '#asset-list' ||
+      activeHash === '#asset-bangunan-tanah' ||
+      activeHash === '#asset-alat-angkutan' ||
+      activeHash === '#asset-khusus-tik' ||
+      activeHash === '#asset-non-tik'
+    ) {
+      setIsAssetMenuOpen(true);
+    }
+  }, [activeHash]);
+
+  const assetSubMenus = [
+    { href: '#asset-list', label: 'Bangunan / Tanah', icon: Landmark },
+    { href: '#asset-alat-angkutan', label: 'Alat Angkut Bermotor', icon: Car },
+    { href: '#asset-khusus-tik', label: 'Mesin Khusus TIK', icon: Laptop },
+    { href: '#asset-non-tik', label: 'Mesin Peralatan Non TIK', icon: Wrench },
+  ];
+
   const hasAnalytics = canViewExecutiveAnalytics(currentRole);
   const hasUserMgmt = canManageUsers(currentRole);
 
-  const mainMenu = [
-    { href: '#dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { href: '#asset-list', label: 'Data Aset', icon: Landmark },
-    { href: '#verification', label: 'Verifikasi', icon: BadgeCheck },
-    ...(hasAnalytics ? [{ href: '#analytics', label: 'Analitik', icon: BarChart3 }] : []),
-  ];
-
   const managementMenu = [
     { href: '#utilization', label: 'Pemanfaatan', icon: Handshake },
+    { href: '#disposal', label: 'Penghapusan', icon: Archive },
     { href: '#issues', label: 'Permasalahan', icon: CircleAlert },
     { href: '#reports', label: 'Laporan', icon: FileText },
     ...(hasUserMgmt ? [{ href: '#users', label: 'User & Role', icon: Users }] : []),
@@ -107,33 +128,96 @@ export function Sidebar({ currentRole, isOpenMobile, onCloseMobile }: SidebarPro
               Main Menu
             </h3>
             <div className="flex flex-col gap-1">
-              {mainMenu.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeHash === item.href;
-                return (
-                  <a
-                    key={item.href}
-                    href={item.href}
-                    onClick={(e) => handleNavClick(item.href, e)}
-                    className={`group flex items-center gap-3 rounded-xl p-4 transition-all duration-300 cursor-pointer ${
-                      isActive
-                        ? 'bg-muted font-semibold text-foreground'
-                        : 'text-secondary hover:bg-muted hover:text-foreground'
-                    }`}
-                  >
-                    <Icon
-                      className={`h-6 w-6 transition-all duration-300 ${
-                        isActive ? 'text-foreground font-semibold' : 'text-secondary group-hover:text-foreground'
-                      }`}
-                    />
-                    <span className="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground">
-                      {item.label}
-                    </span>
-                  </a>
-                );
-              })}
+              {/* Dashboard */}
+              <a
+                href="#dashboard"
+                onClick={(e) => handleNavClick('#dashboard', e)}
+                className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
+                  activeHash === '#dashboard'
+                    ? 'bg-muted font-semibold text-foreground'
+                    : 'text-secondary hover:bg-muted hover:text-foreground'
+                }`}
+              >
+                <LayoutDashboard className={`h-5 w-5 ${activeHash === '#dashboard' ? 'text-foreground' : 'text-secondary'}`} />
+                <span className="font-medium">Dashboard</span>
+              </a>
+
+              {/* Data Aset Expandable Menu */}
+              <div className="flex flex-col gap-1">
+                <button
+                  type="button"
+                  onClick={() => setIsAssetMenuOpen(!isAssetMenuOpen)}
+                  className={`group flex items-center justify-between rounded-xl p-3.5 transition-all duration-300 cursor-pointer text-left ${
+                    assetSubMenus.some((sub) => sub.href === activeHash)
+                      ? 'bg-muted/70 font-semibold text-foreground'
+                      : 'text-secondary hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Landmark className="h-5 w-5 text-secondary group-hover:text-foreground" />
+                    <span className="font-medium">Data Aset</span>
+                  </div>
+                  {isAssetMenuOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                </button>
+
+                {/* Sub Menu Items */}
+                {isAssetMenuOpen && (
+                  <div className="ml-4 flex flex-col gap-1 border-l-2 border-slate-100 pl-3 pt-1">
+                    {assetSubMenus.map((sub) => {
+                      const SubIcon = sub.icon;
+                      const isSubActive = activeHash === sub.href;
+                      return (
+                        <a
+                          key={sub.href}
+                          href={sub.href}
+                          onClick={(e) => handleNavClick(sub.href, e)}
+                          className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all cursor-pointer ${
+                            isSubActive
+                              ? 'bg-sky-50 text-sky-700 font-bold border border-sky-100'
+                              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                          }`}
+                        >
+                          <SubIcon className={`h-4 w-4 shrink-0 ${isSubActive ? 'text-sky-600' : 'text-slate-400'}`} />
+                          <span>{sub.label}</span>
+                        </a>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Verifikasi */}
+              <a
+                href="#verification"
+                onClick={(e) => handleNavClick('#verification', e)}
+                className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
+                  activeHash === '#verification'
+                    ? 'bg-muted font-semibold text-foreground'
+                    : 'text-secondary hover:bg-muted hover:text-foreground'
+                }`}
+              >
+                <BadgeCheck className={`h-5 w-5 ${activeHash === '#verification' ? 'text-foreground' : 'text-secondary'}`} />
+                <span className="font-medium">Verifikasi</span>
+              </a>
+
+              {/* Analitik */}
+              {hasAnalytics && (
+                <a
+                  href="#analytics"
+                  onClick={(e) => handleNavClick('#analytics', e)}
+                  className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
+                    activeHash === '#analytics'
+                      ? 'bg-muted font-semibold text-foreground'
+                      : 'text-secondary hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  <BarChart3 className={`h-5 w-5 ${activeHash === '#analytics' ? 'text-foreground' : 'text-secondary'}`} />
+                  <span className="font-medium">Analitik</span>
+                </a>
+              )}
             </div>
           </div>
+
 
           {/* Management Section */}
           <div className="flex flex-col gap-4">

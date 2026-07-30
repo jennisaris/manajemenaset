@@ -15,6 +15,10 @@ export async function POST(request: Request) {
   const auth = await requireManager();
   if (auth.error) return auth.error;
   const asset = await request.json() as Asset;
+  if (auth.user.role === 'Operator Kampus') {
+    if (auth.user.kode_satker) asset.kode_satker = auth.user.kode_satker;
+    if (auth.user.university_name) asset.campus_name = auth.user.university_name;
+  }
   return NextResponse.json({ asset: await upsertAssetToDb(asset), mode: 'postgres' });
 }
 

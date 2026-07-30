@@ -18,6 +18,7 @@ create table if not exists profiles (
   university_name text,
   nip text,
   satuan_kerja text,
+  kode_satker text,
   phone_number text,
   assignment_letter_name text,
   assignment_letter_path text,
@@ -139,3 +140,115 @@ on conflict (email) do nothing;
 insert into profiles (full_name, email, password_hash, status, university_name, role_id)
 select 'Operator Aset', 'operator@aset.id', 'plain:operator123', 'aktif', 'Kampus Utama', roles.id from roles where roles.name = 'Operator Kampus'
 on conflict (email) do nothing;
+
+create table if not exists satker (
+  id bigserial primary key,
+  kode_satker text not null unique,
+  nama_satker text not null,
+  created_at timestamptz not null default now()
+);
+
+-- Tabel BMN Sub-Menu 2: Alat Angkut Bermotor
+create table if not exists bmn_alat_angkutan (
+  id bigserial primary key,
+  jenis_bmn text,
+  kode_satker text,
+  nama_satker text,
+  kode_barang text,
+  nup text,
+  nama_barang text not null,
+  status_bmn text default 'Aktif',
+  merk text,
+  tipe text,
+  kondisi text default 'Baik',
+  umur_aset integer default 0,
+  intra_extra text default 'Intra',
+  henti_guna text default 'Tidak',
+  status_sbsn text,
+  latitude double precision,
+  longitude double precision,
+  alamat_lokasi text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- Tabel BMN Sub-Menu 3: Mesin Khusus TIK
+create table if not exists bmn_khusus_tik (
+  id bigserial primary key,
+  jenis_bmn text,
+  kode_satker text,
+  nama_satker text,
+  kode_barang text,
+  nup text,
+  nama_barang text not null,
+  status_bmn text default 'Aktif',
+  merk text,
+  tipe text,
+  kondisi text default 'Baik',
+  umur_aset integer default 0,
+  intra_extra text default 'Intra',
+  henti_guna text default 'Tidak',
+  status_sbsn text,
+  latitude double precision,
+  longitude double precision,
+  alamat_lokasi text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- Tabel BMN Sub-Menu 4: Mesin Peralatan Non TIK
+create table if not exists bmn_non_tik (
+  id bigserial primary key,
+  jenis_bmn text,
+  kode_satker text,
+  nama_satker text,
+  kode_barang text,
+  nup text,
+  nama_barang text not null,
+  status_bmn text default 'Aktif',
+  merk text,
+  tipe text,
+  kondisi text default 'Baik',
+  umur_aset integer default 0,
+  intra_extra text default 'Intra',
+  henti_guna text default 'Tidak',
+  status_sbsn text,
+  latitude double precision,
+  longitude double precision,
+  alamat_lokasi text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+-- Tabel Usulan Penghapusan BMN
+create table if not exists bmn_disposals (
+  id bigserial primary key,
+  kode_satker text not null,
+  nama_satker text not null,
+  no_surat_permohonan text not null,
+  surat_permohonan_name text,
+  surat_permohonan_path text,
+  surat_permohonan_url text,
+  sptjm_name text,
+  sptjm_path text,
+  sptjm_url text,
+  lampiran_name text,
+  lampiran_path text,
+  lampiran_url text,
+  sk_tim_name text,
+  sk_tim_path text,
+  sk_tim_url text,
+  ba_penelitian_name text,
+  ba_penelitian_path text,
+  ba_penelitian_url text,
+  jumlah_barang integer default 0,
+  jenis_barang text,
+  nilai_perolehan numeric default 0,
+  status text not null default 'menunggu_verifikasi',
+  catatan text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
+);
+
+
+
