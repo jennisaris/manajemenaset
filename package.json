@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "tsx --test tests/**/*.test.ts",
     "db:schema": "psql \"$DATABASE_URL\" -f db/schema.sql",
+    "db:backup": "node scripts/export-backup-sql.mjs",
     "password:hash": "node scripts/hash-password.mjs",
     "supabase:check": "node scripts/check-supabase.mjs",
     "supabase:export": "node scripts/export-supabase-json.mjs",
