@@ -1,5 +1,22 @@
-import 'server-only';
+import nodemailer from 'nodemailer';
 import type { UserProfile } from '@/lib/types';
+
+function createTransporter() {
+  const host = process.env.SMTP_HOST;
+  const port = Number(process.env.SMTP_PORT || 587);
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+
+  if (host && user && pass) {
+    return nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass },
+    });
+  }
+  return null;
+}
 
 export async function sendRegistrationReceivedEmail(user: UserProfile) {
   const subject = `Pendaftaran Akun Operator Aset Universitas Diterima - [${user.full_name}]`;
@@ -22,6 +39,24 @@ Terima kasih,
 Tim Layanan Sistem Manajemen Aset Universitas
   `.trim();
 
+  const transporter = createTransporter();
+  const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || '"Manajemen Aset" <noreply@universitas.ac.id>';
+
+  if (transporter && user.email) {
+    try {
+      const info = await transporter.sendMail({
+        from: fromEmail,
+        to: user.email,
+        subject,
+        text: body,
+      });
+      console.log(`[EMAIL SERVICE] Email sent via SMTP to ${user.email}: ${info.messageId}`);
+      return { ok: true, sent: true, messageId: info.messageId };
+    } catch (err) {
+      console.error('[EMAIL SERVICE] SMTP send failed, falling back to console simulation log:', err);
+    }
+  }
+
   // Log notification to server console for simulation & audit trail
   console.log('====================================================');
   console.log(`[EMAIL SERVICE] Sending Notification to: ${user.email}`);
@@ -29,7 +64,7 @@ Tim Layanan Sistem Manajemen Aset Universitas
   console.log(`[BODY]:\n${body}`);
   console.log('====================================================');
 
-  return { ok: true, subject, body };
+  return { ok: true, sent: false, simulated: true, subject, body };
 }
 
 export async function sendApprovalStatusEmail(user: UserProfile, isApproved: boolean, reason?: string) {
@@ -68,6 +103,24 @@ Salam hangat,
 Tim Layanan Sistem Manajemen Aset Universitas
     `.trim();
 
+  const transporter = createTransporter();
+  const fromEmail = process.env.SMTP_FROM || process.env.SMTP_USER || '"Manajemen Aset" <noreply@universitas.ac.id>';
+
+  if (transporter && user.email) {
+    try {
+      const info = await transporter.sendMail({
+        from: fromEmail,
+        to: user.email,
+        subject,
+        text: body,
+      });
+      console.log(`[EMAIL SERVICE] Approval email sent via SMTP to ${user.email}: ${info.messageId}`);
+      return { ok: true, sent: true, messageId: info.messageId };
+    } catch (err) {
+      console.error('[EMAIL SERVICE] SMTP send failed, falling back to console simulation log:', err);
+    }
+  }
+
   console.log('====================================================');
   console.log(`[EMAIL SERVICE] Sending Approval Update to: ${user.email}`);
   console.log(`[STATUS]: ${isApproved ? 'APPROVED' : 'REJECTED'}`);
@@ -75,5 +128,5 @@ Tim Layanan Sistem Manajemen Aset Universitas
   console.log(`[BODY]:\n${body}`);
   console.log('====================================================');
 
-  return { ok: true, subject, body };
+  return { ok: true, sent: false, simulated: true, subject, body };
 }

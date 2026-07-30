@@ -25,6 +25,8 @@ export async function ensureUserProfileColumns() {
   await query('alter table profiles add column if not exists assignment_letter_path text');
   await query('alter table profiles add column if not exists assignment_letter_url text');
   await query('alter table profiles add column if not exists rejection_reason text');
+  await query('alter table profiles drop constraint if exists profiles_status_check');
+  await query("alter table profiles add constraint profiles_status_check check (status in ('aktif', 'nonaktif', 'menunggu_persetujuan', 'ditolak'))");
 }
 
 export function normalizeUserProfile(row: Record<string, unknown>): UserProfile {
