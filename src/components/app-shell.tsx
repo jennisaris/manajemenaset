@@ -49,7 +49,7 @@ export function AppShell() {
   async function loadDashboardData() {
     setIsDashboardLoading(true);
     try {
-      const nextData = await apiJson<MvpData>('/api/mvp-data?assetLimit=100');
+      const nextData = await apiJson<MvpData>('/api/mvp-data');
       setData(nextData);
     } finally {
       setIsDashboardLoading(false);
@@ -137,7 +137,7 @@ export function AppShell() {
 
   if (authState !== 'authenticated') {
     return (
-      <div className="h-screen w-screen overflow-hidden bg-white text-foreground antialiased flex flex-col font-sans">
+      <div suppressHydrationWarning className="h-screen w-screen overflow-hidden bg-white text-foreground antialiased flex flex-col font-sans">
         {/* Top Navbar - Kemdiktisaintek style */}
         <nav className="h-16 shrink-0 bg-white border-b border-border z-50">
           <div className="flex items-center justify-between px-6 sm:px-8 h-full w-full">
@@ -360,7 +360,7 @@ export function AppShell() {
 
 
   return (
-    <div className="relative min-h-screen bg-[#EFF2F7] text-[#080C1A] antialiased">
+    <div suppressHydrationWarning className="relative min-h-screen bg-[#EFF2F7] text-[#080C1A] antialiased">
       <BottomNav />
       <Sidebar
         currentRole={role}

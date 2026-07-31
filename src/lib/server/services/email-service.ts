@@ -1,7 +1,12 @@
 import nodemailer from 'nodemailer';
 import type { UserProfile } from '@/lib/types';
 
+// Set to true to disable sending emails via SMTP for testing/development
+const IS_EMAIL_DISABLED = true;
+
 function createTransporter() {
+  if (IS_EMAIL_DISABLED) return null;
+
   const host = process.env.SMTP_HOST;
   const port = Number(process.env.SMTP_PORT || 587);
   const user = process.env.SMTP_USER;

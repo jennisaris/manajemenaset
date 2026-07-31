@@ -34,6 +34,7 @@ import { MapCard } from './map-card';
 import { UtilizationManager } from './utilization-manager';
 import { UserRoleManager } from './user-role-manager';
 import { BmnManager } from './bmn/bmn-manager';
+import { matchesUniversityScope } from '@/lib/satker-utils';
 import { BmnDisposalManager } from './bmn-disposal-manager';
 
 
@@ -146,7 +147,7 @@ export function Dashboard({
   const scopedAssets = useMemo(
     () =>
       effectiveUniversity
-        ? currentAssets.filter((asset) => asset.campus_name === effectiveUniversity)
+        ? currentAssets.filter((asset) => matchesUniversityScope(asset, effectiveUniversity))
         : currentAssets,
     [currentAssets, effectiveUniversity]
   );

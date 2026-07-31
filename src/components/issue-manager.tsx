@@ -6,7 +6,7 @@ import { deleteIssue, getIssueProgress, persistIssue, persistIssueProgress } fro
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { createAssetDocumentPreviewUrl, uploadIssueProgressDocument } from '@/lib/storage';
 import type { Asset, AssetIssue, IssueProgress } from '@/lib/types';
-import { formatDateIndo } from '@/lib/date-utils';
+import { formatDateForInput, formatDateIndo } from '@/lib/date-utils';
 
 import { AssetAutocompleteInput } from './asset-autocomplete-input';
 
@@ -195,7 +195,10 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
 
   function openEdit(item: AssetIssue) {
     if (!canManage) return;
-    setDraft({ ...item });
+    setDraft({
+      ...item,
+      found_date: formatDateForInput(item.found_date),
+    });
     setFormOpen(true);
     setProgressOpen(false);
     setMessage(isSupabaseConfigured ? 'Perubahan permasalahan akan ditulis ke asset_issues.' : 'Mode demo: perubahan tersimpan lokal.');
@@ -305,10 +308,19 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
     setMessage(isSupabaseConfigured ? 'Menyimpan permasalahan ke PostgreSQL lokal...' : 'Menyimpan permasalahan ke state lokal demo...');
 
     try {
-      const isNew = !items.some((item) => item.id === draft.id);
-      const result = await persistIssue({ ...draft, issue_title: draft.issue_title.trim() }, { isNew });
+      const isNew = !items.some((item) => Number(item.id) === Number(draft.id));
+      const result = await persistIssue(
+        {
+          ...draft,
+          issue_title: draft.issue_title.trim(),
+          found_date: formatDateForInput(draft.found_date) || null,
+        },
+        { isNew }
+      );
       const saved = result.issue;
-      const nextItems = items.some((item) => item.id === saved.id) ? items.map((item) => item.id === saved.id ? saved : item) : [saved, ...items];
+      const nextItems = items.some((item) => Number(item.id) === Number(saved.id))
+        ? items.map((item) => (Number(item.id) === Number(saved.id) ? saved : item))
+        : [saved, ...items];
       setItems(nextItems);
       onIssuesChange(nextItems);
       setMessage(result.mode === 'postgres' ? 'Permasalahan berhasil disimpan ke PostgreSQL lokal.' : 'Permasalahan berhasil disimpan di mode demo.');
@@ -421,7 +433,7 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
             </label>
             <label className="grid gap-1.5 text-xs font-medium text-foreground">
               Tanggal Temuan
-              <input type="date" value={draft.found_date ?? ''} onChange={(event) => updateDraft({ found_date: event.target.value || null })} className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
+              <input type="date" value={formatDateForInput(draft.found_date)} onChange={(event) => updateDraft({ found_date: event.target.value || null })} className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
             </label>
             <label className="grid gap-1.5 text-xs font-medium text-foreground">
               Prioritas

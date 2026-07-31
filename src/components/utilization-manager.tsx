@@ -2,20 +2,21 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import dynamic from 'next/dynamic';
-import { Eye, FileText, MapPinned, Pencil, Plus, Trash2, UploadCloud, X } from 'lucide-react';
+import { ArrowLeft, Copy, ExternalLink, Eye, FileText, MapPinned, Pencil, Plus, Trash2, UploadCloud, X } from 'lucide-react';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { deleteUtilization, persistUtilization } from '@/lib/utilization-crud';
 import { createAssetDocumentPreviewUrl, uploadUtilizationPks, uploadUtilizationPhoto } from '@/lib/storage';
 import type { Asset, Utilization } from '@/lib/types';
 import { formatArea } from '@/lib/geo';
-import { formatDateRangeIndo } from '@/lib/date-utils';
+import { formatDateForInput, formatDateRangeIndo } from '@/lib/date-utils';
+import { getAssetDisplayName } from '@/lib/satker-utils';
+import { AssetAutocompleteInput } from './asset-autocomplete-input';
+import { ImageSlideshow, SlideshowItem } from './assets/image-slideshow';
 
 const UtilizationAreaMap = dynamic(() => import('./utilization-area-map').then((mod) => mod.UtilizationAreaMap), {
   ssr: false,
   loading: () => <div className="grid h-[320px] place-items-center rounded-3xl bg-sky-50 text-sm font-bold text-sky-700">Memuat peta area pemanfaatan...</div>,
 });
-
-import { AssetAutocompleteInput } from './asset-autocomplete-input';
 
 type UtilizationManagerProps = {
   assets: Asset[];
@@ -24,7 +25,46 @@ type UtilizationManagerProps = {
   onUtilizationsChange: (utilizations: Utilization[]) => void;
 };
 
-const utilizationTypes = ['sewa', 'kerja_sama', 'pinjam_pakai', 'tenant', 'atm', 'lahan_parkir', 'lainnya'];
+export const utilizationTypeOptions = [
+  { value: 'sewa', label: 'Sewa' },
+  { value: 'pinjam_pakai', label: 'Pinjam Pakai' },
+  { value: 'ksp', label: 'Kerja Sama Pemanfaatan (KSP)' },
+  { value: 'bgs_bsg', label: 'Bangun Guna Serah (BGS) / Bangun Serah Guna (BSG)' },
+  { value: 'ketupi', label: 'Kerja Sama Terbatas Untuk Pembiayaan Infrastruktur (KETUPI)' },
+];
+
+export function getUtilizationTypeLabel(typeValue: string): string {
+  const match = utilizationTypeOptions.find(
+    (opt) => opt.value === typeValue || opt.label.toLowerCase() === typeValue.toLowerCase()
+  );
+  if (match) return match.label;
+  if (typeValue === 'kerja_sama') return 'Kerja Sama Pemanfaatan (KSP)';
+  return typeValue.replaceAll('_', ' ');
+}
+
+export function calculateAutomaticStatus(startDateStr: string, endDateStr: string): string {
+  if (!startDateStr || !endDateStr) return 'aktif';
+  const now = new Date();
+  now.setHours(0, 0, 0, 0);
+
+  const start = new Date(startDateStr);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date(endDateStr);
+  end.setHours(23, 59, 59, 999);
+
+  if (now > end) return 'berakhir';
+
+  const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
+  if (end.getTime() - now.getTime() <= thirtyDaysMs && now >= start) {
+    return 'akan_berakhir';
+  }
+
+  if (now < start) return 'menunggu_verifikasi';
+
+  return 'aktif';
+}
+
 const statusOptions = ['draft', 'menunggu_verifikasi', 'aktif', 'akan_berakhir', 'berakhir', 'dibatalkan'];
 
 function StatusPill({ status }: { status: string }) {
@@ -40,14 +80,16 @@ function StatusPill({ status }: { status: string }) {
 }
 
 function emptyUtilization(nextId: number, assetId: number): Utilization {
+  const startDate = new Date().toISOString().slice(0, 10);
+  const endDate = new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().slice(0, 10);
   return {
     id: nextId,
     asset_id: assetId,
     third_party_name: '',
     utilization_type: 'sewa',
-    start_date: new Date().toISOString().slice(0, 10),
-    end_date: new Date(new Date().setFullYear(new Date().getFullYear() + 1)).toISOString().slice(0, 10),
-    status: 'draft',
+    start_date: startDate,
+    end_date: endDate,
+    status: calculateAutomaticStatus(startDate, endDate),
     utilized_area_m2: null,
     geometry_geojson: null,
     use_full_asset_area: false,
@@ -69,8 +111,9 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
   const [pksPreviewUrl, setPksPreviewUrl] = useState<string | null>(null);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
   const [photoPreviewUrls, setPhotoPreviewUrls] = useState<string[]>([]);
+  const [selectedDetail, setSelectedDetail] = useState<Utilization | null>(null);
 
-  const assetOptions = useMemo(() => assets.map((asset) => ({ id: asset.id, label: `${asset.asset_code} — ${asset.asset_name}` })), [assets]);
+  const assetOptions = useMemo(() => assets.map((asset) => ({ id: asset.id, label: `${asset.asset_code} — ${getAssetDisplayName(asset)}` })), [assets]);
   const assetById = useMemo(() => new Map(assets.map((asset) => [asset.id, asset])), [assets]);
 
   function openCreate() {
@@ -90,7 +133,11 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
 
   function openEdit(item: Utilization) {
     if (!canManage) return;
-    setDraft({ ...item });
+    setDraft({
+      ...item,
+      start_date: formatDateForInput(item.start_date),
+      end_date: formatDateForInput(item.end_date),
+    });
     setPksFile(null);
     setPksPreviewUrl(null);
     setPhotoFiles([]);
@@ -107,6 +154,44 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
     setDraft(null);
     setFormOpen(false);
     setIsSaving(false);
+  }
+
+  function copyPhotosFromMasterAsset() {
+    if (!draft) return;
+    const currentAsset = assetById.get(draft.asset_id);
+    if (!currentAsset) return;
+
+    const masterUrls = currentAsset.photo_urls ?? (currentAsset.primary_photo_url ? [currentAsset.primary_photo_url] : []);
+    const masterPaths = currentAsset.photo_paths ?? (currentAsset.primary_photo_path ? [currentAsset.primary_photo_path] : []);
+    const masterNames = currentAsset.photo_names ?? masterUrls.map((_, i) => `Foto Master Aset ${i + 1}`);
+
+    if (masterUrls.length === 0 && !currentAsset.primary_photo_url) {
+      setMessage('Master aset ini belum memiliki foto di database.');
+      return;
+    }
+
+    const existingUrls = draft.photo_urls ?? [];
+    const existingPaths = draft.photo_paths ?? [];
+    const existingNames = draft.photo_names ?? [];
+
+    const combinedUrls = [...existingUrls];
+    const combinedPaths = [...existingPaths];
+    const combinedNames = [...existingNames];
+
+    for (let i = 0; i < masterUrls.length; i++) {
+      if (!combinedUrls.includes(masterUrls[i])) {
+        combinedUrls.push(masterUrls[i]);
+        combinedPaths.push(masterPaths[i] ?? masterUrls[i]);
+        combinedNames.push(masterNames[i] ?? `Foto Master ${i + 1}`);
+      }
+    }
+
+    updateDraft({
+      photo_urls: combinedUrls,
+      photo_paths: combinedPaths,
+      photo_names: combinedNames,
+    });
+    setMessage(`${masterUrls.length} foto dari Master Aset Bangunan/Tanah berhasil ditarik ke Pemanfaatan.`);
   }
 
   function handlePksChange(file?: File) {
@@ -169,7 +254,6 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
       setMessage(error instanceof Error ? error.message : 'Gagal membuka dokumen PKS.');
     }
   }
-
   function openNewTab(url: string | null | undefined, fallbackMessage: string) {
     if (!url) {
       setMessage(fallbackMessage);
@@ -224,7 +308,8 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
 
     try {
       const isNew = !items.some((item) => item.id === draft.id);
-      let result = await persistUtilization({ ...draft, third_party_name: draft.third_party_name.trim() }, { isNew });
+      const autoStatus = calculateAutomaticStatus(draft.start_date, draft.end_date);
+      let result = await persistUtilization({ ...draft, status: autoStatus, third_party_name: draft.third_party_name.trim() }, { isNew });
       let saved = result.utilization;
 
       if (pksFile) {
@@ -320,24 +405,18 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
               <input value={draft.third_party_name} onChange={(event) => updateDraft({ third_party_name: event.target.value })} required className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
             </label>
             <label className="grid gap-1.5 text-xs font-medium text-foreground">
-              Jenis
-              <select value={draft.utilization_type} onChange={(event) => updateDraft({ utilization_type: event.target.value })} className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all">
-                {utilizationTypes.map((type) => <option key={type} value={type}>{type.replaceAll('_', ' ')}</option>)}
+              Jenis Pemanfaatan BMN
+              <select value={draft.utilization_type} onChange={(event) => updateDraft({ utilization_type: event.target.value })} className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-semibold text-foreground outline-none focus:border-primary focus:ring-4 focus:ring-primary/10 transition-all cursor-pointer">
+                {utilizationTypeOptions.map((opt) => <option key={opt.value} value={opt.value}>{opt.label}</option>)}
               </select>
             </label>
             <label className="grid gap-1.5 text-xs font-medium text-foreground">
               Mulai
-              <input type="date" value={draft.start_date} onChange={(event) => updateDraft({ start_date: event.target.value })} required className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
+              <input type="date" value={formatDateForInput(draft.start_date)} onChange={(event) => updateDraft({ start_date: event.target.value })} required className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
             </label>
             <label className="grid gap-1.5 text-xs font-medium text-foreground">
               Selesai
-              <input type="date" value={draft.end_date} onChange={(event) => updateDraft({ end_date: event.target.value })} required className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
-            </label>
-            <label className="grid gap-1.5 text-xs font-medium text-foreground">
-              Status
-              <select value={draft.status} onChange={(event) => updateDraft({ status: event.target.value })} className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all">
-                {statusOptions.map((status) => <option key={status} value={status}>{status.replaceAll('_', ' ')}</option>)}
-              </select>
+              <input type="date" value={formatDateForInput(draft.end_date)} onChange={(event) => updateDraft({ end_date: event.target.value })} required className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
             </label>
           </div>
 
@@ -404,11 +483,22 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
                   <p className="mt-0.5 text-xs text-secondary">Upload banyak gambar dokumentasi pemanfaatan. Setiap gambar maksimal 10MB.</p>
                 </div>
               </div>
-              <label className="inline-flex cursor-pointer items-center gap-2 rounded-button bg-info-light px-4 py-2 text-xs font-semibold text-primary hover:bg-info-light/80 transition">
-                <UploadCloud className="h-4 w-4" />
-                Pilih Banyak Gambar
-                <input type="file" multiple accept="image/*" onChange={(event) => handlePhotoChange(event.target.files)} className="sr-only" />
-              </label>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={copyPhotosFromMasterAsset}
+                  title="Ambil foto dari Master Aset Bangunan/Tanah terpilih"
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-2xl bg-emerald-50 border border-emerald-200 px-4 py-2 text-xs font-bold text-emerald-700 hover:bg-emerald-100 transition shadow-2xs active:scale-95"
+                >
+                  <Copy className="h-4 w-4" />
+                  <span>Gunakan Foto Dari Master Aset</span>
+                </button>
+                <label className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-info-light px-4 py-2 text-xs font-semibold text-primary hover:bg-info-light/80 transition">
+                  <UploadCloud className="h-4 w-4" />
+                  Pilih Banyak Gambar
+                  <input type="file" multiple accept="image/*" onChange={(event) => handlePhotoChange(event.target.files)} className="sr-only" />
+                </label>
+              </div>
             </div>
             {((draft.photo_names?.length ?? 0) > 0 || photoFiles.length > 0) && (
               <div className="mt-3 grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -449,7 +539,7 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
         <button
           onClick={openCreate}
           disabled={!canManage || assetOptions.length === 0}
-          className="inline-flex w-fit items-center gap-2 rounded-button bg-primary px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-primary/20 hover:bg-primary-hover transition-all duration-200 cursor-pointer disabled:cursor-not-allowed disabled:bg-gray-200 disabled:text-gray-400"
+          className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-[#165DFF] px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-[#165DFF]/25 transition-all duration-200 hover:bg-[#0E4BD9] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
         >
           <Plus className="h-4 w-4" />
           Tambah Pemanfaatan
@@ -467,9 +557,8 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
               <th className="px-4 py-3.5 font-semibold">Luas</th>
               <th className="px-4 py-3.5 font-semibold">Periode</th>
               <th className="px-4 py-3.5 font-semibold">PKS</th>
-              <th className="px-4 py-3.5 font-semibold">Foto</th>
               <th className="px-4 py-3.5 font-semibold">Status</th>
-              <th className="px-4 py-3.5 font-semibold">Aksi</th>
+              <th className="px-4 py-3.5 font-semibold text-right">Aksi</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-border bg-white">
@@ -479,51 +568,43 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
                 <tr key={item.id} className="hover:bg-muted/50 transition-colors">
                   <td className="px-4 py-3.5 font-bold text-foreground">{item.third_party_name}</td>
                   <td className="px-4 py-3.5 text-xs font-medium text-secondary">{asset?.campus_name ?? '-'}</td>
-                  <td className="px-4 py-3.5 text-xs font-medium text-foreground">{asset?.asset_name ?? `Aset #${item.asset_id}`}</td>
-                  <td className="px-4 py-3.5 text-xs font-medium text-foreground">{item.utilization_type.replaceAll('_', ' ')}</td>
-                  <td className="px-4 py-3.5 text-xs font-semibold text-secondary">
-                    {item.use_full_asset_area ? 'Seluruh aset' : formatArea(item.utilized_area_m2)}
+                  <td className="px-4 py-3.5 text-xs font-medium text-foreground">{asset ? getAssetDisplayName(asset) : `Aset #${item.asset_id}`}</td>
+                  <td className="px-4 py-3.5 text-xs font-semibold text-[#080C1A]">
+                    <span className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-800 border border-slate-200/60">
+                      {getUtilizationTypeLabel(item.utilization_type)}
+                    </span>
                   </td>
+                  <td className="px-4 py-3.5 text-xs font-semibold text-[#165DFF]">{formatArea(item.utilized_area_m2)}</td>
                   <td className="px-4 py-3.5 text-xs font-medium text-secondary">{formatDateRangeIndo(item.start_date, item.end_date)}</td>
                   <td className="px-4 py-3.5">
                     {item.pks_document_path || item.pks_document_url ? (
                       <button
                         onClick={() => openPksPreview(item)}
                         title="Lihat Dokumen PKS"
-                        className="grid h-9 w-9 place-items-center rounded-xl bg-info-light text-primary transition hover:bg-info-light/80"
+                        className="grid h-9 w-9 place-items-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] hover:shadow-md hover:shadow-[#165DFF]/20 active:scale-95 cursor-pointer"
                       >
-                        <Eye className="h-4 w-4" />
+                        <FileText className="h-4 w-4" />
                       </button>
                     ) : (
                       <span className="text-xs font-medium text-secondary">Belum ada</span>
                     )}
                   </td>
-                  <td className="px-4 py-3.5">
-                    {(item.photo_urls?.length ?? 0) > 0 ? (
-                      <div className="flex flex-wrap gap-1">
-                        {item.photo_urls?.map((url, index) => (
-                          <button
-                            key={`${url}-${index}`}
-                            onClick={() => openNewTab(url, 'Preview foto belum tersedia.')}
-                            title={`Lihat Foto Pemanfaatan ${index + 1}`}
-                            className="grid h-8 w-8 place-items-center rounded-xl bg-info-light text-primary transition hover:bg-info-light/80"
-                          >
-                            <Eye className="h-3.5 w-3.5" />
-                          </button>
-                        ))}
-                      </div>
-                    ) : (
-                      <span className="text-xs font-medium text-secondary">Belum ada</span>
-                    )}
-                  </td>
                   <td className="px-4 py-3.5"><StatusPill status={item.status} /></td>
-                  <td className="px-4 py-3.5">
-                    <div className="flex items-center gap-2">
+                  <td className="px-4 py-3.5 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      <button
+                        type="button"
+                        onClick={() => setSelectedDetail(item)}
+                        title="Lihat Detail Pemanfaatan & Slideshow Foto"
+                        className="grid h-9 w-9 place-items-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] hover:shadow-md hover:shadow-[#165DFF]/20 active:scale-95 cursor-pointer"
+                      >
+                        <Eye className="h-4 w-4" />
+                      </button>
                       <button
                         type="button"
                         onClick={() => openUtilizationMap(item)}
                         title="Lihat Peta Pemanfaatan"
-                        className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF]"
+                        className="grid h-9 w-9 place-items-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] hover:shadow-md hover:shadow-[#165DFF]/20 active:scale-95 cursor-pointer"
                       >
                         <MapPinned className="h-4 w-4" />
                       </button>
@@ -531,7 +612,7 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
                         onClick={() => openEdit(item)}
                         disabled={!canManage}
                         title="Edit Pemanfaatan"
-                        className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                        className="grid h-9 w-9 place-items-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] hover:shadow-md hover:shadow-[#165DFF]/20 active:scale-95 cursor-pointer disabled:opacity-50"
                       >
                         <Pencil className="h-4 w-4" />
                       </button>
@@ -539,7 +620,7 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
                         onClick={() => deleteSelectedUtilization(item)}
                         disabled={!canManage || deletingId === item.id}
                         title={deletingId === item.id ? 'Sedang Menghapus...' : 'Hapus Pemanfaatan'}
-                        className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-rose-600 hover:text-white hover:border-rose-600 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:text-gray-400"
+                        className="grid h-9 w-9 place-items-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-rose-600 hover:text-white hover:border-rose-600 hover:shadow-md hover:shadow-rose-600/20 active:scale-95 cursor-pointer disabled:opacity-50"
                       >
                         <Trash2 className="h-4 w-4" />
                       </button>
@@ -550,7 +631,7 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
             })}
             {items.length === 0 && (
               <tr>
-                <td colSpan={10} className="px-4 py-8 text-center text-xs font-medium text-secondary">
+                <td colSpan={9} className="px-4 py-8 text-center text-xs font-medium text-secondary">
                   Belum ada data pemanfaatan aset.
                 </td>
               </tr>
@@ -569,23 +650,18 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
                 setItemsPerPage(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="rounded-2xl border border-border bg-gray-50 px-3 py-1.5 text-xs font-semibold text-foreground outline-none focus:border-primary"
+              className="rounded-button border border-border bg-white px-2 py-1 text-xs font-semibold text-foreground outline-none"
             >
               <option value={5}>5</option>
               <option value={10}>10</option>
-              <option value={25}>25</option>
+              <option value={20}>20</option>
               <option value={50}>50</option>
-              <option value={100}>100</option>
             </select>
-            data / hal
+            per halaman
           </label>
-          <span className="text-xs text-secondary font-medium">
-            (Menampilkan {items.length > 0 ? ((effectiveCurrentPage - 1) * itemsPerPage) + 1 : 0}-
-            {Math.min(effectiveCurrentPage * itemsPerPage, items.length)} dari {items.length} data)
-          </span>
         </div>
 
-        <div className="flex flex-wrap gap-2">
+        <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
@@ -605,6 +681,183 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
           >
             Selanjutnya
           </button>
+        </div>
+      </div>
+
+      {selectedDetail && (
+        <UtilizationDetailModal
+          utilization={selectedDetail}
+          asset={assetById.get(selectedDetail.asset_id)}
+          onClose={() => setSelectedDetail(null)}
+          onOpenPks={() => openPksPreview(selectedDetail)}
+          onOpenMap={() => openUtilizationMap(selectedDetail)}
+        />
+      )}
+    </div>
+  );
+}
+
+function UtilizationDetailModal({
+  utilization,
+  asset,
+  onClose,
+  onOpenPks,
+  onOpenMap,
+}: {
+  utilization: Utilization;
+  asset: Asset | undefined;
+  onClose: () => void;
+  onOpenPks: () => void;
+  onOpenMap: () => void;
+}) {
+  const assetName = asset ? getAssetDisplayName(asset) : `Aset #${utilization.asset_id}`;
+  const [pksPdfUrl, setPksPdfUrl] = useState<string | null>(
+    utilization.pks_document_url ||
+      (utilization.pks_document_path ? createAssetDocumentPreviewUrl(utilization.pks_document_path) : null)
+  );
+
+  useEffect(() => {
+    const docUrl =
+      utilization.pks_document_url ||
+      (utilization.pks_document_path ? createAssetDocumentPreviewUrl(utilization.pks_document_path) : null);
+    setPksPdfUrl(docUrl);
+  }, [utilization.pks_document_url, utilization.pks_document_path]);
+
+  const slideshowItems: SlideshowItem[] = useMemo(() => {
+    if (utilization.photo_urls && utilization.photo_urls.length > 0) {
+      return utilization.photo_urls.map((url, i) => ({
+        name: utilization.photo_names?.[i] ?? `Foto Pemanfaatan ${i + 1}`,
+        url,
+      }));
+    }
+    return [];
+  }, [utilization]);
+
+  return (
+    <div className="fixed inset-0 z-50 flex flex-col bg-slate-50 overflow-y-auto">
+      {/* Sticky Top Header Bar */}
+      <div className="sticky top-0 z-30 flex items-center justify-between border-b border-slate-200 bg-white/95 px-6 py-4 backdrop-blur-md shadow-xs">
+        <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex items-center gap-2 rounded-2xl bg-slate-100 border border-slate-200/80 px-4 py-2 text-xs font-bold text-slate-700 hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] transition cursor-pointer active:scale-95 shadow-2xs"
+          >
+            <ArrowLeft className="h-4 w-4" />
+            <span>Kembali ke Daftar Pemanfaatan</span>
+          </button>
+          <div className="h-6 w-px bg-slate-200 hidden sm:block" />
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="inline-flex rounded-full bg-[#165DFF]/10 px-2.5 py-0.5 text-[11px] font-bold text-[#165DFF]">
+                Detail Pemanfaatan Aset BMN
+              </span>
+              <StatusPill status={utilization.status} />
+            </div>
+            <h2 className="text-base font-black text-slate-900 truncate max-w-lg mt-0.5">
+              {utilization.third_party_name} — <span className="text-[#165DFF]">{assetName}</span>
+            </h2>
+          </div>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onOpenMap}
+            className="inline-flex items-center gap-2 rounded-2xl bg-sky-50 border border-sky-200 px-4 py-2 text-xs font-bold text-sky-700 hover:bg-sky-100 transition cursor-pointer"
+          >
+            <MapPinned className="h-4 w-4" />
+            <span className="hidden sm:inline">Lihat Peta Pemanfaatan</span>
+          </button>
+          <button
+            type="button"
+            onClick={onClose}
+            className="grid h-9 w-9 place-items-center rounded-2xl border border-slate-200 bg-slate-50 text-slate-600 hover:bg-slate-200 transition cursor-pointer"
+            title="Tutup Detail Fullscreen"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+      </div>
+
+      {/* Main Fullscreen Body Container */}
+      <div className="mx-auto w-full max-w-7xl p-6 sm:p-8 space-y-8 pb-16">
+        {/* Information Grid Cards */}
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Pihak Ketiga Mitra</span>
+            <strong className="text-base font-black text-slate-900 mt-1 block">{utilization.third_party_name}</strong>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Jenis Pemanfaatan BMN</span>
+            <strong className="text-sm font-bold text-[#165DFF] mt-1 block">{getUtilizationTypeLabel(utilization.utilization_type)}</strong>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Luas Area Dimanfaatkan</span>
+            <strong className="text-base font-black text-emerald-600 mt-1 block">{formatArea(utilization.utilized_area_m2)}</strong>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Periode Pelaksanaan PKS</span>
+            <strong className="text-xs font-bold text-slate-800 mt-1 block">{formatDateRangeIndo(utilization.start_date, utilization.end_date)}</strong>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Perguruan Tinggi / Universitas</span>
+            <strong className="text-xs font-bold text-slate-800 mt-1 block">{asset?.campus_name ?? '-'}</strong>
+          </div>
+
+          <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Master Aset Terkait</span>
+            <strong className="text-xs font-bold text-slate-900 mt-1 block">{assetName}</strong>
+          </div>
+        </div>
+
+        {/* Section PDF PKS Viewer */}
+        {pksPdfUrl ? (
+          <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-b border-slate-100 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="grid h-10 w-10 place-items-center rounded-2xl bg-blue-50 text-[#165DFF]">
+                  <FileText className="h-5 w-5" />
+                </div>
+                <div>
+                  <h3 className="text-base font-black text-slate-900">Dokumen Perjanjian Kerja Sama (PKS)</h3>
+                  <p className="text-xs text-slate-500 font-medium">Viewer PDF interaktif dokumen resmi PKS terlampir.</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={onOpenPks}
+                className="inline-flex items-center gap-2 rounded-2xl bg-[#165DFF] px-4 py-2.5 text-xs font-bold text-white shadow-lg shadow-[#165DFF]/25 hover:bg-[#0E4BD9] transition cursor-pointer active:scale-95"
+              >
+                <ExternalLink className="h-4 w-4" />
+                <span>Buka PDF di Tab Baru</span>
+              </button>
+            </div>
+            <div className="overflow-hidden rounded-2xl border border-slate-200 bg-slate-900 h-[680px] shadow-inner">
+              <iframe src={pksPdfUrl} title="Dokumen PKS" className="h-full w-full border-none" />
+            </div>
+          </div>
+        ) : (
+          <div className="rounded-3xl border border-slate-200 bg-white p-8 text-center text-xs font-semibold text-slate-400 shadow-xs">
+            📄 Dokumen PDF PKS belum diupload untuk pemanfaatan ini.
+          </div>
+        )}
+
+        {/* Section Foto Dokumentasi Slideshow */}
+        <div className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
+          <h3 className="text-base font-black text-slate-900 mb-1">Foto Dokumentasi Pemanfaatan ({slideshowItems.length})</h3>
+          <p className="text-xs text-slate-500 font-medium mb-4">Slideshow foto dokumentasi pemanfaatan aset pihak ketiga.</p>
+          {slideshowItems.length > 0 ? (
+            <ImageSlideshow items={slideshowItems} onClose={() => {}} />
+          ) : (
+            <div className="rounded-2xl border border-slate-100 bg-slate-50 p-6 text-center text-xs font-semibold text-slate-400">
+              🖼️ Belum ada foto dokumentasi pemanfaatan yang terlampir.
+            </div>
+          )}
         </div>
       </div>
     </div>

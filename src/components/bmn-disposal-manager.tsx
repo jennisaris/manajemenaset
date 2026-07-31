@@ -19,6 +19,7 @@ import {
   X,
 } from 'lucide-react';
 import { SatkerAutocompleteInput } from '@/components/satker-autocomplete-input';
+import { extract6DigitKodeSatker } from '@/lib/satker-utils';
 import type { BmnDisposalProposal, UserRole } from '@/lib/types';
 
 const formatRupiah = (num: number) => {
@@ -512,7 +513,7 @@ export function BmnDisposalManager({
 
         <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-[#6A7686] uppercase tracking-wider block">Jumlah Barang Diusulkan</span>
+            <span className="text-xs font-bold text-[#6A7686] uppercase tracking-wider block">Total Barang</span>
             <strong className="text-2xl font-black text-[#165DFF] mt-1 block">{totalJumlahBarang.toLocaleString('id-ID')} </strong>
             <span className="text-[11px] text-[#6A7686]">Hasil rekapitulasi lampiran BMN</span>
           </div>
@@ -523,7 +524,7 @@ export function BmnDisposalManager({
 
         <div className="rounded-2xl border border-[#E5E7EB] bg-white p-5 shadow-xs flex items-center justify-between">
           <div>
-            <span className="text-xs font-bold text-[#6A7686] uppercase tracking-wider block">Nilai Perolehan Diusulkan</span>
+            <span className="text-xs font-bold text-[#6A7686] uppercase tracking-wider block">Total Nilai Perolehan</span>
             <strong className="text-xl font-black text-emerald-600 mt-1 block">{formatRupiah(totalNilaiPerolehan)}</strong>
             <span className="text-[11px] text-[#6A7686]">Total estimasi nilai buku BMN</span>
           </div>
@@ -565,10 +566,10 @@ export function BmnDisposalManager({
             <thead className="border-b border-[#E5E7EB] bg-[#F9FAFB] text-[11px] font-bold uppercase tracking-wider text-[#6A7686]">
               <tr>
                 <th className="px-5 py-4">No. Surat & Satker</th>
-                <th className="px-5 py-4">Rekapitulasi Usulan BMN</th>
-                <th className="px-5 py-4">Dokumen Wajib (PDF/Excel)</th>
-                <th className="px-5 py-4 text-center">Status</th>
-                <th className="px-5 py-4 text-right">Aksi</th>
+                <th className="px-5 py-4">Jumlah Barang</th>
+                <th className="px-5 py-4">Jenis Barang</th>
+                <th className="px-5 py-4">Nilai Perolehan</th>
+                <th className="px-5 py-4 text-right">Dokumen & Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E5E7EB]">
@@ -587,105 +588,111 @@ export function BmnDisposalManager({
               ) : (
                 filteredProposals.map((item) => (
                   <tr key={item.id} className="hover:bg-[#F9FAFB]/80 transition">
+                    {/* Kolom 1: No. Surat & Satker */}
                     <td className="px-5 py-4">
                       <div className="font-extrabold text-[#080C1A]">{item.no_surat_permohonan}</div>
                       <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-[#165DFF]">
                         <Building2 className="h-3.5 w-3.5" />
-                        <span>[{item.kode_satker}] {item.nama_satker}</span>
+                        <span>[{extract6DigitKodeSatker(item.kode_satker)}] {item.nama_satker}</span>
                       </div>
                     </td>
 
-                    <td className="px-5 py-4">
-                      <div className="space-y-0.5">
-                        <div className="font-bold text-[#080C1A]">{item.jumlah_barang} Item ({item.jenis_barang || 'BMN Umum'})</div>
-                        <div className="text-[11px] font-extrabold text-emerald-600">Nilai: {formatRupiah(Number(item.nilai_perolehan) || 0)}</div>
-                      </div>
+                    {/* Kolom 2: Jumlah Barang */}
+                    <td className="px-5 py-4 font-bold text-[#080C1A]">
+                      {item.jumlah_barang ? `${item.jumlah_barang.toLocaleString('id-ID')} Item` : '-'}
                     </td>
 
-                    <td className="px-5 py-4">
-                      <div className="flex flex-wrap gap-1.5 max-w-xs">
-                        {item.surat_permohonan_url && (
-                          <a
-                            href={item.surat_permohonan_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700 hover:bg-sky-100 transition"
-                            title="Surat Permohonan (PDF)"
-                          >
-                            <FileText className="h-3 w-3" /> Surat
-                          </a>
-                        )}
-                        {item.sptjm_url && (
-                          <a
-                            href={item.sptjm_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700 hover:bg-sky-100 transition"
-                            title="SPTJM (PDF)"
-                          >
-                            <FileCheck className="h-3 w-3" /> SPTJM
-                          </a>
-                        )}
-                        {item.lampiran_url && (
-                          <a
-                            href={item.lampiran_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100 transition"
-                            title="Lampiran Rekap BMN (.xlsx / .csv)"
-                          >
-                            <FileSpreadsheet className="h-3 w-3" /> Lampiran
-                          </a>
-                        )}
-                        {item.sk_tim_url && (
-                          <a
-                            href={item.sk_tim_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700 hover:bg-sky-100 transition"
-                            title="SK Tim Internal (PDF)"
-                          >
-                            <FileText className="h-3 w-3" /> SK Tim
-                          </a>
-                        )}
-                        {item.ba_penelitian_url && (
-                          <a
-                            href={item.ba_penelitian_url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700 hover:bg-sky-100 transition"
-                            title="Berita Acara Penelitian (PDF)"
-                          >
-                            <FileText className="h-3 w-3" /> BA Research
-                          </a>
-                        )}
-                      </div>
-                    </td>
-
-                    <td className="px-5 py-4 text-center">
-                      <span className="inline-flex items-center rounded-full bg-amber-50 px-3 py-1 text-[11px] font-bold text-amber-700 border border-amber-200">
-                        {item.status.replaceAll('_', ' ')}
+                    {/* Kolom 3: Jenis Barang */}
+                    <td className="px-5 py-4 font-medium text-[#080C1A]">
+                      <span className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-xs font-semibold text-slate-800">
+                        {item.jenis_barang || 'BMN Umum'}
                       </span>
                     </td>
 
+                    {/* Kolom 4: Nilai Perolehan */}
+                    <td className="px-5 py-4 font-extrabold text-emerald-600">
+                      {formatRupiah(Number(item.nilai_perolehan) || 0)}
+                    </td>
+
+                    {/* Kolom 5: Dokumen & Aksi */}
                     <td className="px-5 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1.5">
-                        <button
-                          type="button"
-                          onClick={() => setSelectedProposal(item)}
-                          className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-700 border border-slate-200/60 hover:bg-[#165DFF] hover:text-white transition"
-                          title="Lihat Rincian Usulan"
-                        >
-                          <FileText className="h-4 w-4" />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDelete(item.id, item.no_surat_permohonan)}
-                          className="flex h-8 w-8 items-center justify-center rounded-xl bg-slate-100 text-slate-700 border border-slate-200/60 hover:bg-rose-600 hover:text-white transition"
-                          title="Hapus Usulan"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                      <div className="flex flex-col items-end gap-2">
+                        <div className="flex flex-wrap items-center justify-end gap-1.5 max-w-xs">
+                          {item.surat_permohonan_url && (
+                            <a
+                              href={item.surat_permohonan_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700 hover:bg-sky-100 transition"
+                              title="Surat Permohonan (PDF)"
+                            >
+                              <FileText className="h-3 w-3" /> Surat
+                            </a>
+                          )}
+                          {item.sptjm_url && (
+                            <a
+                              href={item.sptjm_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700 hover:bg-sky-100 transition"
+                              title="SPTJM (PDF)"
+                            >
+                              <FileCheck className="h-3 w-3" /> SPTJM
+                            </a>
+                          )}
+                          {item.lampiran_url && (
+                            <a
+                              href={item.lampiran_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 rounded-md bg-emerald-50 px-2 py-1 text-[10px] font-bold text-emerald-700 hover:bg-emerald-100 transition"
+                              title="Lampiran Rekap BMN (.xlsx / .csv)"
+                            >
+                              <FileSpreadsheet className="h-3 w-3" /> Lampiran
+                            </a>
+                          )}
+                          {item.sk_tim_url && (
+                            <a
+                              href={item.sk_tim_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700 hover:bg-sky-100 transition"
+                              title="SK Tim Internal (PDF)"
+                            >
+                              <FileText className="h-3 w-3" /> SK Tim
+                            </a>
+                          )}
+                          {item.ba_penelitian_url && (
+                            <a
+                              href={item.ba_penelitian_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="inline-flex items-center gap-1 rounded-md bg-sky-50 px-2 py-1 text-[10px] font-bold text-sky-700 hover:bg-sky-100 transition"
+                              title="Berita Acara Penelitian (PDF)"
+                            >
+                              <FileText className="h-3 w-3" /> BA Research
+                            </a>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-end gap-1.5 pt-1">
+                          <button
+                            type="button"
+                            onClick={() => setSelectedProposal(item)}
+                            className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] hover:shadow-md hover:shadow-[#165DFF]/20 active:scale-95 cursor-pointer"
+                            title="Lihat Rincian Usulan"
+                          >
+                            <FileText className="h-4 w-4" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDelete(item.id, item.no_surat_permohonan)}
+                            className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-rose-600 hover:text-white hover:border-rose-600 hover:shadow-md hover:shadow-rose-600/20 active:scale-95 cursor-pointer"
+                            title="Hapus Usulan"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </div>
                     </td>
                   </tr>

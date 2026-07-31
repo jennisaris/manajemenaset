@@ -45,9 +45,10 @@ export async function getIssuesFromDb(): Promise<AssetIssue[]> {
 }
 
 export async function upsertIssueToDb(issue: AssetIssue, isNew = false): Promise<AssetIssue> {
+  const foundDate = issue.found_date && String(issue.found_date).trim() ? String(issue.found_date).trim().slice(0, 10) : null;
   const { rows } = isNew
-    ? await query('insert into asset_issues (asset_id, issue_title, issue_type, priority, status, found_date) values ($1,$2,$3,$4,$5,$6) returning *', [issue.asset_id, issue.issue_title, issue.issue_type, issue.priority, issue.status, issue.found_date])
-    : await query('insert into asset_issues (id, asset_id, issue_title, issue_type, priority, status, found_date) values ($1,$2,$3,$4,$5,$6,$7) on conflict (id) do update set asset_id=excluded.asset_id, issue_title=excluded.issue_title, issue_type=excluded.issue_type, priority=excluded.priority, status=excluded.status, found_date=excluded.found_date, updated_at=now() returning *', [issue.id, issue.asset_id, issue.issue_title, issue.issue_type, issue.priority, issue.status, issue.found_date]);
+    ? await query('insert into asset_issues (asset_id, issue_title, issue_type, priority, status, found_date) values ($1,$2,$3,$4,$5,$6) returning *', [issue.asset_id, issue.issue_title, issue.issue_type, issue.priority, issue.status, foundDate])
+    : await query('insert into asset_issues (id, asset_id, issue_title, issue_type, priority, status, found_date) values ($1,$2,$3,$4,$5,$6,$7) on conflict (id) do update set asset_id=excluded.asset_id, issue_title=excluded.issue_title, issue_type=excluded.issue_type, priority=excluded.priority, status=excluded.status, found_date=excluded.found_date, updated_at=now() returning *', [issue.id, issue.asset_id, issue.issue_title, issue.issue_type, issue.priority, issue.status, foundDate]);
   return normalizeIssue(rows[0]);
 }
 

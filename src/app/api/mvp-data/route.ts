@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { getMvpDataFromDb } from '@/lib/server/local-repository';
 import { getSessionUser } from '@/lib/server/session';
+import { matchesUniversityScope } from '@/lib/satker-utils';
 import type { Asset, AssetIssue, DashboardSummary, Utilization } from '@/lib/types';
 
 type MvpData = { assets: Asset[]; summary: DashboardSummary; utilizations: Utilization[]; issues: AssetIssue[]; pagination?: { assets: { limit: number; offset: number; total: number; returned: number; hasMore: boolean } } };
@@ -26,9 +27,8 @@ function scopeDataForOperator(
   if (!kodeSatker && !universityName) return data;
 
   const assets = data.assets.filter((asset) => {
-    if (kodeSatker && asset.kode_satker === kodeSatker) return true;
-    if (universityName && (asset.campus_name === universityName || asset.nama_satker === universityName)) return true;
-    if (kodeSatker && asset.asset_code && asset.asset_code.includes(kodeSatker)) return true;
+    if (universityName && matchesUniversityScope(asset, universityName)) return true;
+    if (kodeSatker && matchesUniversityScope(asset, kodeSatker)) return true;
     return false;
   });
 
@@ -57,7 +57,8 @@ export async function GET(request: Request) {
     const user = await getSessionUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     const url = new URL(request.url);
-    const assetLimit = Math.max(1, parseBoundedInt(url.searchParams.get("assetLimit"), 100, 1000));
+    const rawLimit = url.searchParams.get("assetLimit");
+    const assetLimit = rawLimit ? Math.max(1, parseBoundedInt(rawLimit, 100000, 100000)) : 100000;
     const assetOffset = parseBoundedInt(url.searchParams.get("assetOffset"), 0, 1_000_000);
     const data = await getMvpDataFromDb({ assetLimit, assetOffset });
     if (user.role === 'Operator Kampus') {

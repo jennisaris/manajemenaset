@@ -3,6 +3,7 @@ import dynamic from 'next/dynamic';
 import { BadgeCheck, Eye, FileText, ImageIcon, MapPin, Maximize2, RotateCcw, X } from 'lucide-react';
 import { createAssetDocumentPreviewUrl } from '@/lib/storage';
 import type { Asset, VerificationStatus } from '@/lib/types';
+import { getAssetDisplayName } from '@/lib/satker-utils';
 import { normalizeStatus } from './asset-status-badge';
 import { ImageSlideshow, SlideshowItem } from './image-slideshow';
 
@@ -58,7 +59,7 @@ export function AssetDetailModal({
         .filter((item) => Boolean(item.url));
     }
     if (viewingAsset.primary_photo_url) {
-      return [{ name: viewingAsset.asset_name, url: viewingAsset.primary_photo_url }];
+      return [{ name: getAssetDisplayName(viewingAsset), url: viewingAsset.primary_photo_url }];
     }
     return [];
   }, [viewingAsset]);
@@ -83,7 +84,7 @@ export function AssetDetailModal({
           <span className="inline-block rounded-full bg-[#165DFF]/10 px-3 py-1 text-[11px] font-bold text-[#165DFF] mb-1">
             {viewingAsset.verification_status === 'menunggu_verifikasi' ? 'Usulan Data Aset Baru' : 'Detail Aset Terdaftar'}
           </span>
-          <h3 className="text-xl font-bold text-[#080C1A]">{viewingAsset.asset_name}</h3>
+          <h3 className="text-xl font-bold text-[#080C1A]">{getAssetDisplayName(viewingAsset)}</h3>
           <p className="mt-0.5 text-xs font-medium text-[#6A7686]">
             {viewingAsset.asset_code} • {viewingAsset.asset_type === 'land' ? 'Tanah' : 'Bangunan'}
           </p>
@@ -123,8 +124,11 @@ export function AssetDetailModal({
         {[
           ['Kampus', viewingAsset.campus_name],
           ['Unit / Fakultas', viewingAsset.faculty_or_unit],
-          ['Alamat Lokasi', viewingAsset.address],
-          ['Kepemilikan', viewingAsset.ownership_status],
+          ['Alamat Lokasi', viewingAsset.alamat || viewingAsset.address],
+          ['Status Sertifikasi', viewingAsset.status_sertifikasi || viewingAsset.ownership_status],
+          ['Nilai Perolehan Pertama', viewingAsset.nilai_perolehan_pertama !== null && viewingAsset.nilai_perolehan_pertama !== undefined ? `Rp ${Number(viewingAsset.nilai_perolehan_pertama).toLocaleString('id-ID')}` : (viewingAsset.nilai_perolehan ? `Rp ${Number(viewingAsset.nilai_perolehan).toLocaleString('id-ID')}` : null)],
+          ['Luas Bangunan', viewingAsset.luas_bangunan ? `${viewingAsset.luas_bangunan} m²` : null],
+          ['No. PSP', viewingAsset.no_psp],
           ['Kondisi Aset', viewingAsset.condition_status],
           ['Status Verifikasi', normalizeStatus(viewingAsset.verification_status)],
           ['Latitude', viewingAsset.latitude?.toString()],

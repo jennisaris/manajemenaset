@@ -24,6 +24,7 @@ import { canApproveAssets, canManageAssets } from '@/lib/auth';
 import { deleteAsset, persistAsset } from '@/lib/asset-crud';
 import { createAssetDocumentPreviewUrl, createAssetPhotoPreviewUrl, uploadAssetDocument, uploadAssetPhoto } from '@/lib/storage';
 import type { Asset, UserRole, VerificationStatus } from '@/lib/types';
+import { extract6DigitKodeSatker, getAssetDisplayName } from '@/lib/satker-utils';
 import { AssetDetailModal, type DocumentPreview } from './assets/asset-detail-modal';
 import { AssetFormDrawer, type AssetFormErrors } from './assets/asset-form-drawer';
 import { AssetTable } from './assets/asset-table';
@@ -71,6 +72,21 @@ export function AssetList({
   const [filterType, setFilterType] = useState<'all' | 'land' | 'building'>('all');
   const [filterStatus, setFilterStatus] = useState<string>('all');
   const [filterCondition, setFilterCondition] = useState<string>('all');
+  const [filterSatker, setFilterSatker] = useState<string>('all');
+
+  const satkerOptions = useMemo(() => {
+    const map = new Map<string, { full_code: string; display_code: string; nama_satker: string }>();
+    for (const item of items) {
+      if (item.kode_satker) {
+        const displayCode = extract6DigitKodeSatker(item.kode_satker) || item.kode_satker;
+        const nama = item.nama_satker || item.campus_name || item.kode_satker;
+        if (!map.has(displayCode)) {
+          map.set(displayCode, { full_code: item.kode_satker, display_code: displayCode, nama_satker: nama });
+        }
+      }
+    }
+    return Array.from(map.values());
+  }, [items]);
 
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
   const [viewingAsset, setViewingAsset] = useState<Asset | null>(null);
@@ -113,7 +129,7 @@ export function AssetList({
       const keyword = query.toLowerCase().trim();
       if (
         keyword &&
-        ![asset.asset_name, asset.asset_code, asset.campus_name, asset.faculty_or_unit]
+        ![getAssetDisplayName(asset), asset.merk, asset.nama_barang, asset.asset_name, asset.asset_code, asset.campus_name, asset.faculty_or_unit, asset.kode_satker, asset.nama_satker]
           .filter(Boolean)
           .join(' ')
           .toLowerCase()
@@ -123,13 +139,17 @@ export function AssetList({
       }
       if (filterType !== 'all' && asset.asset_type !== filterType) return false;
       if (filterStatus !== 'all' && asset.verification_status !== filterStatus) return false;
+      if (filterSatker !== 'all') {
+        const extracted = extract6DigitKodeSatker(asset.kode_satker);
+        if (extracted !== filterSatker && asset.kode_satker !== filterSatker) return false;
+      }
       if (filterCondition !== 'all') {
         if (filterCondition === 'Baik' && asset.condition_status !== 'Baik') return false;
         if (filterCondition === 'Rusak' && asset.condition_status === 'Baik') return false;
       }
       return true;
     });
-  }, [items, query, filterType, filterStatus, filterCondition]);
+  }, [items, query, filterType, filterStatus, filterSatker, filterCondition]);
 
   function openCreate() {
     if (!canManage) return;
@@ -558,7 +578,7 @@ export function AssetList({
                       setQuery(e.target.value);
                       setCurrentPage(1);
                     }}
-                    placeholder="Cari nama / kode aset..."
+                    placeholder="Cari Merk, nama, atau kode aset..."
                     className="w-full rounded-[50px] border border-[#E5E7EB] bg-[#F9FAFB] pl-10 pr-4 py-2 text-xs font-medium text-[#080C1A] outline-none transition focus:border-[#165DFF] focus:bg-white"
                   />
                 </div>
@@ -593,6 +613,25 @@ export function AssetList({
                   <option value="revisi">Revisi</option>
                 </select>
 
+                {/* Filter Satker */}
+                {satkerOptions.length > 0 && (
+                  <select
+                    value={filterSatker}
+                    onChange={(e) => {
+                      setFilterSatker(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="rounded-[50px] border border-[#E5E7EB] bg-[#F9FAFB] px-3.5 py-2 text-xs font-semibold text-[#080C1A] outline-none transition focus:border-[#165DFF] max-w-[200px] truncate"
+                  >
+                    <option value="all">Semua Satker</option>
+                    {satkerOptions.map((s) => (
+                      <option key={s.display_code} value={s.display_code}>
+                        [{s.display_code}] {s.nama_satker}
+                      </option>
+                    ))}
+                  </select>
+                )}
+
                 {/* View Mode Switcher */}
                 <div className="flex items-center rounded-[50px] border border-[#E5E7EB] bg-[#F9FAFB] p-1">
                   <button
@@ -615,11 +654,10 @@ export function AssetList({
                   </button>
                 </div>
 
-                {/* Add Asset Button */}
                 <button
                   onClick={openCreate}
                   disabled={!canManage}
-                  className="inline-flex cursor-pointer items-center gap-2 rounded-[50px] bg-[#165DFF] px-4 py-2 text-xs font-semibold text-white shadow-md transition hover:bg-[#0E4BD9] disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex cursor-pointer items-center gap-2 rounded-2xl bg-[#165DFF] px-5 py-2.5 text-xs font-bold text-white shadow-lg shadow-[#165DFF]/25 transition-all duration-200 hover:bg-[#0E4BD9] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50"
                 >
                   <Plus className="h-4 w-4" />
                   <span>Tambah Aset</span>
@@ -678,7 +716,7 @@ export function AssetList({
 
                         {/* Card Info */}
                         <div className="p-4">
-                          <h4 className="font-bold text-[#080C1A] text-base leading-snug">{asset.asset_name}</h4>
+                          <h4 className="font-bold text-[#080C1A] text-base leading-snug">{getAssetDisplayName(asset)}</h4>
                           <p className="mt-0.5 text-xs font-semibold text-[#6A7686]">{asset.asset_code}</p>
 
                           <div className="mt-3 space-y-1.5 text-xs text-[#6A7686]">

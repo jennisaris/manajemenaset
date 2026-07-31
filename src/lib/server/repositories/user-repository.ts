@@ -36,11 +36,20 @@ export function normalizeUserProfile(row: Record<string, unknown>): UserProfile 
     status = statusRaw as UserStatus;
   }
 
+  let roleName: UserRole = 'Operator Kampus';
+  if (row.role_name) {
+    try {
+      roleName = resolveUserRole(row.role_name);
+    } catch {
+      roleName = 'Operator Kampus';
+    }
+  }
+
   return {
     id: String(row.id),
     full_name: String(row.full_name ?? ''),
     email: row.email ? String(row.email) : null,
-    role_name: resolveUserRole(row.role_name),
+    role_name: roleName,
     campus_name: (row.university_name as string) ?? null,
     university_name: (row.university_name as string) ?? null,
     status,
@@ -56,6 +65,40 @@ export function normalizeUserProfile(row: Record<string, unknown>): UserProfile 
   };
 }
 
+export async function findUserByNip(nip: string): Promise<LoginUser | null> {
+  await ensureUserProfileColumns();
+  const { rows } = await query(`
+    select p.id, p.email, p.full_name, p.status, p.university_name, p.kode_satker, p.password_hash, p.rejection_reason, r.name as role_name
+    from profiles p
+    left join roles r on r.id = p.role_id
+    where p.nip = $1
+    limit 1
+  `, [nip.trim()]);
+  const row = rows[0];
+  if (!row) return null;
+
+  let resolvedRole: UserRole = 'Operator Kampus';
+  if (row.role_name) {
+    try {
+      resolvedRole = resolveUserRole(row.role_name);
+    } catch {
+      resolvedRole = 'Operator Kampus';
+    }
+  }
+
+  return {
+    id: String(row.id),
+    email: String(row.email ?? ''),
+    full_name: String(row.full_name ?? ''),
+    status: (row.status as UserStatus) ?? 'aktif',
+    university_name: row.university_name as string | null,
+    kode_satker: (row.kode_satker as string) ?? null,
+    role: resolvedRole,
+    password_hash: row.password_hash as string | null,
+    rejection_reason: (row.rejection_reason as string) ?? null,
+  };
+}
+
 export async function findUserForLogin(email: string): Promise<LoginUser | null> {
   await ensureUserProfileColumns();
   const { rows } = await query(`
@@ -67,6 +110,16 @@ export async function findUserForLogin(email: string): Promise<LoginUser | null>
   `, [email]);
   const row = rows[0];
   if (!row) return null;
+
+  let resolvedRole: UserRole = 'Operator Kampus';
+  if (row.role_name) {
+    try {
+      resolvedRole = resolveUserRole(row.role_name);
+    } catch {
+      resolvedRole = 'Operator Kampus';
+    }
+  }
+
   return {
     id: String(row.id),
     email: String(row.email ?? email),
@@ -74,7 +127,7 @@ export async function findUserForLogin(email: string): Promise<LoginUser | null>
     status: (row.status as UserStatus) ?? 'aktif',
     university_name: row.university_name as string | null,
     kode_satker: (row.kode_satker as string) ?? null,
-    role: resolveUserRole(row.role_name),
+    role: resolvedRole,
     password_hash: row.password_hash as string | null,
     rejection_reason: (row.rejection_reason as string) ?? null,
   };
@@ -84,9 +137,50 @@ export async function createPendingUserRegistration(input: UserRegistrationInput
   await ensureUserProfileColumns();
   const hashedPassword = hashPassword(input.password);
   
-  // Assign default Operator Kampus role_id if available
-  const roleRes = await query(`select id from roles where name = 'Operator Kampus' limit 1`);
-  const defaultRoleId = roleRes.rows[0]?.id ?? null;
+  // Assign default Operator role_id if available
+  const roleRes = await query(`select id from roles where name in ('Operator Kampus', 'Operator') order by case when name = 'Operator Kampus' then 1 else 2 end limit 1`);
+  const defaultRoleId = roleRes.rows[0]?.id ?? '3';
+
+  // Check if existing profile with this email exists (e.g. previously rejected or draft)
+  const existingRes = await query(`select id from profiles where lower(email) = lower($1)`, [input.email]);
+  if (existingRes.rows.length > 0) {
+    const existingId = existingRes.rows[0].id;
+    const { rows } = await query(`
+      update profiles
+      set full_name = $1,
+          password_hash = $2,
+          status = 'menunggu_persetujuan',
+          university_name = $3,
+          nip = $4,
+          satuan_kerja = $5,
+          kode_satker = $6,
+          phone_number = $7,
+          assignment_letter_name = coalesce($8, assignment_letter_name),
+          assignment_letter_path = coalesce($9, assignment_letter_path),
+          assignment_letter_url = coalesce($10, assignment_letter_url),
+          role_id = coalesce(role_id, $11),
+          rejection_reason = null,
+          updated_at = now()
+      where id = $12
+      returning *
+    `, [
+      input.full_name,
+      hashedPassword,
+      input.satuan_kerja,
+      input.nip,
+      input.satuan_kerja,
+      input.kode_satker ?? null,
+      input.phone_number,
+      input.assignment_letter_name ?? null,
+      input.assignment_letter_path ?? null,
+      input.assignment_letter_url ?? (input.assignment_letter_path ? `/uploads/${input.assignment_letter_path}` : null),
+      defaultRoleId,
+      existingId,
+    ]);
+
+    const roleFetch = await query(`select p.*, r.name as role_name from profiles p left join roles r on r.id = p.role_id where p.id = $1`, [rows[0].id]);
+    return normalizeUserProfile(roleFetch.rows[0] ?? rows[0]);
+  }
 
   const { rows } = await query(`
     insert into profiles (full_name, email, password_hash, status, university_name, nip, satuan_kerja, kode_satker, phone_number, assignment_letter_name, assignment_letter_path, assignment_letter_url, role_id)
@@ -96,7 +190,7 @@ export async function createPendingUserRegistration(input: UserRegistrationInput
     input.full_name,
     input.email,
     hashedPassword,
-    input.satuan_kerja, // Defaults campus/unit to satuan_kerja
+    input.satuan_kerja,
     input.nip,
     input.satuan_kerja,
     input.kode_satker ?? null,
@@ -107,7 +201,8 @@ export async function createPendingUserRegistration(input: UserRegistrationInput
     defaultRoleId,
   ]);
 
-  return normalizeUserProfile(rows[0]);
+  const roleFetch = await query(`select p.*, r.name as role_name from profiles p left join roles r on r.id = p.role_id where p.id = $1`, [rows[0].id]);
+  return normalizeUserProfile(roleFetch.rows[0] ?? rows[0]);
 }
 
 export async function getPendingRegistrationsFromDb(): Promise<UserProfile[]> {

@@ -10,6 +10,16 @@ export function parseJson(value: unknown) {
   return value ?? null;
 }
 
+export async function ensureAssetColumns() {
+  await query('alter table assets add column if not exists status_sertifikasi text');
+  await query('alter table assets add column if not exists nilai_perolehan_pertama numeric');
+  await query('alter table assets add column if not exists luas_bangunan numeric');
+  await query('alter table assets add column if not exists no_psp text');
+  await query('alter table assets add column if not exists alamat text');
+  await query('alter table assets add column if not exists kode_satker text');
+  await query('alter table assets add column if not exists nama_satker text');
+}
+
 export function normalizeAsset(row: Record<string, unknown>): Asset {
   const photoPaths = Array.isArray(row.photo_paths) ? row.photo_paths as string[] : [];
   const photoUrls = Array.isArray(row.photo_urls) ? row.photo_urls as string[] : [];
@@ -22,8 +32,10 @@ export function normalizeAsset(row: Record<string, unknown>): Asset {
     asset_type: row.asset_type === 'land' ? 'land' : 'building',
     campus_name: row.campus_name as string | null,
     faculty_or_unit: row.faculty_or_unit as string | null,
-    address: row.address as string | null,
-    ownership_status: row.ownership_status as string | null,
+    address: (row.address as string) || (row.alamat as string) || null,
+    alamat: (row.alamat as string) || (row.address as string) || null,
+    ownership_status: (row.ownership_status as string) || (row.status_sertifikasi as string) || null,
+    status_sertifikasi: (row.status_sertifikasi as string) || (row.ownership_status as string) || null,
     condition_status: row.condition_status as string | null,
     verification_status: (row.verification_status as Asset['verification_status']) ?? 'draft',
     latitude: row.latitude === null || row.latitude === undefined ? null : Number(row.latitude),
@@ -42,6 +54,9 @@ export function normalizeAsset(row: Record<string, unknown>): Asset {
     has_active_utilization: Boolean(row.has_active_utilization),
     is_deleted: Number(row.is_deleted ?? 0),
     bmn_raw: parseJson(row.bmn_raw) as Record<string, unknown> | null,
+    nilai_perolehan_pertama: row.nilai_perolehan_pertama !== null && row.nilai_perolehan_pertama !== undefined ? Number(row.nilai_perolehan_pertama) : (row.nilai_perolehan !== null && row.nilai_perolehan !== undefined ? Number(row.nilai_perolehan) : null),
+    luas_bangunan: row.luas_bangunan !== null && row.luas_bangunan !== undefined ? Number(row.luas_bangunan) : null,
+    no_psp: row.no_psp ? String(row.no_psp) : null,
   };
 }
 
@@ -53,7 +68,7 @@ export async function getAssetCountFromDb(): Promise<number> {
 }
 
 export async function getAssetsFromDb(options: AssetListOptions = {}): Promise<Asset[]> {
-  const limit = Math.max(1, Math.min(options.limit ?? 300, 1000));
+  const limit = options.limit && options.limit > 0 ? Math.min(options.limit, 100000) : 100000;
   const offset = Math.max(0, options.offset ?? 0);
   const { rows } = await query(`
     select a.*,
@@ -76,13 +91,64 @@ export async function getAssetsFromDb(options: AssetListOptions = {}): Promise<A
 }
 
 export async function upsertAssetToDb(asset: Asset): Promise<Asset> {
+  await ensureAssetColumns();
   return transaction(async (client) => {
     const { rows } = await client.query(`
-      insert into assets (id, asset_code, asset_name, asset_type, campus_name, faculty_or_unit, address, ownership_status, condition_status, verification_status, latitude, longitude, geometry_type, geometry_geojson, is_deleted)
-      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
-      on conflict (id) do update set asset_code=excluded.asset_code, asset_name=excluded.asset_name, asset_type=excluded.asset_type, campus_name=excluded.campus_name, faculty_or_unit=excluded.faculty_or_unit, address=excluded.address, ownership_status=excluded.ownership_status, condition_status=excluded.condition_status, verification_status=excluded.verification_status, latitude=excluded.latitude, longitude=excluded.longitude, geometry_type=excluded.geometry_type, geometry_geojson=excluded.geometry_geojson, is_deleted=excluded.is_deleted, updated_at=now()
+      insert into assets (
+        id, asset_code, asset_name, asset_type, campus_name, faculty_or_unit, address,
+        ownership_status, condition_status, verification_status, latitude, longitude,
+        geometry_type, geometry_geojson, is_deleted, status_sertifikasi,
+        nilai_perolehan_pertama, luas_bangunan, no_psp, alamat, kode_satker, nama_satker
+      )
+      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
+      on conflict (id) do update set
+        asset_code=excluded.asset_code,
+        asset_name=excluded.asset_name,
+        asset_type=excluded.asset_type,
+        campus_name=excluded.campus_name,
+        faculty_or_unit=excluded.faculty_or_unit,
+        address=excluded.address,
+        ownership_status=excluded.ownership_status,
+        condition_status=excluded.condition_status,
+        verification_status=excluded.verification_status,
+        latitude=excluded.latitude,
+        longitude=excluded.longitude,
+        geometry_type=excluded.geometry_type,
+        geometry_geojson=excluded.geometry_geojson,
+        is_deleted=excluded.is_deleted,
+        status_sertifikasi=excluded.status_sertifikasi,
+        nilai_perolehan_pertama=excluded.nilai_perolehan_pertama,
+        luas_bangunan=excluded.luas_bangunan,
+        no_psp=excluded.no_psp,
+        alamat=excluded.alamat,
+        kode_satker=excluded.kode_satker,
+        nama_satker=excluded.nama_satker,
+        updated_at=now()
       returning *
-    `, [asset.id, asset.asset_code, asset.asset_name, asset.asset_type, asset.campus_name, asset.faculty_or_unit, asset.address, asset.ownership_status, asset.condition_status, asset.verification_status, asset.latitude, asset.longitude, asset.geometry_type, asset.geometry_geojson ? JSON.stringify(asset.geometry_geojson) : null, asset.is_deleted ?? 0]);
+    `, [
+      asset.id,
+      asset.asset_code,
+      asset.asset_name,
+      asset.asset_type,
+      asset.campus_name,
+      asset.faculty_or_unit,
+      asset.address ?? asset.alamat ?? null,
+      asset.ownership_status ?? asset.status_sertifikasi ?? null,
+      asset.condition_status,
+      'terverifikasi',
+      asset.latitude,
+      asset.longitude,
+      asset.geometry_type,
+      asset.geometry_geojson ? JSON.stringify(asset.geometry_geojson) : null,
+      asset.is_deleted ?? 0,
+      asset.status_sertifikasi ?? asset.ownership_status ?? null,
+      asset.nilai_perolehan_pertama ?? asset.nilai_perolehan ?? null,
+      asset.luas_bangunan ?? null,
+      asset.no_psp ?? null,
+      asset.alamat ?? asset.address ?? null,
+      asset.kode_satker ?? null,
+      asset.nama_satker ?? null,
+    ]);
 
     const savedAssetId = Number(rows[0].id);
     const photoPaths = asset.photo_paths ?? [];

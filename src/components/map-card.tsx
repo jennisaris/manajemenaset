@@ -43,11 +43,11 @@ export function MapCard({ assets, utilizations = [] }: { assets: Asset[]; utiliz
         <div className="flex items-center gap-3">
           <div className="grid h-11 w-11 place-items-center rounded-2xl bg-sky-100 text-sky-700"><MapPinned size={22} /></div>
           <div>
-            <h3 className="text-lg font-black">Peta Aset Leaflet</h3>
+            <h3 className="text-lg font-black">Peta Aset</h3>
             <p className="text-xs font-medium text-slate-500">Menampilkan {filteredAssets.length} dari {assets.length} aset</p>
           </div>
         </div>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 sm:gap-2">
           {filters.map((filter) => {
             const active = filter.key === activeFilter;
             return (
@@ -55,7 +55,11 @@ export function MapCard({ assets, utilizations = [] }: { assets: Asset[]; utiliz
                 key={filter.key}
                 type="button"
                 onClick={() => setActiveFilter(filter.key)}
-                className={`rounded-full border px-3 py-2 text-xs font-black shadow-sm transition ${active ? 'border-sky-400 bg-sky-600 text-white' : 'border-sky-100 bg-white/80 text-slate-600 hover:border-sky-300 hover:text-sky-700'}`}
+                className={`rounded-full border px-3.5 py-1.5 text-xs font-bold whitespace-nowrap transition-all duration-200 cursor-pointer ${
+                  active
+                    ? 'border-[#165DFF] bg-[#165DFF] text-white shadow-md shadow-[#165DFF]/25 scale-[1.02]'
+                    : 'border-[#E5E7EB] bg-[#F9FAFB] text-[#6A7686] hover:border-[#165DFF] hover:text-[#165DFF] hover:bg-white'
+                }`}
               >
                 {filter.label}
               </button>

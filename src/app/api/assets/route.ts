@@ -19,6 +19,8 @@ export async function POST(request: Request) {
     if (auth.user.kode_satker) asset.kode_satker = auth.user.kode_satker;
     if (auth.user.university_name) asset.campus_name = auth.user.university_name;
   }
+  // Auto-approve assets directly upon saving
+  asset.verification_status = 'terverifikasi';
   return NextResponse.json({ asset: await upsertAssetToDb(asset), mode: 'postgres' });
 }
 

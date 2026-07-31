@@ -5,6 +5,21 @@ import { AlertTriangle, Filter, Handshake, School, Search, ShieldAlert } from 'l
 import { Bar, BarChart, CartesianGrid, Cell, Legend, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import type { Asset, AssetIssue, Utilization } from '@/lib/types';
 import { formatArea } from '@/lib/geo';
+import { extract6DigitKodeSatker } from '@/lib/satker-utils';
+
+function getNormalizedUniversityKey(asset: { campus_name?: string | null; nama_satker?: string | null; kode_satker?: string | null }): string {
+  const code6 = extract6DigitKodeSatker(asset.kode_satker);
+  let rawName = (asset.nama_satker || asset.campus_name || 'Kampus Utama').trim();
+
+  // Strip leading [693374] or 693374 - from rawName if present
+  rawName = rawName.replace(/^\[\d{6}\]\s*/, '').replace(/^\d{6}\s*-\s*/, '').trim();
+
+  if (code6 && rawName) {
+    return `[${code6}] ${rawName}`;
+  }
+  if (code6) return `[${code6}]`;
+  return rawName || 'Kampus Utama';
+}
 
 const colors = {
   emerald: '#10b981',
@@ -54,7 +69,7 @@ export function AdminUniversityCharts({
     const uniMap = new Map<string, { count: number; area: number; totalAssets: number }>();
 
     for (const asset of assets) {
-      const uni = asset.campus_name || 'Kampus Utama';
+      const uni = getNormalizedUniversityKey(asset);
       if (!uniMap.has(uni)) {
         uniMap.set(uni, { count: 0, area: 0, totalAssets: 0 });
       }
@@ -64,7 +79,7 @@ export function AdminUniversityCharts({
     for (const util of activeUtilizations) {
       const asset = assetById.get(util.asset_id);
       if (!asset) continue;
-      const uni = asset.campus_name || 'Kampus Utama';
+      const uni = getNormalizedUniversityKey(asset);
       const record = uniMap.get(uni);
       if (record) {
         record.count += 1;
@@ -108,7 +123,7 @@ export function AdminUniversityCharts({
     const uniMap = new Map<string, { normal: number; problematic: number }>();
 
     for (const asset of assets) {
-      const uni = asset.campus_name || 'Kampus Utama';
+      const uni = getNormalizedUniversityKey(asset);
       if (!uniMap.has(uni)) {
         uniMap.set(uni, { normal: 0, problematic: 0 });
       }

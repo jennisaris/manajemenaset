@@ -1,5 +1,6 @@
 import { BadgeCheck, Building2, Eye, FileText, Image as ImageIcon, Landmark, MapPin, Pencil, RotateCcw, ShieldCheck, Trash2 } from 'lucide-react';
 import type { Asset, VerificationStatus } from '@/lib/types';
+import { extract6DigitKodeSatker, getAssetDisplayName } from '@/lib/satker-utils';
 import { StatusBadge } from './asset-status-badge';
 
 type AssetTableProps = {
@@ -62,7 +63,7 @@ export function AssetTable({
                     </div>
                   )}
                   <div>
-                    <h4 className="font-bold text-[#080C1A] leading-tight">{asset.asset_name}</h4>
+                    <h4 className="font-bold text-[#080C1A] leading-tight">{getAssetDisplayName(asset)}</h4>
                     <p className="mt-0.5 text-xs font-medium text-[#6A7686]">{asset.asset_code}</p>
                   </div>
                 </div>
@@ -75,7 +76,10 @@ export function AssetTable({
                   <strong className="text-[#080C1A] font-bold">
                     {asset.asset_type === 'land' ? 'Tanah' : 'Bangunan'}
                   </strong>
-                  <span className="block truncate">{asset.campus_name || '-'}</span>
+                  <span className="block truncate">
+                    {asset.kode_satker ? <span className="font-extrabold text-[#165DFF] mr-1">[{extract6DigitKodeSatker(asset.kode_satker)}]</span> : null}
+                    {asset.campus_name || asset.nama_satker || '-'}
+                  </span>
                 </div>
                 <div>
                   <span className="block text-[10px] uppercase font-semibold text-[#6A7686]">Kondisi & Legalitas</span>
@@ -171,6 +175,7 @@ export function AssetTable({
               const Icon = asset.asset_type === 'land' ? Landmark : Building2;
               const photoCount = asset.photo_urls?.length || (asset.primary_photo_url ? 1 : 0);
               const docCount = asset.document_urls?.length || asset.document_paths?.length || 0;
+              const displayName = getAssetDisplayName(asset);
 
               return (
                 <tr key={asset.id} className="transition hover:bg-[#F9FAFB]/80">
@@ -180,7 +185,7 @@ export function AssetTable({
                       {asset.primary_photo_url ? (
                         <img
                           src={asset.primary_photo_url}
-                          alt={asset.asset_name}
+                          alt={displayName}
                           className="h-11 w-11 shrink-0 rounded-xl object-cover border border-[#F3F4F3] shadow-xs"
                         />
                       ) : (
@@ -189,7 +194,7 @@ export function AssetTable({
                         </div>
                       )}
                       <div>
-                        <strong className="block font-bold text-[#080C1A]">{asset.asset_name}</strong>
+                        <strong className="block font-bold text-[#080C1A]">{displayName}</strong>
                         <span className="text-xs font-medium text-[#6A7686]">{asset.asset_code}</span>
                       </div>
                     </div>
@@ -200,7 +205,10 @@ export function AssetTable({
                     <span className="inline-flex items-center gap-1 rounded-md bg-[#EFF2F7] px-2 py-0.5 text-[11px] font-bold text-[#165DFF] mb-1">
                       {asset.asset_type === 'land' ? 'Tanah' : 'Bangunan'}
                     </span>
-                    <p className="text-xs font-semibold text-[#080C1A]">{asset.campus_name || '-'}</p>
+                    <p className="text-xs font-semibold text-[#080C1A]">
+                      {asset.kode_satker ? <span className="text-[#165DFF] font-extrabold mr-1">[{extract6DigitKodeSatker(asset.kode_satker)}]</span> : null}
+                      {asset.campus_name || asset.nama_satker || '-'}
+                    </p>
                     <p className="text-[11px] text-[#6A7686] truncate max-w-48">{asset.faculty_or_unit || '-'}</p>
                   </td>
 
@@ -239,7 +247,7 @@ export function AssetTable({
                       <button
                         onClick={() => onMapClick ? onMapClick(asset) : onView(asset)}
                         title="Lihat Peta Lokasi Aset (Layar Besar)"
-                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] cursor-pointer"
+                        className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] hover:shadow-md hover:shadow-[#165DFF]/20 active:scale-95 cursor-pointer"
                       >
                         <MapPin className="h-4 w-4" />
                       </button>
@@ -247,7 +255,7 @@ export function AssetTable({
                       <button
                         onClick={() => onView(asset)}
                         title="Lihat Detail Aset"
-                        className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] cursor-pointer"
+                        className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] hover:shadow-md hover:shadow-[#165DFF]/20 active:scale-95 cursor-pointer"
                       >
                         <Eye className="h-4 w-4" />
                       </button>
@@ -257,14 +265,14 @@ export function AssetTable({
                           <button
                             onClick={() => onUpdateVerification(asset, 'terverifikasi')}
                             title="Setujui Verifikasi Aset"
-                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-emerald-600 hover:text-white hover:border-emerald-600 cursor-pointer"
+                            className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-emerald-600 hover:text-white hover:border-emerald-600 hover:shadow-md hover:shadow-emerald-600/20 active:scale-95 cursor-pointer"
                           >
                             <ShieldCheck className="h-4 w-4" />
                           </button>
                           <button
                             onClick={() => onUpdateVerification(asset, 'revisi')}
                             title="Minta Revisi Aset"
-                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-amber-600 hover:text-white hover:border-amber-600 cursor-pointer"
+                            className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-amber-600 hover:text-white hover:border-amber-600 hover:shadow-md hover:shadow-amber-600/20 active:scale-95 cursor-pointer"
                           >
                             <RotateCcw className="h-4 w-4" />
                           </button>
@@ -276,7 +284,7 @@ export function AssetTable({
                           <button
                             onClick={() => onEdit(asset)}
                             title="Edit Aset"
-                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] cursor-pointer"
+                            className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] hover:shadow-md hover:shadow-[#165DFF]/20 active:scale-95 cursor-pointer"
                           >
                             <Pencil className="h-4 w-4" />
                           </button>
@@ -284,7 +292,7 @@ export function AssetTable({
                             onClick={() => onDelete(asset)}
                             disabled={deletingAssetId === asset.id}
                             title="Hapus Aset"
-                            className="flex h-9 w-9 items-center justify-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-rose-600 hover:text-white hover:border-rose-600 cursor-pointer disabled:opacity-50"
+                            className="flex h-9 w-9 items-center justify-center rounded-2xl bg-white text-slate-700 border border-slate-200/80 shadow-2xs transition-all duration-200 hover:bg-rose-600 hover:text-white hover:border-rose-600 hover:shadow-md hover:shadow-rose-600/20 active:scale-95 cursor-pointer disabled:opacity-50"
                           >
                             <Trash2 className="h-4 w-4" />
                           </button>

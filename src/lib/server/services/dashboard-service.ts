@@ -40,7 +40,7 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
 }
 
 export async function getMvpData(options: MvpDataOptions = {}) {
-  const assetLimit = Math.max(1, Math.min(options.assetLimit ?? 100, 1000));
+  const assetLimit = options.assetLimit && options.assetLimit > 0 ? options.assetLimit : 100000;
   const assetOffset = Math.max(0, options.assetOffset ?? 0);
   try {
     const [assets, totalAssets, utilizations, issues, summary] = await Promise.all([

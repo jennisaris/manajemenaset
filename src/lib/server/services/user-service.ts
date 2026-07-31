@@ -1,6 +1,7 @@
 import 'server-only';
 import {
   findUserForLogin,
+  findUserByNip,
   updateOwnPassword,
   createPendingUserRegistration,
   getPendingRegistrationsFromDb,
@@ -20,16 +21,38 @@ export async function changeUserPassword(userId: string, currentPassword: string
 }
 
 export async function registerUser(input: UserRegistrationInput) {
-  if (!input.nip || !input.full_name || !input.email || !input.password) {
-    throw new Error('NIP, Nama Lengkap, Email, dan Password wajib diisi.');
+  const nipTrimmed = input.nip?.trim();
+  const emailTrimmed = input.email?.trim().toLowerCase();
+  const phoneTrimmed = input.phone_number?.trim();
+
+  if (!nipTrimmed || !input.full_name?.trim() || !emailTrimmed || !phoneTrimmed || !input.password?.trim()) {
+    throw new Error('NIP, Nama Lengkap, Satuan Kerja, Email, No. Handphone, dan Password wajib diisi.');
   }
 
-  const existing = await findUserForLogin(input.email);
-  if (existing) {
-    throw new Error('Email sudah terdaftar. Silakan gunakan email lain atau login.');
+  if (!/^\d{9,18}$/.test(nipTrimmed)) {
+    throw new Error('NIP harus berupa angka antara 9 hingga 18 digit.');
   }
 
-  const user = await createPendingUserRegistration(input);
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(emailTrimmed)) {
+    throw new Error('Format email tidak valid (contoh: nama@domain.com atau nama@ac.id).');
+  }
+
+  if (!/^(\+62|62|0)[0-9]{8,13}$/.test(phoneTrimmed.replace(/[\s-]/g, ''))) {
+    throw new Error('Nomor handphone/WhatsApp tidak valid. Masukkan nomor angka yang benar (contoh: 08123456789).');
+  }
+
+  if (input.password.trim().length < 6) {
+    throw new Error('Password minimal 6 karakter.');
+  }
+
+  // Submit/update pending user registration seamlessly
+  const user = await createPendingUserRegistration({
+    ...input,
+    nip: nipTrimmed,
+    email: emailTrimmed,
+    full_name: input.full_name.trim(),
+    phone_number: phoneTrimmed,
+  });
   await sendRegistrationReceivedEmail(user);
   return user;
 }

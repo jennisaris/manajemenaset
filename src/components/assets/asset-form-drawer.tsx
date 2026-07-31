@@ -55,9 +55,8 @@ export function TextField({
         disabled={disabled}
         onChange={(event) => onChange(event.target.value)}
         aria-invalid={Boolean(error)}
-        className={`rounded-2xl border bg-white/90 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 ${
-          error ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100' : 'border-sky-100 focus:border-sky-400 focus:ring-sky-100'
-        }`}
+        className={`rounded-2xl border bg-white/90 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:ring-4 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-500 ${error ? 'border-rose-300 focus:border-rose-400 focus:ring-rose-100' : 'border-sky-100 focus:border-sky-400 focus:ring-sky-100'
+          }`}
       />
       {error && <span className="text-xs font-black text-rose-600">{error}</span>}
     </label>
@@ -242,6 +241,37 @@ export function AssetFormDrawer({
           value={editingAsset.faculty_or_unit ?? ''}
           onChange={(value) => onUpdateDraft({ faculty_or_unit: value })}
         />
+        <TextField
+          label="Status Sertifikasi"
+          value={editingAsset.status_sertifikasi ?? editingAsset.ownership_status ?? ''}
+          onChange={(value) => onUpdateDraft({ status_sertifikasi: value, ownership_status: value })}
+        />
+        <TextField
+          label="Nilai Perolehan Pertama (Rp)"
+          type="number"
+          step="any"
+          min="0"
+          value={editingAsset.nilai_perolehan_pertama?.toString() ?? editingAsset.nilai_perolehan?.toString() ?? ''}
+          onChange={(value) => onUpdateDraft({ nilai_perolehan_pertama: value ? Number(value) : null, nilai_perolehan: value ? Number(value) : null })}
+        />
+        <TextField
+          label="Luas Bangunan (m²)"
+          type="number"
+          step="any"
+          min="0"
+          value={editingAsset.luas_bangunan?.toString() ?? ''}
+          onChange={(value) => onUpdateDraft({ luas_bangunan: value ? Number(value) : null })}
+        />
+        <TextField
+          label="No. PSP (Penetapan Status Penggunaan)"
+          value={editingAsset.no_psp ?? ''}
+          onChange={(value) => onUpdateDraft({ no_psp: value })}
+        />
+        <TextField
+          label="Alamat"
+          value={editingAsset.alamat ?? editingAsset.address ?? ''}
+          onChange={(value) => onUpdateDraft({ address: value, alamat: value })}
+        />
 
         <SelectField<VerificationStatus>
           label="Status Verifikasi"
@@ -275,11 +305,6 @@ export function AssetFormDrawer({
           value={editingAsset.longitude?.toString() ?? ''}
           onChange={(value) => onUpdateDraft({ longitude: value ? Number(value) : null })}
           error={formErrors.longitude}
-        />
-        <TextField
-          label="Alamat"
-          value={editingAsset.address ?? ''}
-          onChange={(value) => onUpdateDraft({ address: value })}
         />
       </div>
 
@@ -442,7 +467,7 @@ export function AssetFormDrawer({
           disabled={isUploadingPhoto || isUploadingDocuments || isSavingAsset}
           className="rounded-2xl bg-gradient-to-br from-sky-400 to-blue-700 px-5 py-3 text-sm font-black text-white shadow-lg shadow-sky-300/40 hover:from-sky-500 hover:to-blue-800 disabled:cursor-not-allowed disabled:from-slate-200 disabled:to-slate-300 disabled:text-slate-500 disabled:shadow-none"
         >
-          {isUploadingPhoto ? 'Upload Foto...' : isUploadingDocuments ? 'Upload Dokumen...' : isSavingAsset ? 'Simpan Database...' : isOperator ? 'Ajukan ke Admin' : 'Simpan Aset'}
+          {isUploadingPhoto ? 'Upload Foto...' : isUploadingDocuments ? 'Upload Dokumen...' : isSavingAsset ? 'Simpan Database...' : isOperator ? 'Simpan' : 'Simpan Aset'}
         </button>
       </div>
     </form>

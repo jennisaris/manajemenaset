@@ -32,8 +32,32 @@ export function UserRegistrationModal({ isOpen, onClose, campusOptions = [] }: U
     setErrorMsg('');
     setSuccessMsg('');
 
-    if (!nip.trim() || !fullName.trim() || !satuanKerja.trim() || !email.trim() || !phone.trim() || !password.trim()) {
+    const cleanNip = nip.trim();
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanPhone = phone.trim();
+
+    if (!cleanNip || !fullName.trim() || !satuanKerja.trim() || !cleanEmail || !cleanPhone || !password.trim()) {
       setErrorMsg('Semua kolom bertanda bintang (*) wajib diisi.');
+      return;
+    }
+
+    if (!/^\d{9,18}$/.test(cleanNip)) {
+      setErrorMsg('NIP harus berupa angka antara 9 hingga 18 digit.');
+      return;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+      setErrorMsg('Format email tidak valid. Gunakan format nama@domain.com atau nama@ac.id.');
+      return;
+    }
+
+    if (!/^(\+62|62|0)[0-9]{8,13}$/.test(cleanPhone.replace(/[\s-]/g, ''))) {
+      setErrorMsg('Nomor handphone/WhatsApp tidak valid. Gunakan format angka (contoh: 08123456789).');
+      return;
+    }
+
+    if (password.trim().length < 6) {
+      setErrorMsg('Password minimal 6 karakter.');
       return;
     }
 
@@ -52,18 +76,17 @@ export function UserRegistrationModal({ isOpen, onClose, campusOptions = [] }: U
       return;
     }
 
-
     setLoading(true);
 
     try {
       const formData = new FormData();
-      formData.append('nip', nip.trim());
+      formData.append('nip', cleanNip);
       formData.append('full_name', fullName.trim());
       formData.append('satuan_kerja', satuanKerja.trim());
       const extractedKode = kodeSatker || satuanKerja.match(/^(\d{6})/)?.[1] || '';
       if (extractedKode) formData.append('kode_satker', extractedKode);
-      formData.append('email', email.trim());
-      formData.append('phone_number', phone.trim());
+      formData.append('email', cleanEmail);
+      formData.append('phone_number', cleanPhone);
       formData.append('password', password.trim());
       formData.append('assignment_letter', file);
 

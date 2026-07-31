@@ -77,6 +77,24 @@ export function Sidebar({ currentRole, isOpenMobile, onCloseMobile }: SidebarPro
 
   const hasAnalytics = canViewExecutiveAnalytics(currentRole);
   const hasUserMgmt = canManageUsers(currentRole);
+  const [pendingUserCount, setPendingUserCount] = useState<number>(0);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (hasUserMgmt) {
+      fetch('/api/admin/users?status=pending')
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (isMounted && data && Array.isArray(data.users)) {
+            setPendingUserCount(data.users.length);
+          }
+        })
+        .catch(() => null);
+    }
+    return () => {
+      isMounted = false;
+    };
+  }, [hasUserMgmt]);
 
   const managementMenu = [
     { href: '#utilization', label: 'Pemanfaatan', icon: Handshake },
@@ -228,25 +246,33 @@ export function Sidebar({ currentRole, isOpenMobile, onCloseMobile }: SidebarPro
               {managementMenu.map((item) => {
                 const Icon = item.icon;
                 const isActive = activeHash === item.href;
+                const isUserMenu = item.href === '#users';
                 return (
                   <a
                     key={item.href}
                     href={item.href}
                     onClick={(e) => handleNavClick(item.href, e)}
-                    className={`group flex items-center gap-3 rounded-xl p-4 transition-all duration-300 cursor-pointer ${
+                    className={`group flex items-center justify-between rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
                       isActive
                         ? 'bg-muted font-semibold text-foreground'
                         : 'text-secondary hover:bg-muted hover:text-foreground'
                     }`}
                   >
-                    <Icon
-                      className={`h-6 w-6 transition-all duration-300 ${
-                        isActive ? 'text-foreground font-semibold' : 'text-secondary group-hover:text-foreground'
-                      }`}
-                    />
-                    <span className="font-medium text-secondary group-[.active]:font-semibold group-[.active]:text-foreground group-hover:text-foreground">
-                      {item.label}
-                    </span>
+                    <div className="flex items-center gap-3">
+                      <Icon
+                        className={`h-5 w-5 transition-all duration-300 ${
+                          isActive ? 'text-foreground font-semibold' : 'text-secondary group-hover:text-foreground'
+                        }`}
+                      />
+                      <span className="font-medium text-secondary group-hover:text-foreground">
+                        {item.label}
+                      </span>
+                    </div>
+                    {isUserMenu && pendingUserCount > 0 && (
+                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-2 text-[11px] font-extrabold text-white shadow-sm shadow-rose-500/30 animate-pulse">
+                        {pendingUserCount}
+                      </span>
+                    )}
                   </a>
                 );
               })}
