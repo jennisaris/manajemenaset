@@ -65,6 +65,7 @@ export async function POST(request: Request) {
     const formData = await request.formData();
 
     const no_surat_permohonan = String(formData.get('no_surat_permohonan') ?? '').trim();
+    const tgl_surat_permohonan = String(formData.get('tgl_surat_permohonan') ?? '').trim() || null;
     let kode_satker = String(formData.get('kode_satker') ?? '').trim();
     let nama_satker = String(formData.get('nama_satker') ?? '').trim();
 
@@ -120,6 +121,7 @@ export async function POST(request: Request) {
       kode_satker,
       nama_satker,
       no_surat_permohonan,
+      tgl_surat_permohonan,
       surat_permohonan_name: resSurat.name,
       surat_permohonan_path: resSurat.path,
       surat_permohonan_url: resSurat.url,
@@ -155,8 +157,8 @@ export async function PATCH(request: Request) {
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    if (user.role === 'Operator Kampus') {
-      return NextResponse.json({ error: 'Operator Kampus tidak memiliki izin mengubah status usulan.' }, { status: 403 });
+    if (user.role !== 'Superadmin') {
+      return NextResponse.json({ error: 'Forbidden. Hanya Superadmin yang berhak mengubah status verifikasi usulan BMN.' }, { status: 403 });
     }
 
     const body = await request.json();
@@ -187,6 +189,15 @@ export async function DELETE(request: Request) {
     }
 
     const id = parseInt(idParam, 10);
+    const existing = (await getDisposalsFromDb()).find((p) => p.id === id);
+    if (!existing) {
+      return NextResponse.json({ error: 'Usulan penghapusan BMN tidak ditemukan.' }, { status: 404 });
+    }
+
+    if (user.role !== 'Superadmin' && user.kode_satker !== existing.kode_satker) {
+      return NextResponse.json({ error: 'Forbidden. Anda hanya dapat menghapus usulan milik Satker Anda.' }, { status: 403 });
+    }
+
     const success = await deleteDisposalFromDb(id);
     return NextResponse.json({ success });
   } catch (err) {

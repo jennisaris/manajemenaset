@@ -1,7 +1,35 @@
 'use client';
 
+import { useEffect } from 'react';
 import type { LatLngExpression } from 'leaflet';
-import { CircleMarker, MapContainer, Polygon, Popup, TileLayer } from 'react-leaflet';
+import { CircleMarker, MapContainer, Polygon, Popup, TileLayer, useMap } from 'react-leaflet';
+
+function MapResizeTrigger() {
+  const map = useMap();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      map.invalidateSize();
+    }, 200);
+
+    const handleHashOrResize = () => {
+      setTimeout(() => {
+        map.invalidateSize();
+      }, 150);
+    };
+
+    window.addEventListener('hashchange', handleHashOrResize);
+    window.addEventListener('resize', handleHashOrResize);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener('hashchange', handleHashOrResize);
+      window.removeEventListener('resize', handleHashOrResize);
+    };
+  }, [map]);
+
+  return null;
+}
 import type { Asset, Utilization } from '@/lib/types';
 import { formatArea } from '@/lib/geo';
 import { getAssetDisplayName } from '@/lib/satker-utils';
@@ -89,6 +117,7 @@ export function AssetMap({
 }) {
   return (
     <MapContainer center={indonesiaCenter} zoom={5} minZoom={4} scrollWheelZoom={false} className="h-[360px] w-full rounded-b-[1.5rem] sm:h-[430px] lg:h-[470px]">
+      <MapResizeTrigger />
       <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
       {assets.map((asset) => {
         const color = assetColor(asset);

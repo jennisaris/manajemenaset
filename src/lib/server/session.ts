@@ -18,7 +18,7 @@ type SessionPayload = SessionUser & { exp: number; nonce: string };
 
 const cookieName = 'aset_session';
 const maxAgeSeconds = 60 * 60 * 8;
-const secureCookie = process.env.SESSION_COOKIE_SECURE === 'true';
+const secureCookie = process.env.NODE_ENV === 'production' || process.env.SESSION_COOKIE_SECURE === 'true';
 
 function b64url(input: Buffer | string) {
   return Buffer.from(input).toString('base64url');

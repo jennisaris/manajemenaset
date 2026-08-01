@@ -242,6 +242,7 @@ export type BmnDisposalProposal = {
   kode_satker: string;
   nama_satker: string;
   no_surat_permohonan: string;
+  tgl_surat_permohonan?: string | null;
   surat_permohonan_name?: string | null;
   surat_permohonan_path?: string | null;
   surat_permohonan_url?: string | null;

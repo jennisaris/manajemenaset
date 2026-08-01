@@ -43,6 +43,7 @@ import { matchesUniversityScope } from '@/lib/satker-utils';
 import { BmnDisposalManager } from './bmn-disposal-manager';
 import { VerificationCenter } from './verification-center';
 import { BulkAssetUploader } from './bulk-asset-uploader';
+import { ReportsManager } from './reports-manager';
 
 const nf = new Intl.NumberFormat('id-ID');
 
@@ -211,12 +212,12 @@ export function Dashboard({
   const executiveMetrics = useMemo(() => {
     const totalAssets = displayedAssets.length;
     const mappedCount = displayedAssets.filter(
-      (a) => (a.latitude !== null && a.longitude !== null) || Boolean(a.geojson)
+      (a) => (a.latitude !== null && a.longitude !== null) || Boolean(a.geometry_geojson)
     ).length;
     const mappedPct = totalAssets > 0 ? Math.round((mappedCount / totalAssets) * 100) : 0;
 
     const certifiedCount = displayedAssets.filter((a) => {
-      const statusStr = typeof a.certification_status === 'string' ? a.certification_status.toLowerCase() : '';
+      const statusStr = typeof a.status_sertifikasi === 'string' ? a.status_sertifikasi.toLowerCase() : typeof (a as any).certification_status === 'string' ? (a as any).certification_status.toLowerCase() : '';
       return ['sertifikat', 'sudah sertifikat', 'hak pakai', 'hak milik', 'bpkb'].some((keyword) =>
         statusStr.includes(keyword)
       );
@@ -244,10 +245,10 @@ export function Dashboard({
     const totalBuildingArea = liveSummary.total_building_area_m2;
 
     const activeUtilCount = scopedUtilizations.filter((u) => typeof u.status === 'string' && ['aktif', 'akan_berakhir'].includes(u.status.toLowerCase())).length;
-    const totalNilaiPnbp = scopedUtilizations.reduce((sum, u) => sum + (Number(u.nilai_sewa) || 0), 0);
+    const totalNilaiPnbp = scopedUtilizations.reduce((sum, u) => sum + (Number((u as any).nilai_sewa) || 0), 0);
 
     const activeIssueCount = scopedIssues.filter((i) => typeof i.status === 'string' && i.status.toLowerCase() !== 'selesai').length;
-    const sengketaCount = scopedIssues.filter((i) => i.issue_type === 'sengketa' || (typeof i.title === 'string' && i.title.toLowerCase().includes('sengketa'))).length;
+    const sengketaCount = scopedIssues.filter((i) => i.issue_type === 'sengketa' || (typeof i.issue_title === 'string' && i.issue_title.toLowerCase().includes('sengketa'))).length;
 
     const pendingDisposalCount = pendingDisposals.length;
     const approvedDisposalCount = pendingDisposals.filter((d) => d.status === 'disetujui').length;
@@ -854,6 +855,7 @@ export function Dashboard({
               currentRole={role}
               currentUniversity={universityName}
               onAssetsChange={handleAssetsChange}
+              onStatusChanged={handleRefreshAssets}
             />
           </section>
         )}
@@ -944,45 +946,14 @@ export function Dashboard({
 
         {/* Reports Section */}
         {pageHash === '#reports' && (
-          <section
-            className="mt-6 overflow-hidden rounded-card border border-border bg-white p-6 shadow-sm"
-            id="reports"
-          >
-            <div className="mb-6 flex flex-col justify-between gap-3 sm:flex-row sm:items-center">
-              <div>
-                <h3 className="text-lg font-bold text-foreground">Preview & Laporan Aset</h3>
-                {!canExport && (
-                  <p className="mt-1 text-xs font-semibold text-error">
-                    Role {role} tidak memiliki izin ekspor data.
-                  </p>
-                )}
-              </div>
-              <button
-                disabled={!canExport}
-                className="inline-flex cursor-pointer items-center gap-2 rounded-button bg-primary px-5 py-2.5 text-xs font-semibold text-white shadow-md transition hover:bg-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
-              >
-                <Download className="h-4 w-4" />
-                Export Excel
-              </button>
-            </div>
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div className="rounded-2xl bg-muted p-5">
-                <FileText className="mb-3 h-6 w-6 text-primary" />
-                <strong className="block text-sm font-bold text-foreground">Laporan Aset</strong>
-                <p className="mt-1 text-xs text-secondary font-medium">Tanah, bangunan, dan status verifikasi.</p>
-              </div>
-              <div className="rounded-2xl bg-muted p-5">
-                <Handshake className="mb-3 h-6 w-6 text-primary" />
-                <strong className="block text-sm font-bold text-foreground">Laporan Pemanfaatan</strong>
-                <p className="mt-1 text-xs text-secondary font-medium">Kontrak aktif dan pihak ketiga.</p>
-              </div>
-              <div className="rounded-2xl bg-muted p-5">
-                <BadgeCheck className="mb-3 h-6 w-6 text-primary" />
-                <strong className="block text-sm font-bold text-foreground">Laporan Verifikasi</strong>
-                <p className="mt-1 text-xs text-secondary font-medium">Monitoring dan review data aset.</p>
-              </div>
-            </div>
-          </section>
+          <ReportsManager
+            assets={currentAssets}
+            utilizations={currentUtilizations}
+            issues={currentIssues}
+            currentRole={role}
+            universityOptions={universityOptions}
+            universityName={universityName}
+          />
         )}
 
         {/* User Role & Approval Manager */}

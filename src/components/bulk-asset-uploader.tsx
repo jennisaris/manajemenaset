@@ -19,11 +19,14 @@ import {
   Wrench,
   X,
 } from 'lucide-react';
-import type { Asset, UserRole } from '@/lib/types';
+import type { Asset, AssetType, UserRole } from '@/lib/types';
 import { extract6DigitKodeSatker } from '@/lib/satker-utils';
 
-interface TemporaryAssetRow extends Partial<Asset> {
+interface TemporaryAssetRow extends Omit<Partial<Asset>, 'asset_type'> {
   tempId: string;
+  asset_type?: AssetType | 'equipment';
+  acquisition_value?: number;
+  acquisition_year?: number;
   targetSubMenu: 'bangunan_tanah' | 'alat_angkutan' | 'khusus_tik' | 'non_tik';
   targetSubMenuLabel: string;
   targetSubMenuHash: string;

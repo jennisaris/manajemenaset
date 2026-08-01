@@ -159,10 +159,10 @@ export function ExecutiveAnalytics({
 
   // Grafik Data Aset per Sub-Kategori / Jenis BMN
   const assetCategoryData = [
-    { label: 'Bangunan / Tanah', value: assets.filter((a) => a.asset_type === 'land' || a.asset_type === 'building' || !a.category || a.category === 'bangunan').length, color: colors.emerald },
-    { label: 'Alat Angkut', value: assets.filter((a) => a.category === 'alat_angkutan' || (typeof a.nama_barang === 'string' && /mobil|motor|kendaraan|innova/i.test(a.nama_barang))).length, color: colors.blue },
-    { label: 'Khusus TIK', value: assets.filter((a) => a.category === 'khusus_tik' || (typeof a.nama_barang === 'string' && /komputer|server|laptop|tik/i.test(a.nama_barang))).length, color: colors.violet },
-    { label: 'Non TIK', value: assets.filter((a) => a.category === 'non_tik').length, color: colors.amber },
+    { label: 'Bangunan / Tanah', value: assets.filter((a) => a.asset_type === 'land' || a.asset_type === 'building' || !(a as any).category || (a as any).category === 'bangunan').length, color: colors.emerald },
+    { label: 'Alat Angkut', value: assets.filter((a) => (a as any).category === 'alat_angkutan' || (typeof a.nama_barang === 'string' && /mobil|motor|kendaraan|innova/i.test(a.nama_barang))).length, color: colors.blue },
+    { label: 'Khusus TIK', value: assets.filter((a) => (a as any).category === 'khusus_tik' || (typeof a.nama_barang === 'string' && /komputer|server|laptop|tik/i.test(a.nama_barang))).length, color: colors.violet },
+    { label: 'Non TIK', value: assets.filter((a) => (a as any).category === 'non_tik').length, color: colors.amber },
   ];
 
   const verificationData = countBy(

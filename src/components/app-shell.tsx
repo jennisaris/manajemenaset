@@ -168,9 +168,9 @@ export function AppShell() {
           {/* Left Column - Image & Hero Banner with Soft Blue Theme */}
           <div className="hidden lg:flex lg:w-1/2 xl:w-3/5 relative h-full bg-gradient-to-br from-info-light via-blue-100 to-sky-200 overflow-hidden border-r border-border">
             <img
-              src="https://plus.unsplash.com/premium_photo-1691962723291-d5d82743fb4b?q=80&w=1287&auto=format&fit=crop"
-              alt="Kampus Modern Kemdiktisaintek"
-              className="w-full h-full object-cover opacity-20 mix-blend-multiply"
+              src="/images/gedung-dikti.jpg"
+              alt="Gedung Kemdiktisaintek"
+              className="w-full h-full object-cover opacity-40 mix-blend-multiply transition-opacity duration-300"
             />
             <div className="absolute inset-0 bg-gradient-to-t from-blue-100/90 via-transparent to-transparent p-8 xl:p-14 flex flex-col justify-start pt-12 xl:pt-16 gap-6 z-10 text-foreground">
               {/* Hero Text */}
@@ -184,22 +184,22 @@ export function AppShell() {
                   Sistem Manajemen <span className="bg-gradient-to-r from-primary to-info-dark bg-clip-text text-transparent">Aset Universitas</span>
                 </h2>
 
-                <p className="text-base xl:text-lg text-secondary leading-relaxed font-medium text-justify max-w-3xl">
+                <p className="text-base xl:text-lg text-slate-900 leading-relaxed font-bold max-w-3xl">
                   Platform terpadu untuk pemantauan tanah, bangunan, sertifikasi legalitas, dan pengelolaan pemanfaatan pihak ketiga secara efisien dan akurat.
                 </p>
 
-                <div className="pt-6 grid grid-cols-3 gap-4 text-sm border-t border-border max-w-3xl">
+                <div className="pt-4 grid grid-cols-3 gap-4 text-sm border-t border-slate-300/80 max-w-3xl">
                   <div className="flex items-center gap-2.5">
-                    <div className="w-3 h-3 rounded-full bg-primary" />
-                    <span className="font-bold text-foreground">Integrasi Data</span>
+                    <div className="w-3 h-3 rounded-full bg-primary shrink-0" />
+                    <span className="font-extrabold text-slate-900 text-xs sm:text-sm">Integrasi Data</span>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <div className="w-3 h-3 rounded-full bg-success" />
-                    <span className="font-bold text-foreground">Akses Berjenjang</span>
+                    <div className="w-3 h-3 rounded-full bg-emerald-600 shrink-0" />
+                    <span className="font-extrabold text-slate-900 text-xs sm:text-sm">Akses Berjenjang</span>
                   </div>
                   <div className="flex items-center gap-2.5">
-                    <div className="w-3 h-3 rounded-full bg-alert" />
-                    <span className="font-bold text-foreground">Peta GIS & Laporan</span>
+                    <div className="w-3 h-3 rounded-full bg-amber-600 shrink-0" />
+                    <span className="font-extrabold text-slate-900 text-xs sm:text-sm">Peta GIS & Laporan</span>
                   </div>
                 </div>
               </div>
@@ -226,11 +226,10 @@ export function AppShell() {
                 <form onSubmit={handleLogin} className="space-y-4">
                   {message && (
                     <div
-                      className={`p-3.5 rounded-xl text-xs font-semibold leading-relaxed border ${
-                        authState === 'error'
-                          ? 'bg-error-light text-error-dark border-error-light'
-                          : 'bg-info-light text-primary border-info-light'
-                      }`}
+                      className={`p-3.5 rounded-xl text-xs font-semibold leading-relaxed border ${authState === 'error'
+                        ? 'bg-error-light text-error-dark border-error-light'
+                        : 'bg-info-light text-primary border-info-light'
+                        }`}
                     >
                       {message}
                     </div>
@@ -357,7 +356,7 @@ export function AppShell() {
                   Terms of Service
                 </a>
                 <span>•</span>
-                <span>Kemdiktisaintek v2.0</span>
+                <span>Kemdiktisaintek v1.0</span>
               </div>
             </div>
           </div>

@@ -9,6 +9,7 @@ export async function ensureBmnDisposalTable() {
       kode_satker text not null,
       nama_satker text not null,
       no_surat_permohonan text not null,
+      tgl_surat_permohonan date,
       surat_permohonan_name text,
       surat_permohonan_path text,
       surat_permohonan_url text,
@@ -32,6 +33,7 @@ export async function ensureBmnDisposalTable() {
       created_at timestamptz not null default now(),
       updated_at timestamptz not null default now()
     );
+    alter table bmn_disposals add column if not exists tgl_surat_permohonan date;
   `);
 }
 
@@ -41,6 +43,7 @@ export function normalizeDisposal(row: Record<string, unknown>): BmnDisposalProp
     kode_satker: String(row.kode_satker ?? ''),
     nama_satker: String(row.nama_satker ?? ''),
     no_surat_permohonan: String(row.no_surat_permohonan ?? ''),
+    tgl_surat_permohonan: row.tgl_surat_permohonan ? String(row.tgl_surat_permohonan) : null,
     surat_permohonan_name: (row.surat_permohonan_name as string) ?? null,
     surat_permohonan_path: (row.surat_permohonan_path as string) ?? null,
     surat_permohonan_url: (row.surat_permohonan_url as string) ?? (row.surat_permohonan_path ? `/uploads/${row.surat_permohonan_path}` : null),
@@ -98,7 +101,7 @@ export async function createDisposalInDb(
   await ensureBmnDisposalTable();
   const res = await query<Record<string, unknown>>(
     `insert into bmn_disposals (
-       kode_satker, nama_satker, no_surat_permohonan,
+       kode_satker, nama_satker, no_surat_permohonan, tgl_surat_permohonan,
        surat_permohonan_name, surat_permohonan_path, surat_permohonan_url,
        sptjm_name, sptjm_path, sptjm_url,
        lampiran_name, lampiran_path, lampiran_url,
@@ -106,12 +109,13 @@ export async function createDisposalInDb(
        ba_penelitian_name, ba_penelitian_path, ba_penelitian_url,
        jumlah_barang, jenis_barang, nilai_perolehan, status, catatan
      )
-     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)
+     values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)
      returning *`,
     [
       item.kode_satker,
       item.nama_satker,
       item.no_surat_permohonan,
+      item.tgl_surat_permohonan ?? null,
       item.surat_permohonan_name ?? null,
       item.surat_permohonan_path ?? null,
       item.surat_permohonan_url ?? null,
@@ -169,40 +173,70 @@ export async function updateDisposalStatusInDb(
 export function parseLampiranRecap(fileContentText: string) {
   const lines = fileContentText.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
   if (lines.length === 0) {
-    return { jumlahBarang: 0, jenisBarang: 'BMN Umum', nilaiPerolehan: 0 };
+    return { jumlahBarang: 0, jenisBarang: 'Peralatan & Mesin', nilaiPerolehan: 0 };
   }
 
   const categorySet = new Set<string>();
   let totalNilai = 0;
   let itemCount = 0;
 
-  // Header skipping if line contains text header
-  const dataLines = lines.filter((l) => !l.toLowerCase().includes('nama_barang') && !l.toLowerCase().includes('kode_barang') && !l.toLowerCase().includes('nup'));
+  // Detect header line if present
+  const headerLineIndex = lines.findIndex((l) => l.toLowerCase().includes('nilai perolehan') || l.toLowerCase().includes('jenis bmn') || l.toLowerCase().includes('jenis barang'));
+
+  let nilaiColIdx = -1;
+  let jenisColIdx = -1;
+
+  if (headerLineIndex !== -1) {
+    const headers = lines[headerLineIndex].split(/[,;\t]/).map((h) => h.replace(/^['"]|['"]$/g, '').trim().toLowerCase());
+    nilaiColIdx = headers.findIndex((h) => h.includes('nilai perolehan') || h.includes('nilai_perolehan'));
+    jenisColIdx = headers.findIndex((h) => (h.includes('jenis bmn') || h.includes('jenis barang') || h.includes('kategori')) && !h.includes('nama'));
+  }
+
+  const dataLines = headerLineIndex !== -1 ? lines.slice(headerLineIndex + 1) : lines;
 
   for (const line of dataLines) {
+    const lowerLine = line.toLowerCase();
+    const isTotalLine =
+      lowerLine.includes('total') ||
+      lowerLine.includes('jumlah') ||
+      lowerLine.includes('subtotal') ||
+      lowerLine.includes('rekapitulasi');
+
+    if (isTotalLine) continue; // Exclude summary / total row from item count & summation
+
     itemCount++;
     const parts = line.split(/[,;\t]/).map((p) => p.replace(/^['"]|['"]$/g, '').trim());
 
-    // Extract potential category / name
-    for (const part of parts) {
-      if (part.length > 3 && isNaN(Number(part)) && !part.match(/^\d{10,}/)) {
-        categorySet.add(part.toUpperCase());
-        break;
+    if (jenisColIdx !== -1 && parts[jenisColIdx]) {
+      categorySet.add(parts[jenisColIdx]);
+    } else {
+      for (const part of parts) {
+        if (part.length > 3 && isNaN(Number(part)) && !part.match(/^\d{10,}/) && !part.toLowerCase().includes('http')) {
+          categorySet.add(part.toUpperCase());
+          break;
+        }
       }
     }
 
-    // Extract numbers for nilai perolehan
-    for (const part of parts) {
-      const cleaned = part.replace(/[^0-9.]/g, '');
+    if (nilaiColIdx !== -1 && parts[nilaiColIdx]) {
+      const cleaned = parts[nilaiColIdx].replace(/[^0-9.]/g, '');
       const val = parseFloat(cleaned);
-      if (!isNaN(val) && val > 10000) {
+      if (!isNaN(val) && val > 0) {
         totalNilai += val;
-        break;
+      }
+    } else {
+      for (const part of parts) {
+        const cleaned = part.replace(/[^0-9.]/g, '');
+        const val = parseFloat(cleaned);
+        if (!isNaN(val) && val > 1000) {
+          totalNilai += val;
+          break;
+        }
       }
     }
   }
 
-  const categories = Array.from(categorySet).slice(0, 4).join(', ') || 'BMN Peralatan & Bangunan';
+  const categories = Array.from(categorySet).slice(0, 3).join(', ') || 'Peralatan & Mesin';
 
   return {
     jumlahBarang: itemCount > 0 ? itemCount : lines.length,

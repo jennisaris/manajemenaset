@@ -31,11 +31,13 @@ export function VerificationCenter({
   currentRole,
   currentUniversity,
   onAssetsChange,
+  onStatusChanged,
 }: {
   assets: Asset[];
   currentRole: UserRole;
   currentUniversity: string | null;
   onAssetsChange?: (assets: Asset[]) => void;
+  onStatusChanged?: () => void;
 }) {
   const [activeTab, setActiveTab] = useState<'asset' | 'disposal'>('asset');
 
@@ -77,6 +79,7 @@ export function VerificationCenter({
       });
       if (res.ok) {
         fetchDisposals();
+        onStatusChanged?.();
         if (selectedDisposal && selectedDisposal.id === id) {
           setSelectedDisposal((prev) => (prev ? { ...prev, status: status as any, catatan: catatan ?? prev.catatan } : null));
         }
@@ -86,7 +89,7 @@ export function VerificationCenter({
     }
   }
 
-  const pendingDisposalsCount = disposals.filter((d) => d.status === 'menunggu_verifikasi' || d.status === 'dalam_proses').length;
+  const pendingDisposalsCount = disposals.filter((d) => d.status === 'menunggu_verifikasi').length;
 
   const filteredDisposals = disposals.filter((item) => {
     const matchSearch =
@@ -99,7 +102,7 @@ export function VerificationCenter({
       disposalStatusFilter === 'all'
         ? true
         : disposalStatusFilter === 'pending'
-        ? item.status === 'menunggu_verifikasi' || item.status === 'dalam_proses'
+        ? item.status === 'menunggu_verifikasi'
         : item.status === disposalStatusFilter;
 
     return matchSearch && matchStatus;
@@ -271,17 +274,13 @@ export function VerificationCenter({
                             <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-3 py-1 text-xs font-extrabold text-emerald-700 border border-emerald-200">
                               <CheckCircle2 className="h-3.5 w-3.5" /> Disetujui (SK Terbit)
                             </span>
-                          ) : item.status === 'dalam_proses' ? (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-3 py-1 text-xs font-extrabold text-sky-700 border border-sky-200">
-                              <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Penelitian Tim BMN
-                            </span>
                           ) : item.status === 'ditolak' ? (
                             <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-3 py-1 text-xs font-extrabold text-rose-700 border border-rose-200">
                               <X className="h-3.5 w-3.5" /> Ditolak / Perlu Revisi
                             </span>
                           ) : (
-                            <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-3 py-1 text-xs font-extrabold text-amber-700 border border-amber-200">
-                              <FileText className="h-3.5 w-3.5" /> Menunggu Review Admin
+                            <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-3 py-1 text-xs font-extrabold text-sky-700 border border-sky-200">
+                              <RefreshCw className="h-3.5 w-3.5 animate-spin" /> Menunggu Verifikasi
                             </span>
                           )}
                         </td>

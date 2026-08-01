@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
-import { getCurrentUser } from '@/lib/server/session';
+import { getSessionUser } from '@/lib/server/session';
 import { upsertAssetToDb } from '@/lib/server/local-repository';
 import type { Asset } from '@/lib/types';
 
 export async function POST(request: Request) {
   try {
-    const user = await getCurrentUser();
+    const user = await getSessionUser();
     if (!user) {
       return NextResponse.json({ error: 'Tidak terotentikasi' }, { status: 401 });
     }
@@ -25,7 +25,7 @@ export async function POST(request: Request) {
         ...item,
         id: item.id || `AST-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
         verification_status: isOperator ? 'menunggu_verifikasi' : (item.verification_status || 'terverifikasi'),
-        campus_name: item.campus_name || user.university || 'Portofolio Kemdiktisaintek',
+        campus_name: item.campus_name || user.university_name || 'Portofolio Kemdiktisaintek',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       };

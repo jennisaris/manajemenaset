@@ -15,7 +15,7 @@
     "supabase:export": "node scripts/export-supabase-json.mjs",
     "postgres:import": "node scripts/import-json-postgres.mjs",
     "supabase:demo-users": "node scripts/upsert-demo-users.mjs",
-    "postbuild": "mkdir -p .next/standalone/.next && rm -rf .next/standalone/.next/static .next/standalone/public && cp -R .next/static .next/standalone/.next/static && cp -R public .next/standalone/public"
+    "postbuild": "node scripts/postbuild.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.105.4",

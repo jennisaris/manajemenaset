@@ -22,7 +22,7 @@ type ProfileRow = {
 
 function resolveRole(row: ProfileRow | null): UserRole {
   const roleValue = Array.isArray(row?.roles) ? row?.roles[0]?.name : row?.roles?.name;
-  return roleValue && roles.includes(roleValue) ? roleValue : 'Admin Aset';
+  return roleValue && roles.includes(roleValue) ? roleValue : 'Operator Kampus';
 }
 
 export function AuthPanel({ role, onRoleChange, campusOptions = [] }: AuthPanelProps) {

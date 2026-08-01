@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import * as XLSX from 'xlsx';
 import {
   Archive,
   Building2,
@@ -75,10 +76,100 @@ export function BmnDisposalManager({
   const [formKodeSatker, setFormKodeSatker] = useState(kodeSatker || '');
   const [formNamaSatker, setFormNamaSatker] = useState(universityName || '');
   const [noSurat, setNoSurat] = useState('');
+  const [tglSurat, setTglSurat] = useState('');
   const [catatan, setCatatan] = useState('');
   const [jumlahBarang, setJumlahBarang] = useState('');
   const [jenisBarang, setJenisBarang] = useState('');
   const [nilaiPerolehan, setNilaiPerolehan] = useState('');
+
+  const handleLiveAutoParseLampiran = async (file: File) => {
+    try {
+      const buffer = await file.arrayBuffer();
+      const workbook = XLSX.read(buffer, { type: 'array' });
+      const sheetName = workbook.SheetNames[0];
+      if (!sheetName) return;
+      const sheet = workbook.Sheets[sheetName];
+      const rows = XLSX.utils.sheet_to_json<Record<string, any>>(sheet, { defval: '' });
+
+      if (Array.isArray(rows) && rows.length > 0) {
+        // 1. Identify SINGLE best column keys for Nilai Perolehan & Jenis BMN
+        const sampleRow = rows.find((r) => Object.keys(r).length > 0) || rows[0];
+        const allKeys = Object.keys(sampleRow);
+
+        let targetNilaiKey =
+          allKeys.find((k) => {
+            const lk = k.toLowerCase().trim();
+            return (
+              lk === 'nilai perolehan' ||
+              lk === 'nilai perolehan (rp)' ||
+              lk === 'total nilai perolehan' ||
+              lk === 'nilai_perolehan'
+            );
+          }) ||
+          allKeys.find((k) => k.toLowerCase().includes('nilai perolehan')) ||
+          allKeys.find((k) => k.toLowerCase().includes('perolehan') && !k.toLowerCase().includes('tahun'));
+
+        let targetJenisKey =
+          allKeys.find((k) => {
+            const lk = k.toLowerCase().trim();
+            return lk === 'jenis bmn' || lk === 'jenis barang' || lk === 'kategori bmn';
+          }) ||
+          allKeys.find(
+            (k) =>
+              (k.toLowerCase().includes('jenis') || k.toLowerCase().includes('kategori')) &&
+              !k.toLowerCase().includes('nama')
+          );
+
+        let totalNilai = 0;
+        let itemCount = 0;
+        let grandTotalFromRow = 0;
+        const jenisSet = new Set<string>();
+
+        rows.forEach((r) => {
+          const rowValuesStr = Object.values(r).join(' ').toLowerCase().trim();
+
+          // Detect summary / total / grand total row at the end of Excel table
+          const isTotalRow =
+            rowValuesStr.includes('total') ||
+            rowValuesStr.includes('jumlah') ||
+            rowValuesStr.includes('subtotal') ||
+            rowValuesStr.includes('rekapitulasi');
+
+          if (isTotalRow) {
+            if (targetNilaiKey && r[targetNilaiKey]) {
+              const val = parseFloat(String(r[targetNilaiKey]).replace(/[^0-9.-]+/g, ''));
+              if (!Number.isNaN(val) && val > 0) grandTotalFromRow = val;
+            }
+            return; // EXCLUDE total row from item counting & double summation!
+          }
+
+          itemCount++;
+
+          if (targetNilaiKey && r[targetNilaiKey]) {
+            const val = parseFloat(String(r[targetNilaiKey]).replace(/[^0-9.-]+/g, ''));
+            if (!Number.isNaN(val) && val > 0) totalNilai += val;
+          }
+
+          if (targetJenisKey && r[targetJenisKey]) {
+            const valStr = String(r[targetJenisKey]).trim();
+            if (valStr) jenisSet.add(valStr);
+          }
+        });
+
+        const finalNilai = totalNilai > 0 ? totalNilai : grandTotalFromRow;
+
+        setJumlahBarang(String(itemCount));
+        if (finalNilai > 0) setNilaiPerolehan(String(finalNilai));
+        if (jenisSet.size > 0) {
+          setJenisBarang(Array.from(jenisSet).slice(0, 3).join(', '));
+        } else if (!jenisBarang) {
+          setJenisBarang('Peralatan & Mesin');
+        }
+      }
+    } catch (err) {
+      console.warn('Auto-parse lampiran via client error:', err);
+    }
+  };
 
   // Form File State
   const [fileSurat, setFileSurat] = useState<File | null>(null);
@@ -111,6 +202,7 @@ export function BmnDisposalManager({
 
   function resetForm() {
     setNoSurat('');
+    setTglSurat('');
     setCatatan('');
     setJumlahBarang('');
     setJenisBarang('');
@@ -157,6 +249,7 @@ export function BmnDisposalManager({
     try {
       const formData = new FormData();
       formData.append('no_surat_permohonan', noSurat.trim());
+      if (tglSurat.trim()) formData.append('tgl_surat_permohonan', tglSurat.trim());
       formData.append('kode_satker', finalKodeSatker);
       formData.append('nama_satker', finalNamaSatker);
       if (catatan.trim()) formData.append('catatan', catatan.trim());
@@ -245,7 +338,7 @@ export function BmnDisposalManager({
             >
               ← Kembali ke Daftar Usulan Penghapusan
             </button>
-            <h3 className="text-xl font-bold text-foreground">Tambah Usulan Penghapusan BMN Baru</h3>
+            <h3 className="text-xl font-bold text-foreground">Tambah Usulan Penghapusan BMN</h3>
             <p className="mt-0.5 text-xs text-secondary">Lengkapi surat permohonan, dokumen SPTJM, lampiran rekap BMN, SK tim, dan BA penelitian.</p>
           </div>
           <button
@@ -273,8 +366,8 @@ export function BmnDisposalManager({
               </div>
             )}
 
-            {/* Grid Satker & No Surat */}
-            <div className="grid gap-4 md:grid-cols-2">
+            {/* Grid Satker, No Surat & Tgl Surat */}
+            <div className="grid gap-4 md:grid-cols-3">
               {!isOperator ? (
                 <div className="grid gap-1.5 text-xs font-medium text-foreground">
                   <SatkerAutocompleteInput
@@ -311,6 +404,16 @@ export function BmnDisposalManager({
                   value={noSurat}
                   onChange={(e) => setNoSurat(e.target.value)}
                   placeholder="Contoh: 1234/UN.16/PL/2026"
+                  className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all"
+                />
+              </label>
+
+              <label className="grid gap-1.5 text-xs font-medium text-foreground">
+                Tgl. Surat Permohonan
+                <input
+                  type="date"
+                  value={tglSurat}
+                  onChange={(e) => setTglSurat(e.target.value)}
                   className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all"
                 />
               </label>
@@ -378,7 +481,17 @@ export function BmnDisposalManager({
                   <label className="inline-flex cursor-pointer items-center gap-2 rounded-button bg-success-light px-4 py-2 text-xs font-semibold text-success-dark hover:bg-success-light/80 transition shrink-0">
                     <UploadCloud className="h-4 w-4" />
                     Pilih XLSX/CSV
-                    <input type="file" required accept=".xlsx,.xls,.csv" onChange={(e) => setFileLampiran(e.target.files?.[0] || null)} className="sr-only" />
+                    <input
+                      type="file"
+                      required
+                      accept=".xlsx,.xls,.csv"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0] || null;
+                        setFileLampiran(file);
+                        if (file) handleLiveAutoParseLampiran(file);
+                      }}
+                      className="sr-only"
+                    />
                   </label>
                 </div>
               </div>
@@ -441,14 +554,25 @@ export function BmnDisposalManager({
                   />
                 </label>
                 <label className="grid gap-1.5 text-xs font-medium text-foreground">
-                  Jenis Barang BMN
+                  Jenis BMN
                   <input
                     type="text"
+                    list="bmn-disposal-categories"
                     value={jenisBarang}
                     onChange={(e) => setJenisBarang(e.target.value)}
-                    placeholder="Contoh: Peralatan TIK, Kendaraan"
+                    placeholder="Contoh: Peralatan & Mesin, Gedung & Bangunan..."
                     className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all"
                   />
+                  <datalist id="bmn-disposal-categories">
+                    <option value="Peralatan & Mesin" />
+                    <option value="Alat Angkutan Bermotor" />
+                    <option value="Mesin Khusus TIK" />
+                    <option value="Mesin Peralatan Non TIK" />
+                    <option value="Gedung & Bangunan" />
+                    <option value="Tanah" />
+                    <option value="Jalan, Irigasi & Jaringan" />
+                    <option value="Aset Tetap Lainnya / KETUPI" />
+                  </datalist>
                 </label>
                 <label className="grid gap-1.5 text-xs font-medium text-foreground">
                   Nilai Perolehan (Rp)
@@ -631,7 +755,7 @@ export function BmnDisposalManager({
               <tr>
                 <th className="px-5 py-4">No. Surat & Satker</th>
                 <th className="px-5 py-4">Jumlah Barang</th>
-                <th className="px-5 py-4">Jenis Barang</th>
+                <th className="px-5 py-4">Jenis BMN</th>
                 <th className="px-5 py-4">Nilai Perolehan</th>
                 <th className="px-5 py-4">Status & Tracking Progress</th>
                 <th className="px-5 py-4 text-right">Dokumen & Aksi</th>
@@ -656,6 +780,9 @@ export function BmnDisposalManager({
                     {/* Kolom 1: No. Surat & Satker */}
                     <td className="px-5 py-4">
                       <div className="font-extrabold text-[#080C1A]">{item.no_surat_permohonan}</div>
+                      {item.tgl_surat_permohonan && (
+                        <div className="text-[11px] font-medium text-slate-500">Tgl: {item.tgl_surat_permohonan}</div>
+                      )}
                       <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-[#165DFF]">
                         <Building2 className="h-3.5 w-3.5" />
                         <span>[{extract6DigitKodeSatker(item.kode_satker)}] {item.nama_satker}</span>
@@ -684,11 +811,7 @@ export function BmnDisposalManager({
                       <div className="flex flex-col gap-1.5 min-w-[170px]">
                         {item.status === 'disetujui' ? (
                           <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-extrabold text-emerald-700 border border-emerald-200">
-                            <CheckCircle2 className="h-3.5 w-3.5" /> 3. Disetujui (SK Terbit)
-                          </span>
-                        ) : item.status === 'dalam_proses' ? (
-                          <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-extrabold text-sky-700 border border-sky-200">
-                            <RefreshCw className="h-3.5 w-3.5 animate-spin" /> 2. Penelitian Tim BMN
+                            <CheckCircle2 className="h-3.5 w-3.5" /> Disetujui (SK Terbit)
                           </span>
                         ) : item.status === 'ditolak' ? (
                           <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-extrabold text-rose-700 border border-rose-200">
@@ -696,7 +819,7 @@ export function BmnDisposalManager({
                           </span>
                         ) : (
                           <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-extrabold text-amber-700 border border-amber-200">
-                            <FileText className="h-3.5 w-3.5" /> 1. Menunggu Review Admin
+                            <FileText className="h-3.5 w-3.5" /> Menunggu Verifikasi
                           </span>
                         )}
 
@@ -823,10 +946,14 @@ export function BmnDisposalManager({
             </div>
 
             <div className="space-y-4 text-xs">
-              <div className="grid grid-cols-2 gap-4 bg-slate-50 p-4 rounded-2xl">
+              <div className="grid grid-cols-3 gap-4 bg-slate-50 p-4 rounded-2xl">
                 <div>
                   <span className="text-[#6A7686] block text-[11px] uppercase font-bold">Nomor Surat</span>
                   <strong className="text-[#080C1A] text-sm">{selectedProposal.no_surat_permohonan}</strong>
+                </div>
+                <div>
+                  <span className="text-[#6A7686] block text-[11px] uppercase font-bold">Tgl. Surat</span>
+                  <strong className="text-[#080C1A] text-sm">{selectedProposal.tgl_surat_permohonan || '-'}</strong>
                 </div>
                 <div>
                   <span className="text-[#6A7686] block text-[11px] uppercase font-bold">Satuan Kerja</span>
@@ -840,7 +967,7 @@ export function BmnDisposalManager({
                   <strong className="text-sm font-black text-[#080C1A]">{selectedProposal.jumlah_barang} Unit</strong>
                 </div>
                 <div>
-                  <span className="text-[#6A7686] block text-[11px]">Jenis Barang</span>
+                  <span className="text-[#6A7686] block text-[11px]">Jenis BMN</span>
                   <strong className="text-sm font-black text-[#080C1A]">{selectedProposal.jenis_barang || '-'}</strong>
                 </div>
                 <div>

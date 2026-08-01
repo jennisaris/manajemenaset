@@ -13,7 +13,6 @@ export function hashPassword(password: string) {
 
 export function verifyPassword(password: string, storedHash: string | null | undefined) {
   if (!storedHash) return false;
-  if (storedHash.startsWith('plain:')) return password === storedHash.slice('plain:'.length);
   const [scheme, iterationText, salt, hash] = storedHash.split('$');
   if (scheme !== 'pbkdf2' || !iterationText || !salt || !hash) return false;
   const next = pbkdf2Sync(password, salt, Number(iterationText), keyLength, digest).toString('base64url');

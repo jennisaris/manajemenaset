@@ -18,6 +18,12 @@ export async function POST(request: Request) {
   if (!(file instanceof File)) return NextResponse.json({ error: 'File wajib diisi.' }, { status: 400 });
 
   const extension = file.name.includes('.') ? `.${file.name.split('.').pop()?.toLowerCase()}` : '';
+  const allowedExtensions = ['.pdf', '.png', '.jpg', '.jpeg', '.xlsx', '.xls', '.csv'];
+
+  if (!extension || !allowedExtensions.includes(extension)) {
+    return NextResponse.json({ error: 'Format berkas tidak diizinkan. Hanya file PDF, Gambar (PNG/JPG), dan Excel/CSV yang diperbolehkan.' }, { status: 400 });
+  }
+
   const filename = desiredPath || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safePart(file.name.replace(/\.[^.]+$/, ''))}${extension}`;
   const relativePath = safePart(path.posix.join(folder, filename));
   const uploadRoot = path.join(process.cwd(), 'public', 'uploads');
