@@ -30,11 +30,11 @@ function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number, message: str
 export function AppShell() {
   const [isMounted, setIsMounted] = useState(false);
   const [authState, setAuthState] = useState<AuthState>('checking');
-  const [email, setEmail] = useState('admin@aset.id');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('superadmin@aset.id');
+  const [password, setPassword] = useState('superadmin123');
   const [showPassword, setShowPassword] = useState(false);
-  const [role, setRole] = useState<UserRole>('Admin Aset');
-  const [fullName, setFullName] = useState('Admin Demo');
+  const [role, setRole] = useState<UserRole>('Superadmin');
+  const [fullName, setFullName] = useState('Superadmin Tim Pusat');
   const [universityName, setUniversityName] = useState<string | null>(null);
   const [message, setMessage] = useState('Memeriksa sesi pengguna lokal...');
   const [data, setData] = useState<MvpData>({ assets: [], summary: emptySummary(), utilizations: [], issues: [] });
@@ -285,22 +285,32 @@ export function AppShell() {
                       <button
                         type="button"
                         onClick={() => {
-                          setEmail('admin@aset.id');
-                          setPassword('admin123');
+                          setEmail('superadmin@aset.id');
+                          setPassword('superadmin123');
                         }}
                         className="rounded-full border border-border bg-gray-50 px-3 py-1 text-xs font-semibold text-foreground hover:bg-muted hover:border-primary transition cursor-pointer"
                       >
-                        Admin Aset
+                        Superuser (Superadmin)
                       </button>
                       <button
                         type="button"
                         onClick={() => {
-                          setEmail('operator@aset.id');
+                          setEmail('operator.unsil@aset.id');
                           setPassword('operator123');
                         }}
                         className="rounded-full border border-border bg-gray-50 px-3 py-1 text-xs font-semibold text-foreground hover:bg-muted hover:border-primary transition cursor-pointer"
                       >
-                        Operator Kampus
+                        Operator (Univ. Siliwangi)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setEmail('pimpinan@aset.id');
+                          setPassword('pimpinan123');
+                        }}
+                        className="rounded-full border border-border bg-gray-50 px-3 py-1 text-xs font-semibold text-foreground hover:bg-muted hover:border-primary transition cursor-pointer"
+                      >
+                        Pimpinan
                       </button>
                     </div>
                   </div>

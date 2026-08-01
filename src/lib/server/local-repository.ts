@@ -52,6 +52,7 @@ export {
 export {
   getDisposalsFromDb,
   createDisposalInDb,
+  updateDisposalStatusInDb,
   deleteDisposalFromDb,
   parseLampiranRecap,
 } from '@/lib/server/repositories/disposal-repository';

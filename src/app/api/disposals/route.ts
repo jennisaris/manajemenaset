@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
-import { createDisposalInDb, deleteDisposalFromDb, getDisposalsFromDb, parseLampiranRecap } from '@/lib/server/local-repository';
+import { createDisposalInDb, deleteDisposalFromDb, getDisposalsFromDb, parseLampiranRecap, updateDisposalStatusInDb } from '@/lib/server/local-repository';
 import { getSessionUser } from '@/lib/server/session';
 import type { BmnDisposalProposal } from '@/lib/types';
 
@@ -146,6 +146,30 @@ export async function POST(request: Request) {
   } catch (err) {
     console.error('POST /api/disposals error:', err);
     return NextResponse.json({ error: 'Gagal mengajukan usulan penghapusan BMN.' }, { status: 500 });
+  }
+}
+
+export async function PATCH(request: Request) {
+  try {
+    const user = await getSessionUser();
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+    if (user.role === 'Operator Kampus') {
+      return NextResponse.json({ error: 'Operator Kampus tidak memiliki izin mengubah status usulan.' }, { status: 403 });
+    }
+
+    const body = await request.json();
+    const { id, status, catatan } = body;
+    if (!id || !status) {
+      return NextResponse.json({ error: 'ID dan status wajib diisi.' }, { status: 400 });
+    }
+
+    const updated = await updateDisposalStatusInDb(Number(id), String(status), catatan ? String(catatan) : null);
+    return NextResponse.json({ proposal: updated });
+  } catch (err) {
+    console.error('PATCH /api/disposals error:', err);
+    return NextResponse.json({ error: 'Gagal memperbarui status usulan.' }, { status: 500 });
   }
 }
 

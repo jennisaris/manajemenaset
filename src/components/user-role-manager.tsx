@@ -22,17 +22,15 @@ type RolePermission = {
 };
 
 const rolePermissions: RolePermission[] = [
-  { role: 'Superadmin', scope: 'Global semua kampus', permissions: ['Kelola user & role', 'Kelola master data', 'CRUD semua aset', 'Verifikasi semua data', 'Export laporan'] },
-  { role: 'Admin Aset', scope: 'Global semua kampus', permissions: ['CRUD semua aset', 'Verifikasi/approve data semua kampus', 'Kelola dokumen aset', 'Export laporan semua kampus'] },
-  { role: 'Operator Kampus', scope: 'Per kampus', permissions: ['Input aset kampusnya', 'Upload foto/dokumen', 'Ajukan verifikasi', 'Tidak bisa approve sendiri'] },
-  { role: 'Pimpinan Dashboard', scope: 'Dashboard saja', permissions: ['View-only dashboard', 'Lihat peta/statistik', 'Tanpa CRUD', 'Tanpa export data'] },
+  { role: 'Superadmin', scope: 'Global semua Satker / PTN', permissions: ['Kelola user & approval registrasi', 'Verifikasi & approve aset baru', 'Verifikasi & SK penghapusan BMN', 'Akses analitik & laporan'] },
+  { role: 'Operator Kampus', scope: 'Per Satker / Kampus', permissions: ['Input aset single & massal Excel', 'Upload foto & GIS koordinat', 'Ajukan usulan penghapusan BMN', 'Lihat data Satkernya'] },
+  { role: 'Pimpinan Dashboard', scope: 'Monitoring Eksekutif', permissions: ['Monitoring peta GIS & KPI', 'Lihat statistik portofolio', 'Akses laporan & analitik eksekutif', 'Tanpa fitur CRUD'] },
 ];
 
 const demoUsers: UserProfile[] = [
-  { id: 'demo-superadmin', full_name: 'Superadmin Sistem', email: 'superadmin@aset.id', role_name: 'Superadmin', campus_name: null, university_name: null, status: 'aktif' },
-  { id: 'demo-admin-utama', full_name: 'Admin Aset Kampus Utama', email: 'admin@aset.id', role_name: 'Admin Aset', campus_name: 'Kampus Utama', university_name: 'Kampus Utama', status: 'aktif' },
+  { id: 'demo-superadmin', full_name: 'Superadmin Tim Pusat', email: 'superadmin@aset.id', role_name: 'Superadmin', campus_name: null, university_name: null, status: 'aktif' },
   { id: 'demo-operator-utama', full_name: 'Operator Kampus Utama', email: 'operator@aset.id', role_name: 'Operator Kampus', campus_name: 'Kampus Utama', university_name: 'Kampus Utama', status: 'aktif' },
-  { id: 'demo-pimpinan', full_name: 'Pimpinan Universitas', email: 'pimpinan@aset.id', role_name: 'Pimpinan Dashboard', campus_name: null, university_name: null, status: 'aktif' },
+  { id: 'demo-pimpinan', full_name: 'Pimpinan Kemdiktisaintek', email: 'pimpinan@aset.id', role_name: 'Pimpinan Dashboard', campus_name: null, university_name: null, status: 'aktif' },
 ];
 
 function emptyDraft(campusOptions: string[]): DraftUser {

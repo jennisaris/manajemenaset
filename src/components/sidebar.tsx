@@ -21,6 +21,7 @@ import {
   LayoutDashboard,
   MessageCircleQuestion,
   Search,
+  UploadCloud,
   UserCheck,
   Users,
   Wrench,
@@ -140,151 +141,211 @@ export function Sidebar({ currentRole, isOpenMobile, onCloseMobile }: SidebarPro
 
         {/* Navigation Menu */}
         <div className="flex flex-1 flex-col gap-6 overflow-y-auto p-5 pb-28">
-          {/* Main Menu Section */}
-          <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-medium text-secondary">
-              Main Menu
-            </h3>
-            <div className="flex flex-col gap-1">
-              {/* Dashboard */}
-              <a
-                href="#dashboard"
-                onClick={(e) => handleNavClick('#dashboard', e)}
-                className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
-                  activeHash === '#dashboard'
-                    ? 'bg-muted font-semibold text-foreground'
-                    : 'text-secondary hover:bg-muted hover:text-foreground'
-                }`}
-              >
-                <LayoutDashboard className={`h-5 w-5 ${activeHash === '#dashboard' ? 'text-foreground' : 'text-secondary'}`} />
-                <span className="font-medium">Dashboard</span>
-              </a>
-
-              {/* Data Aset Expandable Menu */}
-              <div className="flex flex-col gap-1">
-                <button
-                  type="button"
-                  onClick={() => setIsAssetMenuOpen(!isAssetMenuOpen)}
-                  className={`group flex items-center justify-between rounded-xl p-3.5 transition-all duration-300 cursor-pointer text-left ${
-                    assetSubMenus.some((sub) => sub.href === activeHash)
-                      ? 'bg-muted/70 font-semibold text-foreground'
-                      : 'text-secondary hover:bg-muted hover:text-foreground'
-                  }`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Landmark className="h-5 w-5 text-secondary group-hover:text-foreground" />
-                    <span className="font-medium">Data Aset</span>
-                  </div>
-                  {isAssetMenuOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                </button>
-
-                {/* Sub Menu Items */}
-                {isAssetMenuOpen && (
-                  <div className="ml-4 flex flex-col gap-1 border-l-2 border-slate-100 pl-3 pt-1">
-                    {assetSubMenus.map((sub) => {
-                      const SubIcon = sub.icon;
-                      const isSubActive = activeHash === sub.href;
-                      return (
-                        <a
-                          key={sub.href}
-                          href={sub.href}
-                          onClick={(e) => handleNavClick(sub.href, e)}
-                          className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all cursor-pointer ${
-                            isSubActive
-                              ? 'bg-sky-50 text-sky-700 font-bold border border-sky-100'
-                              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                          }`}
-                        >
-                          <SubIcon className={`h-4 w-4 shrink-0 ${isSubActive ? 'text-sky-600' : 'text-slate-400'}`} />
-                          <span>{sub.label}</span>
-                        </a>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-
-              {/* Verifikasi */}
-              <a
-                href="#verification"
-                onClick={(e) => handleNavClick('#verification', e)}
-                className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
-                  activeHash === '#verification'
-                    ? 'bg-muted font-semibold text-foreground'
-                    : 'text-secondary hover:bg-muted hover:text-foreground'
-                }`}
-              >
-                <BadgeCheck className={`h-5 w-5 ${activeHash === '#verification' ? 'text-foreground' : 'text-secondary'}`} />
-                <span className="font-medium">Verifikasi</span>
-              </a>
-
-              {/* Analitik */}
-              {hasAnalytics && (
+          {currentRole === 'Pimpinan Dashboard' ? (
+            /* Pimpinan Menu (2 Menu Utama: Analitik & Laporan) */
+            <div className="flex flex-col gap-4">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                Menu Utama Pimpinan
+              </h3>
+              <div className="flex flex-col gap-1.5">
                 <a
-                  href="#analytics"
-                  onClick={(e) => handleNavClick('#analytics', e)}
+                  href="#dashboard"
+                  onClick={(e) => handleNavClick('#dashboard', e)}
                   className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
-                    activeHash === '#analytics'
-                      ? 'bg-muted font-semibold text-foreground'
+                    ['#dashboard', '#analytics'].includes(activeHash)
+                      ? 'bg-[#165DFF] font-semibold text-white shadow-md shadow-[#165DFF]/20'
                       : 'text-secondary hover:bg-muted hover:text-foreground'
                   }`}
                 >
-                  <BarChart3 className={`h-5 w-5 ${activeHash === '#analytics' ? 'text-foreground' : 'text-secondary'}`} />
-                  <span className="font-medium">Analitik</span>
+                  <BarChart3 className={`h-5 w-5 ${['#dashboard', '#analytics'].includes(activeHash) ? 'text-white' : 'text-secondary'}`} />
+                  <span className="font-semibold text-sm">Analitik</span>
                 </a>
-              )}
+
+                <a
+                  href="#reports"
+                  onClick={(e) => handleNavClick('#reports', e)}
+                  className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
+                    activeHash === '#reports'
+                      ? 'bg-[#165DFF] font-semibold text-white shadow-md shadow-[#165DFF]/20'
+                      : 'text-secondary hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  <FileText className={`h-5 w-5 ${activeHash === '#reports' ? 'text-white' : 'text-secondary'}`} />
+                  <span className="font-semibold text-sm">Laporan</span>
+                </a>
+
+                <a
+                  href="#change-password"
+                  onClick={(e) => handleNavClick('#change-password', e)}
+                  className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
+                    activeHash === '#change-password'
+                      ? 'bg-[#165DFF] font-semibold text-white shadow-md shadow-[#165DFF]/20'
+                      : 'text-secondary hover:bg-muted hover:text-foreground'
+                  }`}
+                >
+                  <KeyRound className={`h-5 w-5 ${activeHash === '#change-password' ? 'text-white' : 'text-secondary'}`} />
+                  <span className="font-semibold text-sm">Ubah Password</span>
+                </a>
+              </div>
             </div>
-          </div>
-
-
-          {/* Management Section */}
-          <div className="flex flex-col gap-4">
-            <h3 className="text-sm font-medium text-secondary">
-              Management
-            </h3>
-            <div className="flex flex-col gap-1">
-              {managementMenu.map((item) => {
-                const Icon = item.icon;
-                const isActive = activeHash === item.href;
-                const isUserMenu = item.href === '#users';
-                return (
+          ) : (
+            /* Regular Operator & Superadmin Menu */
+            <>
+              <div className="flex flex-col gap-4">
+                <h3 className="text-sm font-medium text-secondary">
+                  Main Menu
+                </h3>
+                <div className="flex flex-col gap-1">
+                  {/* Dashboard */}
                   <a
-                    key={item.href}
-                    href={item.href}
-                    onClick={(e) => handleNavClick(item.href, e)}
-                    className={`group flex items-center justify-between rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
-                      isActive
+                    href="#dashboard"
+                    onClick={(e) => handleNavClick('#dashboard', e)}
+                    className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
+                      activeHash === '#dashboard'
                         ? 'bg-muted font-semibold text-foreground'
                         : 'text-secondary hover:bg-muted hover:text-foreground'
                     }`}
                   >
-                    <div className="flex items-center gap-3">
-                      <Icon
-                        className={`h-5 w-5 transition-all duration-300 ${
-                          isActive ? 'text-foreground font-semibold' : 'text-secondary group-hover:text-foreground'
-                        }`}
-                      />
-                      <span className="font-medium text-secondary group-hover:text-foreground">
-                        {item.label}
-                      </span>
-                    </div>
-                    {isUserMenu && pendingUserCount > 0 && (
-                      <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-2 text-[11px] font-extrabold text-white shadow-sm shadow-rose-500/30 animate-pulse">
-                        {pendingUserCount}
-                      </span>
-                    )}
+                    <LayoutDashboard className={`h-5 w-5 ${activeHash === '#dashboard' ? 'text-foreground' : 'text-secondary'}`} />
+                    <span className="font-medium">Dashboard</span>
                   </a>
-                );
-              })}
-            </div>
-          </div>
+
+                  {/* Data Aset Expandable Menu */}
+                  <div className="flex flex-col gap-1">
+                    <button
+                      type="button"
+                      onClick={() => setIsAssetMenuOpen(!isAssetMenuOpen)}
+                      className={`group flex items-center justify-between rounded-xl p-3.5 transition-all duration-300 cursor-pointer text-left ${
+                        assetSubMenus.some((sub) => sub.href === activeHash)
+                          ? 'bg-muted/70 font-semibold text-foreground'
+                          : 'text-secondary hover:bg-muted hover:text-foreground'
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Landmark className="h-5 w-5 text-secondary group-hover:text-foreground" />
+                        <span className="font-medium">Data Aset</span>
+                      </div>
+                      {isAssetMenuOpen ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                    </button>
+
+                    {/* Sub Menu Items */}
+                    {isAssetMenuOpen && (
+                      <div className="ml-4 flex flex-col gap-1 border-l-2 border-slate-100 pl-3 pt-1">
+                        {assetSubMenus.map((sub) => {
+                          const SubIcon = sub.icon;
+                          const isSubActive = activeHash === sub.href;
+                          return (
+                            <a
+                              key={sub.href}
+                              href={sub.href}
+                              onClick={(e) => handleNavClick(sub.href, e)}
+                              className={`flex items-center gap-2.5 rounded-lg px-3 py-2 text-xs font-semibold transition-all cursor-pointer ${
+                                isSubActive
+                                  ? 'bg-sky-50 text-sky-700 font-bold border border-sky-100'
+                                  : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                              }`}
+                            >
+                              <SubIcon className={`h-4 w-4 shrink-0 ${isSubActive ? 'text-sky-600' : 'text-slate-400'}`} />
+                              <span>{sub.label}</span>
+                            </a>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Verifikasi (Khusus Superadmin) */}
+                  {currentRole === 'Superadmin' && (
+                    <a
+                      href="#verification"
+                      onClick={(e) => handleNavClick('#verification', e)}
+                      className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
+                        activeHash === '#verification'
+                          ? 'bg-muted font-semibold text-foreground'
+                          : 'text-secondary hover:bg-muted hover:text-foreground'
+                      }`}
+                    >
+                      <BadgeCheck className={`h-5 w-5 ${activeHash === '#verification' ? 'text-foreground' : 'text-secondary'}`} />
+                      <span className="font-medium">Verifikasi</span>
+                    </a>
+                  )}
+
+                  {/* Unggah Data */}
+                  <a
+                    href="#upload"
+                    onClick={(e) => handleNavClick('#upload', e)}
+                    className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
+                      activeHash === '#upload'
+                        ? 'bg-muted font-semibold text-foreground'
+                        : 'text-secondary hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    <UploadCloud className={`h-5 w-5 ${activeHash === '#upload' ? 'text-foreground' : 'text-secondary'}`} />
+                    <span className="font-medium">Unggah Data</span>
+                  </a>
+
+                  {/* Analitik */}
+                  {hasAnalytics && (
+                    <a
+                      href="#analytics"
+                      onClick={(e) => handleNavClick('#analytics', e)}
+                      className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
+                        activeHash === '#analytics'
+                          ? 'bg-muted font-semibold text-foreground'
+                          : 'text-secondary hover:bg-muted hover:text-foreground'
+                      }`}
+                    >
+                      <BarChart3 className={`h-5 w-5 ${activeHash === '#analytics' ? 'text-foreground' : 'text-secondary'}`} />
+                      <span className="font-medium">Analitik</span>
+                    </a>
+                  )}
+                </div>
+              </div>
+
+              {/* Management Section */}
+              <div className="flex flex-col gap-4">
+                <h3 className="text-sm font-medium text-secondary">
+                  Management
+                </h3>
+                <div className="flex flex-col gap-1">
+                  {managementMenu.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = activeHash === item.href;
+                    const isUserMenu = item.href === '#users';
+                    return (
+                      <a
+                        key={item.href}
+                        href={item.href}
+                        onClick={(e) => handleNavClick(item.href, e)}
+                        className={`group flex items-center justify-between rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
+                          isActive
+                            ? 'bg-muted font-semibold text-foreground'
+                            : 'text-secondary hover:bg-muted hover:text-foreground'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <Icon className={`h-5 w-5 ${isActive ? 'text-foreground' : 'text-secondary'}`} />
+                          <span className="font-medium">{item.label}</span>
+                        </div>
+                        {isUserMenu && pendingUserCount > 0 && (
+                          <span className="flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-600 px-1.5 text-[10px] font-black text-white shadow-xs">
+                            {pendingUserCount}
+                          </span>
+                        )}
+                      </a>
+                    );
+                  })}
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Bottom Help Card */}
         <div className="absolute bottom-0 left-0 w-[280px] border-t border-border bg-white p-5">
           <div className="flex items-center justify-between gap-3">
             <div className="min-w-0">
-              <p className="font-semibold text-foreground">Butuh Bantuan?</p>
+              <p className="font-semibold text-foreground">Butuh Panduan?</p>
               <a
                 href="#help"
                 className="text-sm text-secondary transition-all duration-300 hover:text-primary hover:underline"

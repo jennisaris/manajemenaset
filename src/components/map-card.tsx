@@ -10,7 +10,7 @@ const AssetMap = dynamic(() => import('./asset-map').then((mod) => mod.AssetMap)
   loading: () => <div className="grid h-[360px] place-items-center rounded-b-[1.5rem] bg-sky-50 text-sm font-bold text-sky-700 sm:h-[430px] lg:h-[470px]">Memuat peta aset...</div>,
 });
 
-type FilterKey = 'all' | 'land' | 'building' | 'utilized' | 'issue' | 'pending';
+type FilterKey = 'all' | 'land' | 'building' | 'utilized' | 'issue';
 
 const filters: { key: FilterKey; label: string }[] = [
   { key: 'all', label: 'Semua' },
@@ -18,7 +18,6 @@ const filters: { key: FilterKey; label: string }[] = [
   { key: 'building', label: 'Bangunan' },
   { key: 'utilized', label: 'Dimanfaatkan' },
   { key: 'issue', label: 'Bermasalah' },
-  { key: 'pending', label: 'Menunggu' },
 ];
 
 function applyFilter(assets: Asset[], filter: FilterKey) {
@@ -28,12 +27,19 @@ function applyFilter(assets: Asset[], filter: FilterKey) {
     if (filter === 'building') return asset.asset_type === 'building';
     if (filter === 'utilized') return asset.has_active_utilization;
     if (filter === 'issue') return asset.has_active_issue;
-    if (filter === 'pending') return asset.verification_status === 'menunggu_verifikasi';
     return true;
   });
 }
 
-export function MapCard({ assets, utilizations = [] }: { assets: Asset[]; utilizations?: Utilization[] }) {
+export function MapCard({
+  assets,
+  utilizations = [],
+  onSelectAsset,
+}: {
+  assets: Asset[];
+  utilizations?: Utilization[];
+  onSelectAsset?: (asset: Asset) => void;
+}) {
   const [activeFilter, setActiveFilter] = useState<FilterKey>('all');
   const filteredAssets = useMemo(() => applyFilter(assets, activeFilter), [assets, activeFilter]);
 
@@ -67,7 +73,11 @@ export function MapCard({ assets, utilizations = [] }: { assets: Asset[]; utiliz
           })}
         </div>
       </div>
-      <AssetMap assets={filteredAssets} utilizations={utilizations.filter((item) => filteredAssets.some((asset) => asset.id === item.asset_id))} />
+      <AssetMap
+        assets={filteredAssets}
+        utilizations={utilizations.filter((item) => filteredAssets.some((asset) => asset.id === item.asset_id))}
+        onSelectAsset={onSelectAsset}
+      />
     </section>
   );
 }

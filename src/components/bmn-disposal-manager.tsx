@@ -43,6 +43,26 @@ export function BmnDisposalManager({
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedSatkerFilter, setSelectedSatkerFilter] = useState('');
+  const [selectedYearFilter, setSelectedYearFilter] = useState('all');
+  const [selectedMonthFilter, setSelectedMonthFilter] = useState('all');
+
+  async function handleUpdateStatus(id: number, status: string, statusNote?: string) {
+    try {
+      const res = await fetch('/api/disposals', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id, status, catatan: statusNote }),
+      });
+      if (res.ok) {
+        fetchProposals();
+        if (selectedProposal && selectedProposal.id === id) {
+          setSelectedProposal((prev) => (prev ? { ...prev, status: status as any, catatan: statusNote ?? prev.catatan } : null));
+        }
+      }
+    } catch (err) {
+      console.error('Gagal memperbarui status usulan:', err);
+    }
+  }
 
   // Form Modal State
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -195,9 +215,18 @@ export function BmnDisposalManager({
 
       const matchSatker = !selectedSatkerFilter || item.kode_satker === selectedSatkerFilter;
 
-      return matchSearch && matchSatker;
+      const dateObj = item.created_at ? new Date(item.created_at) : null;
+      const matchYear =
+        selectedYearFilter === 'all' ||
+        (dateObj && dateObj.getFullYear().toString() === selectedYearFilter);
+
+      const matchMonth =
+        selectedMonthFilter === 'all' ||
+        (dateObj && (dateObj.getMonth() + 1).toString() === selectedMonthFilter);
+
+      return matchSearch && matchSatker && matchYear && matchMonth;
     });
-  }, [proposals, searchTerm, selectedSatkerFilter]);
+  }, [proposals, searchTerm, selectedSatkerFilter, selectedYearFilter, selectedMonthFilter]);
 
   // Total Calculations
   const totalUsulan = filteredProposals.length;
@@ -535,20 +564,55 @@ export function BmnDisposalManager({
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row gap-3 items-center justify-between rounded-2xl border border-[#E5E7EB] bg-white p-4">
-        <div className="relative w-full sm:w-80">
-          <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#6A7686]" />
-          <input
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder="Cari no. surat, jenis barang, atau satker..."
-            className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] pl-10 pr-4 py-2 text-xs font-medium text-[#080C1A] outline-none focus:border-[#165DFF]"
-          />
+      <div className="flex flex-col sm:flex-row flex-wrap gap-3 items-center justify-between rounded-2xl border border-[#E5E7EB] bg-white p-4">
+        <div className="flex flex-wrap items-center gap-2.5 w-full sm:w-auto flex-1">
+          <div className="relative w-full sm:w-72">
+            <Search className="absolute left-3.5 top-3 h-4 w-4 text-[#6A7686]" />
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="Cari no. surat, jenis barang, satker..."
+              className="w-full rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] pl-10 pr-4 py-2 text-xs font-medium text-[#080C1A] outline-none focus:border-[#165DFF]"
+            />
+          </div>
+
+          {/* Filter Year */}
+          <select
+            value={selectedYearFilter}
+            onChange={(e) => setSelectedYearFilter(e.target.value)}
+            className="rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-xs font-semibold text-[#080C1A] outline-none focus:border-[#165DFF]"
+          >
+            <option value="all">🗓️ Semua Tahun</option>
+            <option value="2026">Tahun 2026</option>
+            <option value="2025">Tahun 2025</option>
+            <option value="2024">Tahun 2024</option>
+          </select>
+
+          {/* Filter Month */}
+          <select
+            value={selectedMonthFilter}
+            onChange={(e) => setSelectedMonthFilter(e.target.value)}
+            className="rounded-xl border border-[#E5E7EB] bg-[#F9FAFB] px-3 py-2 text-xs font-semibold text-[#080C1A] outline-none focus:border-[#165DFF]"
+          >
+            <option value="all">📅 Semua Bulan</option>
+            <option value="1">Januari</option>
+            <option value="2">Februari</option>
+            <option value="3">Maret</option>
+            <option value="4">April</option>
+            <option value="5">Mei</option>
+            <option value="6">Juni</option>
+            <option value="7">Juli</option>
+            <option value="8">Agustus</option>
+            <option value="9">September</option>
+            <option value="10">Oktober</option>
+            <option value="11">November</option>
+            <option value="12">Desember</option>
+          </select>
         </div>
 
         {!isOperator && (
-          <div className="w-full sm:w-72">
+          <div className="w-full sm:w-64">
             <SatkerAutocompleteInput
               value={selectedSatkerFilter}
               onChange={(val, selected) => setSelectedSatkerFilter(selected?.kode_satker || val.match(/^(\d{6})/)?.[1] || '')}
@@ -569,19 +633,20 @@ export function BmnDisposalManager({
                 <th className="px-5 py-4">Jumlah Barang</th>
                 <th className="px-5 py-4">Jenis Barang</th>
                 <th className="px-5 py-4">Nilai Perolehan</th>
+                <th className="px-5 py-4">Status & Tracking Progress</th>
                 <th className="px-5 py-4 text-right">Dokumen & Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-[#E5E7EB]">
               {loading ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-xs font-semibold text-[#6A7686]">
+                  <td colSpan={6} className="py-12 text-center text-xs font-semibold text-[#6A7686]">
                     Memuat data usulan penghapusan BMN...
                   </td>
                 </tr>
               ) : filteredProposals.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="py-12 text-center text-xs font-semibold text-[#6A7686]">
+                  <td colSpan={6} className="py-12 text-center text-xs font-semibold text-[#6A7686]">
                     Belum ada usulan penghapusan BMN yang diajukan.
                   </td>
                 </tr>
@@ -614,7 +679,43 @@ export function BmnDisposalManager({
                       {formatRupiah(Number(item.nilai_perolehan) || 0)}
                     </td>
 
-                    {/* Kolom 5: Dokumen & Aksi */}
+                    {/* Kolom 5: Status & Tracking Progress */}
+                    <td className="px-5 py-4">
+                      <div className="flex flex-col gap-1.5 min-w-[170px]">
+                        {item.status === 'disetujui' ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-extrabold text-emerald-700 border border-emerald-200">
+                            <CheckCircle2 className="h-3.5 w-3.5" /> 3. Disetujui (SK Terbit)
+                          </span>
+                        ) : item.status === 'dalam_proses' ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-sky-50 px-2.5 py-1 text-[11px] font-extrabold text-sky-700 border border-sky-200">
+                            <RefreshCw className="h-3.5 w-3.5 animate-spin" /> 2. Penelitian Tim BMN
+                          </span>
+                        ) : item.status === 'ditolak' ? (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-rose-50 px-2.5 py-1 text-[11px] font-extrabold text-rose-700 border border-rose-200">
+                            <X className="h-3.5 w-3.5" /> Dikembalikan / Ditolak
+                          </span>
+                        ) : (
+                          <span className="inline-flex items-center gap-1 rounded-full bg-amber-50 px-2.5 py-1 text-[11px] font-extrabold text-amber-700 border border-amber-200">
+                            <FileText className="h-3.5 w-3.5" /> 1. Menunggu Review Admin
+                          </span>
+                        )}
+
+                        {!isOperator && (
+                          <select
+                            value={item.status || 'menunggu_verifikasi'}
+                            onChange={(e) => handleUpdateStatus(item.id, e.target.value)}
+                            className="mt-0.5 rounded-lg border border-slate-200 bg-white px-2 py-1 text-[11px] font-semibold text-slate-700 outline-none focus:border-[#165DFF] cursor-pointer"
+                          >
+                            <option value="menunggu_verifikasi">1. Menunggu Review</option>
+                            <option value="dalam_proses">2. Penelitian Tim BMN</option>
+                            <option value="disetujui">3. Disetujui & SK Terbit</option>
+                            <option value="ditolak">Ditolak / Revisi</option>
+                          </select>
+                        )}
+                      </div>
+                    </td>
+
+                    {/* Kolom 6: Dokumen & Aksi */}
                     <td className="px-5 py-4 text-right">
                       <div className="flex flex-col items-end gap-2">
                         <div className="flex flex-wrap items-center justify-end gap-1.5 max-w-xs">
@@ -745,6 +846,22 @@ export function BmnDisposalManager({
                 <div>
                   <span className="text-[#6A7686] block text-[11px]">Nilai Perolehan</span>
                   <strong className="text-sm font-black text-emerald-600">{formatRupiah(Number(selectedProposal.nilai_perolehan) || 0)}</strong>
+                </div>
+              </div>
+
+              {/* Progress Stepper Timeline */}
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 space-y-3">
+                <span className="font-extrabold text-[#080C1A] block">Tracking Status Proses Usulan:</span>
+                <div className="grid grid-cols-3 gap-2 text-center text-[11px] font-bold">
+                  <div className={`p-2.5 rounded-xl border ${selectedProposal.status === 'ditolak' ? 'bg-rose-50 border-rose-200 text-rose-700' : 'bg-emerald-50 border-emerald-200 text-emerald-700'}`}>
+                    ✓ 1. Permohonan Diajukan
+                  </div>
+                  <div className={`p-2.5 rounded-xl border ${['dalam_proses', 'disetujui'].includes(selectedProposal.status) ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : selectedProposal.status === 'ditolak' ? 'bg-slate-100 text-slate-400 border-slate-200' : 'bg-sky-50 border-sky-200 text-sky-700 animate-pulse'}`}>
+                    {['dalam_proses', 'disetujui'].includes(selectedProposal.status) ? '✓ 2. Penelitian Tim BMN' : '⏳ 2. Penelitian Tim BMN'}
+                  </div>
+                  <div className={`p-2.5 rounded-xl border ${selectedProposal.status === 'disetujui' ? 'bg-emerald-50 border-emerald-200 text-emerald-700' : 'bg-slate-100 text-slate-400 border-slate-200'}`}>
+                    {selectedProposal.status === 'disetujui' ? '✓ 3. Disetujui (SK Terbit)' : '⏳ 3. Penerbitan SK'}
+                  </div>
                 </div>
               </div>
 

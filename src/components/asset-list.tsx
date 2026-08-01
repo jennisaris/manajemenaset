@@ -55,11 +55,17 @@ export function AssetList({
   currentRole,
   currentUniversity,
   onAssetsChange,
+  initialViewingAsset,
+  onCloseDetail,
+  defaultFilterStatus,
 }: {
   assets: Asset[];
   currentRole: UserRole;
   currentUniversity: string | null;
   onAssetsChange?: (assets: Asset[]) => void;
+  initialViewingAsset?: Asset | null;
+  onCloseDetail?: () => void;
+  defaultFilterStatus?: string;
 }) {
   const [items, setItems] = useState(assets);
 
@@ -70,7 +76,7 @@ export function AssetList({
   const [query, setQuery] = useState('');
   const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [filterType, setFilterType] = useState<'all' | 'land' | 'building'>('all');
-  const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [filterStatus, setFilterStatus] = useState<string>(defaultFilterStatus ?? 'all');
   const [filterCondition, setFilterCondition] = useState<string>('all');
   const [filterSatker, setFilterSatker] = useState<string>('all');
 
@@ -89,7 +95,13 @@ export function AssetList({
   }, [items]);
 
   const [editingAsset, setEditingAsset] = useState<Asset | null>(null);
-  const [viewingAsset, setViewingAsset] = useState<Asset | null>(null);
+  const [viewingAsset, setViewingAsset] = useState<Asset | null>(initialViewingAsset ?? null);
+
+  useEffect(() => {
+    if (initialViewingAsset) {
+      setViewingAsset(initialViewingAsset);
+    }
+  }, [initialViewingAsset]);
   const [formErrors, setFormErrors] = useState<AssetFormErrors>({});
   const [formOpen, setFormOpen] = useState(false);
   const [photoFiles, setPhotoFiles] = useState<File[]>([]);
@@ -459,6 +471,7 @@ export function AssetList({
             setViewingAsset(null);
             setPreviewPhoto(null);
             setPreviewDocument(null);
+            onCloseDetail?.();
           }}
           onOpenPhotoPreview={openPhotoPreview}
           onOpenDocumentPreview={openDocumentPreview}

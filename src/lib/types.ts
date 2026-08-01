@@ -1,6 +1,6 @@
 export type AssetType = 'land' | 'building';
 export type VerificationStatus = 'draft' | 'menunggu_verifikasi' | 'revisi' | 'terverifikasi' | 'tidak_aktif';
-export type UserRole = 'Superadmin' | 'Admin Aset' | 'Operator Kampus' | 'Pimpinan Dashboard';
+export type UserRole = 'Superadmin' | 'Operator Kampus' | 'Pimpinan Dashboard';
 
 export type UserStatus = 'aktif' | 'nonaktif' | 'menunggu_persetujuan' | 'ditolak';
 

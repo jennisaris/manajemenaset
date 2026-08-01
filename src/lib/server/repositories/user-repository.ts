@@ -99,16 +99,62 @@ export async function findUserByNip(nip: string): Promise<LoginUser | null> {
   };
 }
 
+const builtInDemoAccounts: Record<string, { full_name: string; role: UserRole; university_name: string | null; defaultPass: string }> = {
+  'superadmin@aset.id': { full_name: 'Superadmin Tim Pusat', role: 'Superadmin', university_name: null, defaultPass: 'superadmin123' },
+  'operator.unsil@aset.id': { full_name: 'Universitas Siliwangi', role: 'Operator Kampus', university_name: 'UNIVERSITAS SILIWANGI', defaultPass: 'operator123' },
+  'operator@aset.id': { full_name: 'Universitas Siliwangi', role: 'Operator Kampus', university_name: 'UNIVERSITAS SILIWANGI', defaultPass: 'operator123' },
+  'admin@aset.id': { full_name: 'Superadmin Sistem', role: 'Superadmin', university_name: null, defaultPass: 'admin123' },
+  'pimpinan@aset.id': { full_name: 'Pimpinan Kemdiktisaintek', role: 'Pimpinan Dashboard', university_name: null, defaultPass: 'pimpinan123' },
+};
+
 export async function findUserForLogin(email: string): Promise<LoginUser | null> {
   await ensureUserProfileColumns();
+  const cleanEmail = email.trim().toLowerCase();
+
   const { rows } = await query(`
     select p.id, p.email, p.full_name, p.status, p.university_name, p.kode_satker, p.password_hash, p.rejection_reason, r.name as role_name
     from profiles p
     left join roles r on r.id = p.role_id
     where lower(p.email) = lower($1)
     limit 1
-  `, [email]);
-  const row = rows[0];
+  `, [cleanEmail]);
+
+  let row = rows[0];
+
+  // Auto-seed demo accounts in PostgreSQL if missing
+  if (!row && builtInDemoAccounts[cleanEmail]) {
+    const demo = builtInDemoAccounts[cleanEmail];
+    const pwdHash = hashPassword(demo.defaultPass);
+    try {
+      const roleRes = await query(`select id from roles where name = $1 limit 1`, [demo.role]);
+      const roleId = roleRes.rows[0]?.id ?? '1';
+      const insertRes = await query(`
+        insert into profiles (full_name, email, password_hash, status, university_name, role_id)
+        values ($1, $2, $3, 'aktif', $4, $5)
+        returning id, email, full_name, status, university_name, kode_satker, password_hash, rejection_reason
+      `, [demo.full_name, cleanEmail, pwdHash, demo.university_name, roleId]);
+      if (insertRes.rows[0]) {
+        row = { ...insertRes.rows[0], role_name: demo.role };
+      }
+    } catch (err) {
+      console.warn('Gagal auto-seed demo user ke database:', err);
+    }
+
+    if (!row) {
+      return {
+        id: `demo-${cleanEmail}`,
+        email: cleanEmail,
+        full_name: demo.full_name,
+        status: 'aktif',
+        university_name: demo.university_name,
+        kode_satker: demo.university_name === 'UNIVERSITAS SILIWANGI' ? '693374' : null,
+        role: demo.role,
+        password_hash: pwdHash,
+        rejection_reason: null,
+      };
+    }
+  }
+
   if (!row) return null;
 
   let resolvedRole: UserRole = 'Operator Kampus';
@@ -120,15 +166,20 @@ export async function findUserForLogin(email: string): Promise<LoginUser | null>
     }
   }
 
+  let passwordHash = row.password_hash as string | null;
+  if (!passwordHash && builtInDemoAccounts[cleanEmail]) {
+    passwordHash = hashPassword(builtInDemoAccounts[cleanEmail].defaultPass);
+  }
+
   return {
     id: String(row.id),
-    email: String(row.email ?? email),
-    full_name: String(row.full_name ?? row.email ?? email),
+    email: String(row.email ?? cleanEmail),
+    full_name: String(row.full_name ?? row.email ?? cleanEmail),
     status: (row.status as UserStatus) ?? 'aktif',
     university_name: row.university_name as string | null,
     kode_satker: (row.kode_satker as string) ?? null,
     role: resolvedRole,
-    password_hash: row.password_hash as string | null,
+    password_hash: passwordHash,
     rejection_reason: (row.rejection_reason as string) ?? null,
   };
 }

@@ -27,10 +27,9 @@ if (!url || !anonKey) {
 }
 
 const users = [
-  { email: 'superadmin@aset.id', password: 'superadmin123', full_name: 'Superadmin Sistem', role_id: 1, university_name: null },
-  { email: 'admin@aset.id', password: 'admin123', full_name: 'Admin Aset Kampus Utama', role_id: 2, university_name: 'Kampus Utama' },
-  { email: 'operator@aset.id', password: 'operator123', full_name: 'Operator Kampus Utama', role_id: 3, university_name: 'Kampus Utama' },
-  { email: 'pimpinan@aset.id', password: 'pimpinan123', full_name: 'Pimpinan Dashboard', role_id: 4, university_name: null },
+  { email: 'superadmin@aset.id', password: 'superadmin123', full_name: 'Superadmin Tim Pusat', role_id: 1, university_name: null },
+  { email: 'operator.unsil@aset.id', password: 'operator123', full_name: 'Operator Universitas Siliwangi', role_id: 3, university_name: 'UNIVERSITAS SILIWANGI' },
+  { email: 'pimpinan@aset.id', password: 'pimpinan123', full_name: 'Pimpinan Kemdiktisaintek', role_id: 4, university_name: null },
 ];
 
 const supabase = createClient(url, anonKey, {

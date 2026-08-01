@@ -1,14 +1,15 @@
 import type { UserRole } from './types';
 
-export const roles: UserRole[] = ['Superadmin', 'Admin Aset', 'Operator Kampus', 'Pimpinan Dashboard'];
+export const roles: UserRole[] = ['Superadmin', 'Operator Kampus', 'Pimpinan Dashboard'];
 
 const legacyRoleMap: Record<string, UserRole> = {
   'Super Admin': 'Superadmin',
+  'Admin Aset': 'Superadmin',
+  Admin: 'Superadmin',
+  'Admin Kampus': 'Superadmin',
+  Verifikator: 'Superadmin',
   Operator: 'Operator Kampus',
   'Operator Aset': 'Operator Kampus',
-  Admin: 'Admin Aset',
-  'Admin Kampus': 'Admin Aset',
-  Verifikator: 'Admin Aset',
   Executive: 'Pimpinan Dashboard',
   Pimpinan: 'Pimpinan Dashboard',
   'Pimpinan/Viewer': 'Pimpinan Dashboard',

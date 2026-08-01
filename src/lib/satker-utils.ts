@@ -58,5 +58,6 @@ export function matchesUniversityScope(asset: { campus_name?: string | null; nam
 export function getAssetDisplayName(asset: { merk?: string | null; nama_barang?: string | null; asset_name?: string | null }): string {
   if (asset.merk && asset.merk.trim()) return asset.merk.trim();
   if (asset.nama_barang && asset.nama_barang.trim()) return asset.nama_barang.trim();
-  return asset.asset_name?.trim() || 'Aset Tanpa Nama';
+  if (asset.asset_name && asset.asset_name.trim()) return asset.asset_name.trim();
+  return 'Aset Tanpa Nama';
 }

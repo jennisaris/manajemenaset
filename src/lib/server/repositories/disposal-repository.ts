@@ -144,6 +144,25 @@ export async function deleteDisposalFromDb(id: number): Promise<boolean> {
   return (res.rowCount ?? 0) > 0;
 }
 
+export async function updateDisposalStatusInDb(
+  id: number,
+  status: string,
+  catatan?: string | null
+): Promise<BmnDisposalProposal | null> {
+  await ensureBmnDisposalTable();
+  const res = await query<Record<string, unknown>>(
+    `update bmn_disposals
+     set status = $2,
+         catatan = coalesce($3, catatan),
+         updated_at = now()
+     where id = $1
+     returning *`,
+    [id, status, catatan ?? null]
+  );
+  if (res.rows.length === 0) return null;
+  return normalizeDisposal(res.rows[0]);
+}
+
 /**
  * Parsing berkas lampiran CSV / Text untuk menghitung rekapitulasi usulan secara otomatis
  */
