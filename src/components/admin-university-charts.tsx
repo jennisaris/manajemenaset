@@ -11,7 +11,6 @@ function getNormalizedUniversityKey(asset: { campus_name?: string | null; nama_s
   const code6 = extract6DigitKodeSatker(asset.kode_satker);
   let rawName = (asset.nama_satker || asset.campus_name || 'Kampus Utama').trim();
 
-  // Strip leading [693374] or 693374 - from rawName if present
   rawName = rawName.replace(/^\[\d{6}\]\s*/, '').replace(/^\d{6}\s*-\s*/, '').trim();
 
   if (code6 && rawName) {
@@ -30,6 +29,27 @@ const colors = {
   slate: '#64748b',
 };
 
+function getIssueStageProgress(status: string): { percentage: number; label: string } {
+  const normalized = (status || '').toLowerCase().trim();
+  if (normalized === 'selesai') {
+    return { percentage: 100, label: '100% Selesai' };
+  }
+  if (normalized === 'sedang_ditindaklanjuti' || normalized === 'tindak_lanjut') {
+    return { percentage: 75, label: '75% Ditindaklanjuti' };
+  }
+  if (normalized === 'investigasi' || normalized === 'dalam_proses' || normalized === 'proses_penanganan') {
+    return { percentage: 50, label: '50% Penanganan' };
+  }
+  return { percentage: 25, label: '25% Dicatat' };
+}
+
+function getStageLabelFromPercentage(pct: number): string {
+  if (pct >= 90) return '100% Selesai';
+  if (pct >= 60) return '75% Ditindaklanjuti';
+  if (pct >= 35) return '50% Penanganan';
+  return '25% Dicatat';
+}
+
 type UniversityUtilizationData = {
   rank: number;
   rankLabel: string;
@@ -47,6 +67,11 @@ type UniversityIssueData = {
   problematicAssets: number;
   totalAssets: number;
   problemPercentage: number;
+  healthPercentage: number;
+  totalIssues: number;
+  resolvedIssues: number;
+  resolutionPercentage: number;
+  latestStageLabel: string;
 };
 
 export function AdminUniversityCharts({
@@ -115,17 +140,18 @@ export function AdminUniversityCharts({
     return result;
   }, [allUtilizationData, searchQuery, displayLimit]);
 
-  // 2. Data Aset Bermasalah vs Tidak Bermasalah per Universitas
+  // 2. Data Aset Bermasalah vs Tidak Bermasalah per Universitas (dengan Persentase Progress Stage)
   const allIssueData = useMemo<UniversityIssueData[]>(() => {
     const unresolvedIssues = issues.filter((i) => i.status !== 'selesai');
     const problematicAssetIds = new Set(unresolvedIssues.map((i) => i.asset_id));
+    const assetById = new Map(assets.map((a) => [a.id, a]));
 
-    const uniMap = new Map<string, { normal: number; problematic: number }>();
+    const uniMap = new Map<string, { normal: number; problematic: number; totalIssues: number; resolvedIssues: number; totalStagePoints: number }>();
 
     for (const asset of assets) {
       const uni = getNormalizedUniversityKey(asset);
       if (!uniMap.has(uni)) {
-        uniMap.set(uni, { normal: 0, problematic: 0 });
+        uniMap.set(uni, { normal: 0, problematic: 0, totalIssues: 0, resolvedIssues: 0, totalStagePoints: 0 });
       }
       const record = uniMap.get(uni)!;
       if (problematicAssetIds.has(asset.id) || asset.has_active_issue) {
@@ -135,16 +161,40 @@ export function AdminUniversityCharts({
       }
     }
 
+    for (const issue of issues) {
+      const asset = assetById.get(issue.asset_id);
+      if (!asset) continue;
+      const uni = getNormalizedUniversityKey(asset);
+      const record = uniMap.get(uni);
+      if (record) {
+        record.totalIssues += 1;
+        const stage = getIssueStageProgress(issue.status);
+        record.totalStagePoints += stage.percentage;
+        if (issue.status === 'selesai') {
+          record.resolvedIssues += 1;
+        }
+      }
+    }
+
     return Array.from(uniMap.entries())
       .map(([university, data]) => {
         const total = data.normal + data.problematic;
         const problemPercentage = total > 0 ? Math.round((data.problematic / total) * 100) : 0;
+        const healthPercentage = total > 0 ? Math.round((data.normal / total) * 100) : 100;
+        const resolutionPercentage = data.totalIssues > 0 ? Math.round(data.totalStagePoints / data.totalIssues) : 100;
+        const latestStageLabel = data.totalIssues > 0 ? getStageLabelFromPercentage(resolutionPercentage) : '100% Selesai';
+
         return {
           university,
           normalAssets: data.normal,
           problematicAssets: data.problematic,
           totalAssets: total,
           problemPercentage,
+          healthPercentage,
+          totalIssues: data.totalIssues,
+          resolvedIssues: data.resolvedIssues,
+          resolutionPercentage,
+          latestStageLabel,
         };
       })
       .sort((a, b) => b.problematicAssets - a.problematicAssets || b.totalAssets - a.totalAssets)
@@ -385,7 +435,7 @@ export function AdminUniversityCharts({
                 <h3 className="text-base font-black text-slate-900">2. Status Permasalahan Aset per Universitas</h3>
               </div>
               <p className="mt-1 text-xs text-slate-500 font-medium leading-relaxed">
-                Perbandingan aset normal vs bermasalah dengan tabel rincian di bawah.
+                Perbandingan aset normal vs bermasalah dan progres penanganan isu per kampus.
               </p>
             </div>
             <span className="rounded-full bg-rose-100 px-3 py-1 text-[11px] font-bold text-rose-800">
@@ -411,18 +461,31 @@ export function AdminUniversityCharts({
                     if (active && payload && payload.length) {
                       const data = payload[0].payload as UniversityIssueData;
                       return (
-                        <div className="rounded-2xl border border-rose-100 bg-slate-900 p-3.5 shadow-xl text-white text-xs space-y-1 z-50 min-w-56">
-                          <span className="inline-block rounded-md bg-sky-400 px-2 py-0.5 text-[10px] font-black text-slate-950 mb-1">
-                            Nomor Urut {data.rankLabel}
-                          </span>
-                          <strong className="block font-bold text-sky-300 text-sm">{data.university}</strong>
-                          <p className="text-emerald-400 font-bold pt-1">
-                            ✅ Tidak Bermasalah (Normal): {data.normalAssets} Unit
-                          </p>
-                          <p className="text-rose-400 font-bold">
-                            ⚠️ Aset Bermasalah: {data.problematicAssets} Unit ({data.problemPercentage}%)
-                          </p>
-                          <p className="text-slate-400 text-[10px]">Total Aset Tercatat: {data.totalAssets} Unit</p>
+                        <div className="rounded-2xl border border-rose-100 bg-slate-900 p-3.5 shadow-xl text-white text-xs space-y-1.5 z-50 min-w-64">
+                          <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2">
+                            <span className="inline-block rounded-md bg-sky-400 px-2 py-0.5 text-[10px] font-black text-slate-950">
+                              Nomor Urut {data.rankLabel}
+                            </span>
+                            <span className="text-[10px] font-bold text-slate-400">Total Portofolio: {data.totalAssets} Unit Aset</span>
+                          </div>
+                          <strong className="block font-bold text-sky-300 text-sm leading-tight">{data.university}</strong>
+                          
+                          <div className="space-y-1 pt-1 text-xs">
+                            <div className="flex items-center justify-between text-emerald-400 font-bold">
+                              <span>✅ Normal (Bebas Masalah):</span>
+                              <span>{data.normalAssets} Unit ({data.healthPercentage}%)</span>
+                            </div>
+                            <div className="flex items-center justify-between text-rose-400 font-bold">
+                              <span>⚠️ Aset Bermasalah:</span>
+                              <span>{data.problematicAssets} Unit ({data.problemPercentage}% Aset)</span>
+                            </div>
+                            {data.totalIssues > 0 && (
+                              <div className="flex items-center justify-between text-amber-300 font-bold pt-1.5 border-t border-slate-800/80">
+                                <span>🛠️ Progres Penanganan Issue:</span>
+                                <span>{data.resolutionPercentage}% ({data.latestStageLabel})</span>
+                              </div>
+                            )}
+                          </div>
                         </div>
                       );
                     }
@@ -450,10 +513,10 @@ export function AdminUniversityCharts({
             </ResponsiveContainer>
           </div>
 
-          {/* Table for Chart 2 with Matching Row Numbers */}
+          {/* Table for Chart 2 without Bermasalah Column */}
           <div className="mt-4 overflow-x-auto rounded-2xl border border-slate-100 bg-slate-50/70 p-3 text-xs">
             <div className="mb-2 flex items-center justify-between px-1">
-              <span className="text-[11px] font-extrabold uppercase text-slate-500">Tabel Keterangan Nomor Urut Grafik (#)</span>
+              <span className="text-[11px] font-extrabold uppercase text-slate-500">Tabel Keterangan & Persentase Progres (#)</span>
               <span className="text-[11px] font-bold text-rose-700">Total: {filteredIssueData.length} Kampus</span>
             </div>
             <table className="w-full text-left">
@@ -462,8 +525,8 @@ export function AdminUniversityCharts({
                   <th className="pb-2 text-center w-12">No (#)</th>
                   <th className="pb-2">Nama Perguruan Tinggi</th>
                   <th className="pb-2 text-center">Normal</th>
-                  <th className="pb-2 text-center">Bermasalah</th>
-                  <th className="pb-2 text-right">Rasio Risiko</th>
+                  <th className="pb-2 text-center">Progres Penanganan Issue</th>
+                  <th className="pb-2 text-right">Rasio Risiko Aset</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-200/60 font-semibold text-slate-700">
@@ -473,13 +536,37 @@ export function AdminUniversityCharts({
                       <td className="py-2.5 text-center font-black text-slate-900 bg-rose-100/50 rounded-lg">
                         {item.rankLabel}
                       </td>
-                      <td className="py-2.5 pl-2 text-slate-900 font-bold max-w-[180px] truncate">{item.university}</td>
-                      <td className="py-2.5 text-center font-bold text-emerald-600">{item.normalAssets} Unit</td>
-                      <td className="py-2.5 text-center font-bold text-rose-600">{item.problematicAssets} Unit</td>
+                      <td className="py-2.5 pl-2 text-slate-900 font-bold max-w-[160px] truncate">{item.university}</td>
+                      <td className="py-2.5 text-center font-bold text-emerald-600">
+                        {item.normalAssets} Unit <span className="text-[10px] text-emerald-700/80">({item.healthPercentage}%)</span>
+                      </td>
+                      <td className="py-2.5 text-center">
+                        {item.totalIssues > 0 ? (
+                          <div className="inline-flex flex-col items-center">
+                            <span className="text-[11px] font-bold text-amber-800">
+                              {item.resolutionPercentage}% Progres <span className="text-[10px] text-amber-600 font-normal">({item.latestStageLabel})</span>
+                            </span>
+                            <div className="h-1.5 w-24 rounded-full bg-slate-200 overflow-hidden mt-0.5">
+                              <div
+                                className="h-full bg-amber-500 rounded-full transition-all duration-500"
+                                style={{ width: `${item.resolutionPercentage}%` }}
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <span className="text-[10px] font-bold text-slate-400">Tidak ada isu</span>
+                        )}
+                      </td>
                       <td className="py-2.5 text-right">
-                        <span className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-bold ${item.problematicAssets > 0 ? 'bg-rose-100 text-rose-700' : 'bg-emerald-100 text-emerald-700'}`}>
-                          {item.problemPercentage}% Masalah
-                        </span>
+                        <div className="flex flex-col items-end gap-1">
+                          <span className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-[10px] font-extrabold ${item.problematicAssets > 0 ? 'bg-rose-100 text-rose-700 border border-rose-200' : 'bg-emerald-100 text-emerald-700 border border-emerald-200'}`}>
+                            {item.problematicAssets > 0 ? `⚠️ ${item.problematicAssets} Unit (${item.problemPercentage}%)` : `✅ 100% Sehat`}
+                          </span>
+                          <div className="h-1.5 w-24 rounded-full bg-rose-200 overflow-hidden flex">
+                            <div className="h-full bg-emerald-500 transition-all duration-500" style={{ width: `${item.healthPercentage}%` }} />
+                            <div className="h-full bg-rose-500 transition-all duration-500" style={{ width: `${item.problemPercentage}%` }} />
+                          </div>
+                        </div>
                       </td>
                     </tr>
                   ))

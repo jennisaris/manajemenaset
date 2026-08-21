@@ -18,6 +18,9 @@ export async function POST(request: Request) {
     }
 
     const isOperator = user.role === 'Operator Kampus';
+    if (isOperator && !user.kode_satker) {
+      return NextResponse.json({ error: 'Akun Operator Kampus tidak memiliki kode satker yang valid.' }, { status: 403 });
+    }
     const insertedAssets: Asset[] = [];
 
     for (const item of items) {

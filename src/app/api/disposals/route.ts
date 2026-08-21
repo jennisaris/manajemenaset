@@ -41,6 +41,9 @@ export async function GET(request: Request) {
     let proposals: BmnDisposalProposal[] = [];
 
     if (user.role === 'Operator Kampus') {
+      if (!user.kode_satker) {
+        return NextResponse.json({ proposals: [] });
+      }
       proposals = await getDisposalsFromDb(user.kode_satker, user.university_name);
     } else if (filterKodeSatker) {
       proposals = await getDisposalsFromDb(filterKodeSatker);
@@ -70,7 +73,10 @@ export async function POST(request: Request) {
     let nama_satker = String(formData.get('nama_satker') ?? '').trim();
 
     if (user.role === 'Operator Kampus') {
-      if (user.kode_satker) kode_satker = user.kode_satker;
+      if (!user.kode_satker) {
+        return NextResponse.json({ error: 'Akun Operator Kampus tidak memiliki kode satker yang valid.' }, { status: 403 });
+      }
+      kode_satker = user.kode_satker;
       if (user.university_name) nama_satker = user.university_name;
     }
 

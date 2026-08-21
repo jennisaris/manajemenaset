@@ -24,15 +24,13 @@ function scopeDataForOperator(
   kodeSatker?: string | null,
   universityName?: string | null
 ): MvpData {
-  if (!kodeSatker && !universityName) return data;
-
   const assets = data.assets.filter((asset) => {
     if (universityName && matchesUniversityScope(asset, universityName)) return true;
     if (kodeSatker && matchesUniversityScope(asset, kodeSatker)) return true;
     return false;
   });
 
-  const finalAssets = assets.length > 0 ? assets : data.assets;
+  const finalAssets = assets;
   const assetIds = new Set(finalAssets.map((asset) => asset.id));
   const utilizations = data.utilizations.filter((item) => assetIds.has(item.asset_id));
   const issues = data.issues.filter((issue) => assetIds.has(issue.asset_id));

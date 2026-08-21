@@ -60,33 +60,160 @@ export function normalizeAsset(row: Record<string, unknown>): Asset {
   };
 }
 
-export type AssetListOptions = { limit?: number; offset?: number };
+export type BatchInsertResult = { query: string; params: unknown[] };
 
-export async function getAssetCountFromDb(): Promise<number> {
-  const { rows } = await query('select count(*)::bigint as total from assets where coalesce(is_deleted, 0) = 0');
+export function buildPhotoBatchInsert(
+  assetId: number,
+  photoPaths: string[],
+  photoUrls: string[],
+  photoNames: string[]
+): BatchInsertResult {
+  if (!photoPaths || photoPaths.length === 0) {
+    return { query: '', params: [] };
+  }
+  const valueTuples: string[] = [];
+  const params: unknown[] = [];
+  let paramIdx = 1;
+
+  for (let i = 0; i < photoPaths.length; i++) {
+    const photoPath = photoPaths[i];
+    const photoUrl = photoUrls[i] ?? `/uploads/${photoPath}`;
+    const caption = photoNames[i] ?? photoPath.split('/').pop() ?? 'Foto Aset';
+    const isPrimary = i === 0;
+
+    valueTuples.push(`($${paramIdx}, $${paramIdx + 1}, $${paramIdx + 2}, $${paramIdx + 3}, $${paramIdx + 4})`);
+    params.push(assetId, photoPath, photoUrl, caption, isPrimary);
+    paramIdx += 5;
+  }
+
+  const query = `
+    insert into asset_photos (asset_id, photo_path, photo_url, caption, is_primary)
+    values ${valueTuples.join(', ')}
+    on conflict (asset_id, photo_path) do update set
+      photo_url=excluded.photo_url, caption=excluded.caption, is_primary=excluded.is_primary
+  `.trim();
+
+  return { query, params };
+}
+
+export function buildDocumentBatchInsert(
+  assetId: number,
+  documentPaths: string[],
+  documentNames: string[]
+): BatchInsertResult {
+  if (!documentPaths || documentPaths.length === 0) {
+    return { query: '', params: [] };
+  }
+  const valueTuples: string[] = [];
+  const params: unknown[] = [];
+  let paramIdx = 1;
+
+  for (let i = 0; i < documentPaths.length; i++) {
+    const file_path = documentPaths[i];
+    const document_name = documentNames[i] ?? file_path.split('/').pop() ?? 'Dokumen Aset';
+
+    valueTuples.push(`($${paramIdx}, $${paramIdx + 1}, $${paramIdx + 2})`);
+    params.push(assetId, document_name, file_path);
+    paramIdx += 3;
+  }
+
+  const query = `
+    insert into asset_documents (asset_id, document_name, file_path)
+    values ${valueTuples.join(', ')}
+    on conflict (asset_id, file_path) do update set
+      document_name=excluded.document_name
+  `.trim();
+
+  return { query, params };
+}
+
+export type AssetListOptions = {
+  limit?: number;
+  offset?: number;
+  search?: string;
+  asset_type?: 'land' | 'building' | string;
+  verification_status?: string;
+  kode_satker?: string;
+};
+
+export function buildAssetFilterClauses(options: AssetListOptions = {}): { whereClause: string; params: unknown[] } {
+  const conditions = ['coalesce(a.is_deleted, 0) = 0'];
+  const params: unknown[] = [];
+  let paramIdx = 1;
+
+  if (options.search && options.search.trim()) {
+    conditions.push(`(a.asset_name ilike $${paramIdx} or a.asset_code ilike $${paramIdx} or coalesce(a.campus_name, '') ilike $${paramIdx} or coalesce(a.nama_satker, '') ilike $${paramIdx})`);
+    params.push(`%${options.search.trim()}%`);
+    paramIdx++;
+  }
+
+  if (options.asset_type && (options.asset_type === 'land' || options.asset_type === 'building')) {
+    conditions.push(`a.asset_type = $${paramIdx}`);
+    params.push(options.asset_type);
+    paramIdx++;
+  }
+
+  if (options.verification_status && options.verification_status.trim()) {
+    conditions.push(`a.verification_status = $${paramIdx}`);
+    params.push(options.verification_status.trim());
+    paramIdx++;
+  }
+
+  if (options.kode_satker && options.kode_satker.trim()) {
+    conditions.push(`a.kode_satker = $${paramIdx}`);
+    params.push(options.kode_satker.trim());
+    paramIdx++;
+  }
+
+  return {
+    whereClause: conditions.join(' and '),
+    params,
+  };
+}
+
+export async function getAssetCountFromDb(options: AssetListOptions = {}): Promise<number> {
+  const { whereClause, params } = buildAssetFilterClauses(options);
+  const { rows } = await query(`select count(*)::bigint as total from assets a where ${whereClause}`, params);
   return Number(rows[0]?.total ?? 0);
 }
 
 export async function getAssetsFromDb(options: AssetListOptions = {}): Promise<Asset[]> {
+  const { whereClause, params } = buildAssetFilterClauses(options);
   const limit = options.limit && options.limit > 0 ? Math.min(options.limit, 100000) : 100000;
   const offset = Math.max(0, options.offset ?? 0);
+  const limitParamIdx = params.length + 1;
+  const offsetParamIdx = params.length + 2;
+  const queryParams = [...params, limit, offset];
+
   const { rows } = await query(`
     select a.*,
-      coalesce(array_remove(array_agg(distinct ap.photo_path), null), '{}') as photo_paths,
-      coalesce(array_remove(array_agg(distinct ap.photo_url), null), '{}') as photo_urls,
-      coalesce(array_remove(array_agg(distinct ap.caption), null), '{}') as photo_names,
-      coalesce(array_remove(array_agg(distinct ad.file_path), null), '{}') as document_paths,
-      coalesce(array_remove(array_agg(distinct ad.document_name), null), '{}') as document_names,
+      coalesce(ap.photo_paths, '{}') as photo_paths,
+      coalesce(ap.photo_urls, '{}') as photo_urls,
+      coalesce(ap.photo_names, '{}') as photo_names,
+      coalesce(ad.document_paths, '{}') as document_paths,
+      coalesce(ad.document_names, '{}') as document_names,
       exists(select 1 from asset_issues ai where ai.asset_id = a.id and ai.status <> 'selesai') as has_active_issue,
       exists(select 1 from asset_utilizations au where au.asset_id = a.id and au.status in ('aktif','akan_berakhir')) as has_active_utilization
     from assets a
-    left join asset_photos ap on ap.asset_id = a.id
-    left join asset_documents ad on ad.asset_id = a.id
-    where coalesce(a.is_deleted, 0) = 0
-    group by a.id
+    left join lateral (
+      select
+        array_remove(array_agg(p.photo_path), null) as photo_paths,
+        array_remove(array_agg(p.photo_url), null) as photo_urls,
+        array_remove(array_agg(p.caption), null) as photo_names
+      from asset_photos p
+      where p.asset_id = a.id
+    ) ap on true
+    left join lateral (
+      select
+        array_remove(array_agg(d.file_path), null) as document_paths,
+        array_remove(array_agg(d.document_name), null) as document_names
+      from asset_documents d
+      where d.asset_id = a.id
+    ) ad on true
+    where ${whereClause}
     order by a.id asc
-    limit $1 offset $2
-  `, [limit, offset]);
+    limit $${limitParamIdx} offset $${offsetParamIdx}
+  `, queryParams);
   return rows.map((row) => normalizeAsset(row));
 }
 
@@ -135,7 +262,7 @@ export async function upsertAssetToDb(asset: Asset): Promise<Asset> {
       asset.address ?? asset.alamat ?? null,
       asset.ownership_status ?? asset.status_sertifikasi ?? null,
       asset.condition_status,
-      'terverifikasi',
+      asset.verification_status ?? 'terverifikasi',
       asset.latitude,
       asset.longitude,
       asset.geometry_type,
@@ -158,19 +285,15 @@ export async function upsertAssetToDb(asset: Asset): Promise<Asset> {
     const documentNames = asset.document_names ?? [];
 
     await client.query('delete from asset_photos where asset_id = $1', [savedAssetId]);
-    for (const [index, photoPath] of photoPaths.entries()) {
-      await client.query(
-        'insert into asset_photos (asset_id, photo_path, photo_url, caption, is_primary) values ($1,$2,$3,$4,$5) on conflict (asset_id, photo_path) do update set photo_url=excluded.photo_url, caption=excluded.caption, is_primary=excluded.is_primary',
-        [savedAssetId, photoPath, photoUrls[index] ?? `/uploads/${photoPath}`, photoNames[index] ?? photoPath.split('/').pop() ?? 'Foto Aset', index === 0]
-      );
+    const photoBatch = buildPhotoBatchInsert(savedAssetId, photoPaths, photoUrls, photoNames);
+    if (photoBatch.query) {
+      await client.query(photoBatch.query, photoBatch.params);
     }
 
     await client.query('delete from asset_documents where asset_id = $1', [savedAssetId]);
-    for (const [index, documentPath] of documentPaths.entries()) {
-      await client.query(
-        'insert into asset_documents (asset_id, document_name, file_path) values ($1,$2,$3) on conflict (asset_id, file_path) do update set document_name=excluded.document_name',
-        [savedAssetId, documentNames[index] ?? documentPath.split('/').pop() ?? 'Dokumen Aset', documentPath]
-      );
+    const docBatch = buildDocumentBatchInsert(savedAssetId, documentPaths, documentNames);
+    if (docBatch.query) {
+      await client.query(docBatch.query, docBatch.params);
     }
 
     await client.query("select setval('assets_id_seq', (select max(id) from assets))");

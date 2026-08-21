@@ -29,13 +29,15 @@ export async function GET(
     }
 
     const user = await getSessionUser();
-    let data: BmnAssetItem[] = [];
     if (user?.role === 'Operator Kampus') {
-      data = await getBmnAssetsFromDb(category, user.kode_satker, user.university_name);
-    } else {
-      data = await getBmnAssetsFromDb(category);
+      if (!user.kode_satker) {
+        return NextResponse.json({ data: [] });
+      }
+      const data = await getBmnAssetsFromDb(category, user.kode_satker, user.university_name);
+      return NextResponse.json({ data });
     }
 
+    const data = await getBmnAssetsFromDb(category);
     return NextResponse.json({ data });
   } catch (err) {
     console.error('API GET /api/bmn error:', err);
