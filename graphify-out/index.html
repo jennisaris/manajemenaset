@@ -3,124 +3,302 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Graphify - Visualisasi Arsitektur Sistem Manajemen Aset</title>
+  <title>Graphify - Knowledge Graph SMART-DIKTI</title>
   <script src="https://cdn.jsdelivr.net/npm/vis-network@9.1.2/dist/vis-network.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background: #0f172a; color: #f8fafc; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
-    header { background: #1e293b; padding: 16px 24px; border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; }
-    h1 { font-size: 1.25rem; font-weight: 600; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
-    .badge { background: #0284c7; color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 9999px; }
-    .container { display: flex; flex: 1; height: calc(100vh - 65px); }
-    #network { flex: 1; height: 100%; background: #0b0f19; }
-    .sidebar { width: 340px; background: #1e293b; border-left: 1px solid #334155; padding: 20px; overflow-y: auto; }
-    .card { background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 14px; margin-bottom: 16px; }
-    .card h3 { font-size: 0.95rem; color: #38bdf8; margin-bottom: 8px; }
-    .card p { font-size: 0.85rem; color: #94a3b8; line-height: 1.4; }
-    .legend-item { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; font-size: 0.85rem; color: #cbd5e1; }
-    .legend-color { width: 14px; height: 14px; border-radius: 4px; }
+    :root {
+      --bg: #0b0f19;
+      --card-bg: #131b2e;
+      --card-border: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent-glow: rgba(56, 189, 248, 0.2);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', -apple-system, sans-serif; }
+    body { background: var(--bg); color: var(--text); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+    
+    header {
+      background: #0f172a;
+      padding: 14px 24px;
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+      z-index: 10;
+    }
+    .brand { display: flex; align-items: center; gap: 12px; }
+    .brand h1 { font-size: 1.15rem; font-weight: 700; color: #ffffff; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
+    .badge { background: #0284c7; color: #fff; font-size: 0.7rem; font-weight: 600; padding: 3px 8px; border-radius: 9999px; }
+    
+    .search-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: #1e293b;
+      padding: 6px 12px;
+      border-radius: 8px;
+      border: 1px solid #334155;
+    }
+    .search-box input {
+      background: transparent;
+      border: none;
+      outline: none;
+      color: #f8fafc;
+      font-size: 0.85rem;
+      width: 220px;
+    }
+
+    .container { display: flex; flex: 1; height: calc(100vh - 65px); position: relative; }
+    #network { flex: 1; height: 100%; background: radial-gradient(circle at center, #111827 0%, #030712 100%); }
+    
+    .sidebar {
+      width: 380px;
+      background: #0f172a;
+      border-left: 1px solid var(--card-border);
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      z-index: 5;
+    }
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.2);
+    }
+    .card h3 { font-size: 0.9rem; font-weight: 600; color: var(--accent); margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; }
+    .card p { font-size: 0.82rem; color: var(--text-muted); line-height: 1.5; }
+    
+    .legend-grid { display: flex; flex-direction: column; gap: 8px; }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 0.8rem;
+      color: #cbd5e1;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: rgba(255,255,255,0.03);
+      cursor: pointer;
+      transition: background 0.15s ease;
+    }
+    .legend-item:hover { background: rgba(255,255,255,0.08); }
+    .legend-color { width: 12px; height: 12px; border-radius: 3px; margin-right: 8px; display: inline-block; }
+    
+    .stat-row { display: flex; justify-content: space-between; font-size: 0.82rem; padding: 4px 0; border-bottom: 1px dashed #1e293b; }
+    .stat-row:last-child { border-bottom: none; }
+    .stat-label { color: var(--text-muted); }
+    .stat-val { font-weight: 600; color: #f8fafc; }
+
+    .node-detail-title { font-size: 1rem; font-weight: 700; color: #38bdf8; margin-bottom: 4px; }
+    .node-tag { display: inline-block; font-size: 0.7rem; font-weight: 600; padding: 2px 8px; border-radius: 4px; margin-bottom: 8px; }
+    .node-desc { font-size: 0.82rem; color: #cbd5e1; line-height: 1.45; margin-bottom: 10px; }
+    
+    .controls {
+      position: absolute;
+      bottom: 20px;
+      left: 20px;
+      display: flex;
+      gap: 8px;
+      z-index: 10;
+    }
+    .btn {
+      background: #1e293b;
+      color: #f8fafc;
+      border: 1px solid #334155;
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+    .btn:hover { background: #334155; border-color: #475569; }
+    .btn-primary { background: #0284c7; border-color: #0369a1; }
+    .btn-primary:hover { background: #0369a1; }
   </style>
 </head>
 <body>
   <header>
-    <h1><span>🕸️ Graphify - Visualisator Arsitektur</span> <span class="badge">manajemenaset</span></h1>
-    <div style="font-size: 0.85rem; color: #94a3b8;">Sistem Manajemen Aset Universitas</div>
+    <div class="brand">
+      <h1><span>🕸️ Graphify Explorer</span> <span class="badge">SMART-DIKTI v2.0</span></h1>
+    </div>
+    <div class="search-box">
+      <span>🔍</span>
+      <input type="text" id="search-input" placeholder="Cari modul, repositori, api...">
+    </div>
   </header>
 
   <div class="container">
     <div id="network"></div>
+    
+    <div class="controls">
+      <button class="btn btn-primary" onclick="fitNetwork()">⚡ Reset Kamera</button>
+      <button class="btn" onclick="togglePhysics()">🔄 Toggle Fisika</button>
+    </div>
+
     <div class="sidebar">
-      <div class="card">
-        <h3>Detail Node</h3>
+      <div class="card" id="detail-card">
+        <h3>Detail Entitas Node</h3>
         <div id="node-details">
-          <p style="font-style: italic;">Klik node pada graf di samping untuk melihat detail metadata arsitektur, sentralitas, dan relasinya.</p>
+          <p style="font-style: italic;">Klik salah satu node pada graf di samping untuk melihat metadata, sentralitas, relasi pemanggilan, dan rincian arsitekturnya.</p>
         </div>
       </div>
 
       <div class="card">
-        <h3>Komunitas & Subsistem</h3>
-        <div class="legend-item"><div class="legend-color" style="background: #3B82F6;"></div> Database & Persistensi</div>
-        <div class="legend-item"><div class="legend-color" style="background: #10B981;"></div> Server & Keamanan API</div>
-        <div class="legend-item"><div class="legend-color" style="background: #8B5CF6;"></div> Komponen Aplikasi Frontend</div>
-        <div class="legend-item"><div class="legend-color" style="background: #F59E0B;"></div> Utilitas & Tipe Data</div>
+        <h3>Komunitas & Lapisan Arsitektur</h3>
+        <div class="legend-grid" id="legend-container"></div>
       </div>
 
       <div class="card">
-        <h3>Statistik Graf</h3>
-        <p><strong>Total Node:</strong> 14</p>
-        <p><strong>Total Edge (Relasi):</strong> 12</p>
-        <p><strong>God Nodes:</strong> 3 (`types.ts`, `asset-list.tsx`, `local-repository.ts`)</p>
+        <h3>Statistik Pengetahuan</h3>
+        <div class="stat-row"><span class="stat-label">Total Entitas (Node):</span> <span class="stat-val" id="stat-nodes">42</span></div>
+        <div class="stat-row"><span class="stat-label">Total Ketergantungan (Edge):</span> <span class="stat-val" id="stat-edges">68</span></div>
+        <div class="stat-row"><span class="stat-label">Komunitas Terdeteksi:</span> <span class="stat-val">5 Lapisan</span></div>
+        <div class="stat-row"><span class="stat-label">God Nodes (Hub Kritis):</span> <span class="stat-val">5 File</span></div>
       </div>
     </div>
   </div>
 
   <script>
-    const graphData = {
-      nodes: [
-        { id: 1, label: 'types.ts', group: 'utility', title: 'God Node / Definisi Tipe Domain Utama', shape: 'diamond', size: 30, color: '#F59E0B' },
-        { id: 2, label: 'asset-list.tsx', group: 'ui', title: 'God Node / Komponen UI Manajemen Aset', shape: 'dot', size: 35, color: '#8B5CF6' },
-        { id: 3, label: 'local-repository.ts', group: 'data', title: 'God Node / Akses Data PostgreSQL', shape: 'dot', size: 30, color: '#3B82F6' },
-        { id: 4, label: 'schema.sql', group: 'data', title: 'Skema Database Relasional (10 Tabel)', shape: 'database', size: 30, color: '#3B82F6' },
-        { id: 5, label: 'app-shell.tsx', group: 'ui', title: 'Layout Utama App Shell', shape: 'dot', size: 25, color: '#8B5CF6' },
-        { id: 6, label: 'dashboard.tsx', group: 'ui', title: 'Dasbor Eksekutif & Ringkasan Aset', shape: 'dot', size: 22, color: '#8B5CF6' },
-        { id: 7, label: 'location-picker.tsx', group: 'ui', title: 'Pemeta Koordinat & GeoJSON Leaflet', shape: 'dot', size: 22, color: '#8B5CF6' },
-        { id: 8, label: 'issue-manager.tsx', group: 'ui', title: 'Manajemen Masalah & Perbaikan Aset', shape: 'dot', size: 20, color: '#8B5CF6' },
-        { id: 9, label: 'utilization-manager.tsx', group: 'ui', title: 'Manajemen Pemanfaatan & Sewa Aset', shape: 'dot', size: 20, color: '#8B5CF6' },
-        { id: 10, label: 'user-role-manager.tsx', group: 'ui', title: 'Manajemen Pengguna & Peran (RBAC)', shape: 'dot', size: 20, color: '#8B5CF6' },
-        { id: 11, label: 'session.ts', group: 'server', title: 'Sesi Cookie JWT & Keamanan Auth', shape: 'triangle', size: 22, color: '#10B981' },
-        { id: 12, label: 'role-utils.ts', group: 'utility', title: 'Evaluasi Akses Pengguna', shape: 'diamond', size: 20, color: '#F59E0B' },
-        { id: 13, label: 'geo.ts', group: 'utility', title: 'Kalkulator GIS & Centroid', shape: 'diamond', size: 18, color: '#F59E0B' },
-        { id: 14, label: 'api/assets', group: 'server', title: 'Endpoint REST API Aset', shape: 'box', size: 22, color: '#10B981' }
-      ],
-      edges: [
-        { from: 5, to: 2, label: 'rendisi' },
-        { from: 5, to: 6, label: 'rendisi' },
-        { from: 5, to: 8, label: 'rendisi' },
-        { from: 5, to: 9, label: 'rendisi' },
-        { from: 5, to: 10, label: 'rendisi' },
-        { from: 2, to: 7, label: 'menggunakan' },
-        { from: 2, to: 1, label: 'mengimpor' },
-        { from: 2, to: 12, label: 'mengimpor' },
-        { from: 2, to: 14, label: 'mengambil data' },
-        { from: 14, to: 3, label: 'memanggil' },
-        { from: 14, to: 11, label: 'autentikasi' },
-        { from: 3, to: 4, label: 'query database' }
-      ]
-    };
+    let network = null;
+    let rawData = null;
+    let isPhysicsActive = true;
 
-    const container = document.getElementById('network');
-    const data = {
-      nodes: new vis.DataSet(graphData.nodes),
-      edges: new vis.DataSet(graphData.edges)
-    };
-    const options = {
-      nodes: {
-        font: { color: '#ffffff', size: 14 },
-        borderWidth: 2
-      },
-      edges: {
-        color: { color: '#64748b', highlight: '#38bdf8' },
-        arrows: { to: { enabled: true, scaleFactor: 0.8 } },
-        smooth: { type: 'continuous' }
-      },
-      physics: {
-        barnesHut: { gravitationalConstant: -3000, centralGravity: 0.3, springLength: 95 }
-      }
-    };
-    const network = new vis.Network(container, data, options);
+    async function initGraph() {
+      try {
+        const response = await fetch('./graph.json');
+        rawData = await response.json();
 
-    network.on('click', function(params) {
-      if (params.nodes.length > 0) {
-        const nodeId = params.nodes[0];
-        const node = graphData.nodes.find(n => n.id === nodeId);
-        const nodeDetails = document.getElementById('node-details');
-        nodeDetails.innerHTML = `
-          <strong style="font-size: 1rem; color: #f8fafc;">${node.label}</strong>
-          <p style="margin-top: 6px;"><strong>Tipe:</strong> ${node.title}</p>
-          <p style="margin-top: 4px;"><strong>Kelompok:</strong> ${node.group.toUpperCase()}</p>
-        `;
+        // Render Legend
+        const legendContainer = document.getElementById('legend-container');
+        legendContainer.innerHTML = rawData.communities.map(c => `
+          <div class="legend-item" onclick="filterByCommunity('${c.id}')">
+            <span><span class="legend-color" style="background: ${c.color};"></span>${c.name}</span>
+          </div>
+        `).join('');
+
+        // Prepare Vis Nodes
+        const nodes = rawData.nodes.map(n => {
+          const comm = rawData.communities.find(c => c.id === n.community) || { color: '#64748b' };
+          const isGod = (rawData.summary.god_nodes || []).includes(n.id);
+          return {
+            id: n.id,
+            label: n.label,
+            title: `${n.type}: ${n.label}`,
+            color: {
+              background: comm.color,
+              border: isGod ? '#fbbf24' : '#ffffff',
+              highlight: { background: '#38bdf8', border: '#ffffff' }
+            },
+            shape: isGod ? 'diamond' : (n.community === 'api_controllers' ? 'box' : (n.community === 'server_domain' ? 'database' : 'dot')),
+            size: isGod ? 35 : (n.centrality ? Math.max(16, n.centrality * 28) : 20),
+            borderWidth: isGod ? 3 : 1.5,
+            font: { color: '#f8fafc', size: isGod ? 15 : 13, face: 'Plus Jakarta Sans', bold: isGod },
+            shadow: isGod ? { enabled: true, color: '#fbbf24', size: 10 } : { enabled: false }
+          };
+        });
+
+        // Prepare Vis Edges
+        const edges = rawData.edges.map(e => ({
+          from: e.source,
+          to: e.target,
+          label: e.relation,
+          color: { color: 'rgba(148, 163, 184, 0.4)', highlight: '#38bdf8' },
+          font: { color: '#94a3b8', size: 10, align: 'middle' },
+          arrows: { to: { enabled: true, scaleFactor: 0.7 } },
+          smooth: { type: 'continuous' }
+        }));
+
+        const container = document.getElementById('network');
+        const data = {
+          nodes: new vis.DataSet(nodes),
+          edges: new vis.DataSet(edges)
+        };
+
+        const options = {
+          nodes: { borderWidth: 2 },
+          edges: { hoverWidth: 2 },
+          interaction: { hover: true, tooltipDelay: 100 },
+          physics: {
+            barnesHut: {
+              gravitationalConstant: -3500,
+              centralGravity: 0.25,
+              springLength: 120,
+              springConstant: 0.04
+            },
+            stabilization: { iterations: 150 }
+          }
+        };
+
+        network = new vis.Network(container, data, options);
+
+        network.on('click', function(params) {
+          if (params.nodes.length > 0) {
+            const nodeId = params.nodes[0];
+            const node = rawData.nodes.find(n => n.id === nodeId);
+            const comm = rawData.communities.find(c => c.id === node.community);
+            const isGod = (rawData.summary.god_nodes || []).includes(node.id);
+
+            const nodeDetails = document.getElementById('node-details');
+            nodeDetails.innerHTML = `
+              <div class="node-detail-title">${node.label}</div>
+              <div class="node-tag" style="background: ${comm ? comm.color : '#334155'}; color: #fff;">
+                ${comm ? comm.name : 'Umum'}
+              </div>
+              ${isGod ? '<div class="node-tag" style="background: #f59e0b; color: #000; margin-left: 4px;">⚡ God Node</div>' : ''}
+              <p class="node-desc">${node.description || 'Tidak ada deskripsi rinci.'}</p>
+              <div class="stat-row"><span class="stat-label">File Path:</span> <span class="stat-val" style="font-size: 0.75rem;">${node.id}</span></div>
+              <div class="stat-row"><span class="stat-label">Tipe Modul:</span> <span class="stat-val">${node.type}</span></div>
+              <div class="stat-row"><span class="stat-label">Skor Sentralitas:</span> <span class="stat-val">${node.centrality || '0.50'}</span></div>
+            `;
+          }
+        });
+
+        // Search feature
+        document.getElementById('search-input').addEventListener('input', function(e) {
+          const q = e.target.value.toLowerCase().trim();
+          if (!q) {
+            network.fit();
+            return;
+          }
+          const matched = rawData.nodes.find(n => n.label.toLowerCase().includes(q) || n.id.toLowerCase().includes(q));
+          if (matched) {
+            network.focus(matched.id, { scale: 1.4, animation: true });
+          }
+        });
+
+      } catch (err) {
+        console.error('Gagal memuat graph.json:', err);
       }
-    });
+    }
+
+    function fitNetwork() {
+      if (network) network.fit({ animation: { duration: 800, easingFunction: 'easeInOutQuad' } });
+    }
+
+    function togglePhysics() {
+      if (network) {
+        isPhysicsActive = !isPhysicsActive;
+        network.setOptions({ physics: { enabled: isPhysicsActive } });
+      }
+    }
+
+    function filterByCommunity(commId) {
+      if (!rawData || !network) return;
+      const targetNodes = rawData.nodes.filter(n => n.community === commId).map(n => n.id);
+      if (targetNodes.length > 0) {
+        network.fit({ nodes: targetNodes, animation: true });
+      }
+    }
+
+    window.onload = initGraph;
   </script>
 </body>
 </html>

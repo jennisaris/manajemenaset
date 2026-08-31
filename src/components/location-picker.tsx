@@ -194,7 +194,14 @@ function FlyToLocation({ position }: { position: LatLngExpression }) {
   const map = useMap();
 
   useEffect(() => {
-    map.flyTo(position, 17, { duration: 0.8 });
+    try {
+      const container = map.getContainer();
+      if (container && container.ownerDocument && container.ownerDocument.contains(container)) {
+        map.flyTo(position, 17, { duration: 0.8 });
+      }
+    } catch {
+      // Safe fallback if map instance or container was destroyed
+    }
   }, [map, position]);
 
   return null;

@@ -2,6 +2,7 @@ import 'server-only';
 import { createHmac, randomBytes, timingSafeEqual } from 'node:crypto';
 import { cookies } from 'next/headers';
 import { requireAuthSecret } from '@/lib/backend-config';
+import { generateCsrfToken } from '@/lib/server/csrf';
 import type { UserRole } from '@/lib/types';
 
 export type SessionUser = {
@@ -66,9 +67,18 @@ export async function getSessionUser() {
 
 export async function setSessionCookie(user: SessionUser) {
   const store = await cookies();
+  const csrfToken = generateCsrfToken();
   store.set(cookieName, createSessionToken(user), {
     httpOnly: true,
     sameSite: 'lax',
+    secure: secureCookie,
+    path: '/',
+    maxAge: maxAgeSeconds,
+  });
+  // CSRF token in a readable cookie (needed by client JS to send as header)
+  store.set('csrf_token', csrfToken, {
+    httpOnly: false,
+    sameSite: 'strict',
     secure: secureCookie,
     path: '/',
     maxAge: maxAgeSeconds,
@@ -78,4 +88,5 @@ export async function setSessionCookie(user: SessionUser) {
 export async function clearSessionCookie() {
   const store = await cookies();
   store.set(cookieName, '', { httpOnly: true, sameSite: 'lax', secure: secureCookie, path: '/', maxAge: 0 });
+  store.set('csrf_token', '', { httpOnly: false, sameSite: 'strict', secure: secureCookie, path: '/', maxAge: 0 });
 }

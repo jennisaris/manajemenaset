@@ -7,6 +7,7 @@ export {
   getAssetsFromDb,
   getAssetCountFromDb,
   upsertAssetToDb,
+  bulkUpsertAssetsToDb,
   deleteAssetFromDb,
 } from '@/lib/server/repositories/asset-repository';
 

@@ -40,3 +40,9 @@ next-env.d.ts
 
 # runtime user uploads
 /public/uploads/
+
+# global agent skills (junction to ~/.agents/skills)
+.agents/
+
+# IDE & agent cache
+.freebuff/

@@ -126,8 +126,8 @@ export function Sidebar({ currentRole, isOpenMobile, onCloseMobile }: SidebarPro
           <div className="flex items-center gap-3">
             <img src="/images/logo-dikti.png" alt="Logo Kemdiktisaintek" className="h-10 w-auto object-contain shrink-0" />
             <div>
-              <h1 className="text-lg font-bold tracking-tight text-foreground leading-tight">Kemdiktisaintek</h1>
-              <p className="text-xs font-medium text-secondary">Manajemen Aset</p>
+              <h1 className="text-base font-bold tracking-tight text-foreground leading-tight">Kemdiktisaintek</h1>
+              <p className="text-xs font-extrabold text-primary mt-0.5">SMART-DIKTI</p>
             </div>
           </div>
           <button

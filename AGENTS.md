@@ -18,3 +18,6 @@ This version has breaking changes — APIs, conventions, and file structure may 
 4. **Eksekusi & Verifikasi Hasil Tanpa Error**:
    Setelah semua rencana disetujui, saya akan melakukan eksekusi dan memverifikasi hasilnya secara komprehensif (termasuk verifikasi build & runtime) untuk memastikan kode bebas error dan sesuai penuh dengan harapan Anda.
 
+5. **Preferensi Template Admin Default**:
+   Jika pengguna meminta pembuatan aplikasi web, modul admin, atau dashboard dan **belum menentukan/belum memiliki template tertentu**, saya akan **WAJIB menggunakan template [Flowbite Admin Dashboard](https://github.com/themesberg/flowbite-admin-dashboard.git)** berbasis Tailwind CSS & Flowbite sebagai standar desain, struktur komponen (sidebar, navbar, tabel CRUD, modal, charts, dark mode), dan tata letak UI/UX.
+

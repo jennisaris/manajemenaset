@@ -1,6 +1,6 @@
-# Sistem Manajemen Aset Universitas
+# SMART-DIKTI
 
-Next.js app untuk dashboard manajemen aset universitas dengan backend PostgreSQL lokal.
+**SMART-DIKTI** (*Sistem Management & Asset Real-Time Kemdiktisaintek*) - Next.js app untuk dashboard manajemen aset universitas dengan backend PostgreSQL lokal.
 
 ## Production aktif
 

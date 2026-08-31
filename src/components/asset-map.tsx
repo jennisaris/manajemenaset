@@ -8,14 +8,24 @@ function MapResizeTrigger() {
   const map = useMap();
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      map.invalidateSize();
-    }, 200);
+    let resizeTimer: ReturnType<typeof setTimeout> | null = null;
+
+    const safeInvalidate = () => {
+      try {
+        const container = map.getContainer();
+        if (container && container.ownerDocument && container.ownerDocument.contains(container)) {
+          map.invalidateSize();
+        }
+      } catch {
+        // Safe fallback if map instance or container was destroyed
+      }
+    };
+
+    const timer = setTimeout(safeInvalidate, 200);
 
     const handleHashOrResize = () => {
-      setTimeout(() => {
-        map.invalidateSize();
-      }, 150);
+      if (resizeTimer) clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(safeInvalidate, 150);
     };
 
     window.addEventListener('hashchange', handleHashOrResize);
@@ -23,6 +33,7 @@ function MapResizeTrigger() {
 
     return () => {
       clearTimeout(timer);
+      if (resizeTimer) clearTimeout(resizeTimer);
       window.removeEventListener('hashchange', handleHashOrResize);
       window.removeEventListener('resize', handleHashOrResize);
     };

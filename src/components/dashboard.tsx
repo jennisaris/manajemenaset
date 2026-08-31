@@ -331,7 +331,7 @@ export function Dashboard({
   const getPageTitle = () => {
     switch (pageHash) {
       case '#dashboard':
-        return role === 'Pimpinan Dashboard' ? 'Analitik Eksekutif Kemdiktisaintek' : 'Kemdiktisaintek Dashboard';
+        return role === 'Pimpinan Dashboard' ? 'Analitik Eksekutif Pimpinan' : 'Dashboard';
       case '#asset-list':
       case '#asset-bangunan-tanah':
         return 'Data Aset - Bangunan / Tanah';
@@ -360,7 +360,7 @@ export function Dashboard({
       case '#change-password':
         return 'Ubah Password';
       default:
-        return 'Kemdiktisaintek Dashboard';
+        return 'Dashboard';
     }
   };
 
@@ -557,10 +557,8 @@ export function Dashboard({
             <h1 className="text-2xl font-bold text-foreground md:text-3xl mb-1">{getPageTitle()}</h1>
             <p className="text-sm text-secondary">
               Scope:{' '}
-              <strong className="text-foreground">
-                {canViewAll
-                  ? selectedUniversity || 'Semua Universitas'
-                  : universityName ?? 'Universitas belum diset'}
+              <strong className="text-foreground font-bold">
+                {effectiveUniversity || universityName || 'Seluruh Perguruan Tinggi'}
               </strong>
             </p>
           </div>
@@ -586,31 +584,41 @@ export function Dashboard({
           </div>
         </div>
 
-        {/* Campus Filter (if Admin/Superadmin) */}
-        {canViewAll && (
-          <section className="mb-6 rounded-card border border-border bg-white p-6 shadow-sm">
-            <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
-              <div>
-                <h3 className="font-bold text-foreground">Filter Universitas / Kampus</h3>
-                <p className="mt-1 text-sm text-secondary">
-                  Filter data aset, pemanfaatan, dan laporan berdasarkan kampus terdaftar.
-                </p>
-              </div>
+        {/* Campus Filter */}
+        <section className="mb-6 rounded-card border border-border bg-white p-6 shadow-sm">
+          <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
+            <div>
+              <h3 className="font-bold text-foreground">Filter Universitas / Kampus</h3>
+              <p className="mt-1 text-sm text-secondary">
+                {canViewAll
+                  ? 'Filter data aset, pemanfaatan, dan laporan berdasarkan kampus terdaftar.'
+                  : 'Data difilter secara otomatis berdasarkan wilayah penugasan Operator Kampus.'}
+              </p>
+            </div>
+            {canViewAll ? (
               <select
                 value={selectedUniversity}
                 onChange={(event) => setSelectedUniversity(event.target.value)}
-                className="min-w-64 rounded-2xl border border-border bg-gray-50 px-4 py-2.5 text-sm font-medium text-foreground outline-none transition-all duration-200 focus:border-primary focus:bg-white"
+                className="min-w-64 rounded-2xl border border-border bg-gray-50 px-4 py-2.5 text-sm font-medium text-foreground outline-none transition-all duration-200 focus:border-primary focus:bg-white cursor-pointer"
               >
-                <option value="">Semua Universitas</option>
+                <option value="">Semua Universitas (Global)</option>
                 {universityOptions.map((name) => (
                   <option key={name} value={name}>
                     {name}
                   </option>
                 ))}
               </select>
-            </div>
-          </section>
-        )}
+            ) : (
+              <div className="inline-flex items-center gap-2.5 rounded-2xl bg-slate-100/90 border border-slate-200 px-4 py-2.5 text-sm font-extrabold text-slate-800 shadow-2xs select-none">
+                <Building2 className="h-4.5 w-4.5 text-primary shrink-0" />
+                <span>{universityName || 'Universitas Penugasan Anda'}</span>
+                <span className="inline-flex items-center gap-1 rounded-full bg-slate-200/80 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-600 uppercase tracking-wider">
+                  🔒 Khusus Kampus Anda
+                </span>
+              </div>
+            )}
+          </div>
+        </section>
 
         {/* Dashboard Cards & Map */}
         {isDashboardPage && (

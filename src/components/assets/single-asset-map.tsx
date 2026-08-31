@@ -15,7 +15,14 @@ function polygonPositions(geometry: GeoJSON.Geometry | null | undefined): LatLng
 function FocusMap({ center, zoom }: { center: LatLngExpression; zoom: number }) {
   const map = useMap();
   useEffect(() => {
-    map.flyTo(center, zoom, { duration: 0.8 });
+    try {
+      const container = map.getContainer();
+      if (container && container.ownerDocument && container.ownerDocument.contains(container)) {
+        map.flyTo(center, zoom, { duration: 0.8 });
+      }
+    } catch {
+      // Safe fallback if map instance or container was destroyed
+    }
   }, [center, map, zoom]);
   return null;
 }

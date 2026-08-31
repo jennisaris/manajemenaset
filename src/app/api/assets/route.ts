@@ -4,6 +4,7 @@ import { getAssetsFromDb, getAssetCountFromDb, type AssetListOptions } from '@/l
 import { getSessionUser } from '@/lib/server/session';
 import { canManageAssets } from '@/lib/auth';
 import { validateAssetPayload } from '@/lib/server/validation';
+import { requireCsrf } from '@/lib/server/csrf-guard';
 import type { Asset } from '@/lib/types';
 
 async function requireUser() {
@@ -66,6 +67,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const csrfError = await requireCsrf();
+  if (csrfError) return csrfError;
+
   const auth = await requireManager();
   if (auth.error) return auth.error;
 
@@ -87,6 +91,9 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const csrfError = await requireCsrf();
+  if (csrfError) return csrfError;
+
   const auth = await requireManager();
   if (auth.error) return auth.error;
   const id = Number(new URL(request.url).searchParams.get('id'));

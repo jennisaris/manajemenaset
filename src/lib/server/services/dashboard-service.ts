@@ -8,31 +8,33 @@ import type { DashboardSummary } from '@/lib/types';
 
 export type MvpDataOptions = { assetLimit?: number; assetOffset?: number };
 
+export function getDashboardSummaryQuery(): string {
+  return `
+    select
+      count(*) filter (where asset_type = 'land')::bigint as total_land,
+      count(*) filter (where asset_type = 'building')::bigint as total_building,
+      count(*) filter (where verification_status = 'terverifikasi')::bigint as verified_assets,
+      count(*) filter (where verification_status = 'menunggu_verifikasi')::bigint as pending_verification,
+      (select count(*) filter (where status in ('aktif','akan_berakhir')) from asset_utilizations)::bigint as active_utilizations,
+      (select count(*) filter (where status <> 'selesai') from asset_issues)::bigint as active_issues
+    from assets
+    where coalesce(is_deleted, 0) = 0
+  `.trim();
+}
+
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   try {
-    const [{ rows: assetRows }, utilizations, issues] = await Promise.all([
-      query(`
-        select
-          count(*) filter (where asset_type = 'land')::bigint as total_land,
-          count(*) filter (where asset_type = 'building')::bigint as total_building,
-          count(*) filter (where verification_status = 'terverifikasi')::bigint as verified_assets,
-          count(*) filter (where verification_status = 'menunggu_verifikasi')::bigint as pending_verification
-        from assets
-        where coalesce(is_deleted, 0) = 0
-      `),
-      getUtilizationsFromDb(),
-      getIssuesFromDb(),
-    ]);
-    const assetStats = assetRows[0] ?? {};
+    const { rows } = await query(getDashboardSummaryQuery());
+    const row = rows[0] ?? {};
     return {
-      total_land: Number(assetStats.total_land ?? 0),
-      total_building: Number(assetStats.total_building ?? 0),
+      total_land: Number(row.total_land ?? 0),
+      total_building: Number(row.total_building ?? 0),
       total_land_area_m2: 0,
       total_building_area_m2: 0,
-      verified_assets: Number(assetStats.verified_assets ?? 0),
-      pending_verification: Number(assetStats.pending_verification ?? 0),
-      active_utilizations: utilizations.filter((item) => ['aktif', 'akan_berakhir'].includes(item.status)).length,
-      active_issues: issues.filter((issue) => issue.status !== 'selesai').length,
+      verified_assets: Number(row.verified_assets ?? 0),
+      pending_verification: Number(row.pending_verification ?? 0),
+      active_utilizations: Number(row.active_utilizations ?? 0),
+      active_issues: Number(row.active_issues ?? 0),
     };
   } catch {
     return mockSummary;

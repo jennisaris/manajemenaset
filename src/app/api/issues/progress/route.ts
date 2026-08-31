@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getIssueProgressFromDb, upsertIssueProgressToDb } from '@/lib/server/local-repository';
 import { getSessionUser } from '@/lib/server/session';
 import { canManageAssets } from '@/lib/auth';
+import { requireCsrf } from '@/lib/server/csrf-guard';
 import type { IssueProgress } from '@/lib/types';
 
 async function requireUser() {
@@ -17,6 +18,9 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  const csrfError = await requireCsrf();
+  if (csrfError) return csrfError;
+
   const auth = await requireUser();
   if (auth.error) return auth.error;
   if (!canManageAssets(auth.user.role)) return NextResponse.json({ error: 'Forbidden' }, { status: 403 });

@@ -10,16 +10,6 @@ export function parseJson(value: unknown) {
   return value ?? null;
 }
 
-export async function ensureAssetColumns() {
-  await query('alter table assets add column if not exists status_sertifikasi text');
-  await query('alter table assets add column if not exists nilai_perolehan_pertama numeric');
-  await query('alter table assets add column if not exists luas_bangunan numeric');
-  await query('alter table assets add column if not exists no_psp text');
-  await query('alter table assets add column if not exists alamat text');
-  await query('alter table assets add column if not exists kode_satker text');
-  await query('alter table assets add column if not exists nama_satker text');
-}
-
 export function normalizeAsset(row: Record<string, unknown>): Asset {
   const photoPaths = Array.isArray(row.photo_paths) ? row.photo_paths as string[] : [];
   const photoUrls = Array.isArray(row.photo_urls) ? row.photo_urls as string[] : [];
@@ -218,7 +208,6 @@ export async function getAssetsFromDb(options: AssetListOptions = {}): Promise<A
 }
 
 export async function upsertAssetToDb(asset: Asset): Promise<Asset> {
-  await ensureAssetColumns();
   return transaction(async (client) => {
     const { rows } = await client.query(`
       insert into assets (
@@ -305,4 +294,97 @@ export async function upsertAssetToDb(asset: Asset): Promise<Asset> {
 export async function deleteAssetFromDb(assetId: number): Promise<void> {
   // Soft Delete: Mengubah is_deleted dari 0 menjadi 1 tanpa menghapus fisik row dari database
   await query("update assets set is_deleted = 1, verification_status = 'tidak_aktif', updated_at = now() where id = $1", [assetId]);
+}
+
+/**
+ * Bulk upsert multiple assets in a single transaction.
+ * All items succeed or all roll back.
+ */
+export async function bulkUpsertAssetsToDb(assets: Asset[]): Promise<Asset[]> {
+  if (assets.length === 0) return [];
+  return transaction(async (client) => {
+    const results: Asset[] = [];
+    for (const asset of assets) {
+      const { rows } = await client.query(`
+        insert into assets (
+          id, asset_code, asset_name, asset_type, campus_name, faculty_or_unit, address,
+          ownership_status, condition_status, verification_status, latitude, longitude,
+          geometry_type, geometry_geojson, is_deleted, status_sertifikasi,
+          nilai_perolehan_pertama, luas_bangunan, no_psp, alamat, kode_satker, nama_satker
+        )
+        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
+        on conflict (id) do update set
+          asset_code=excluded.asset_code,
+          asset_name=excluded.asset_name,
+          asset_type=excluded.asset_type,
+          campus_name=excluded.campus_name,
+          faculty_or_unit=excluded.faculty_or_unit,
+          address=excluded.address,
+          ownership_status=excluded.ownership_status,
+          condition_status=excluded.condition_status,
+          verification_status=excluded.verification_status,
+          latitude=excluded.latitude,
+          longitude=excluded.longitude,
+          geometry_type=excluded.geometry_type,
+          geometry_geojson=excluded.geometry_geojson,
+          is_deleted=excluded.is_deleted,
+          status_sertifikasi=excluded.status_sertifikasi,
+          nilai_perolehan_pertama=excluded.nilai_perolehan_pertama,
+          luas_bangunan=excluded.luas_bangunan,
+          no_psp=excluded.no_psp,
+          alamat=excluded.alamat,
+          kode_satker=excluded.kode_satker,
+          nama_satker=excluded.nama_satker,
+          updated_at=now()
+        returning *
+      `, [
+        asset.id,
+        asset.asset_code,
+        asset.asset_name,
+        asset.asset_type,
+        asset.campus_name,
+        asset.faculty_or_unit,
+        asset.address ?? asset.alamat ?? null,
+        asset.ownership_status ?? asset.status_sertifikasi ?? null,
+        asset.condition_status,
+        asset.verification_status ?? 'terverifikasi',
+        asset.latitude,
+        asset.longitude,
+        asset.geometry_type,
+        asset.geometry_geojson ? JSON.stringify(asset.geometry_geojson) : null,
+        asset.is_deleted ?? 0,
+        asset.status_sertifikasi ?? asset.ownership_status ?? null,
+        asset.nilai_perolehan_pertama ?? asset.nilai_perolehan ?? null,
+        asset.luas_bangunan ?? null,
+        asset.no_psp ?? null,
+        asset.alamat ?? asset.address ?? null,
+        asset.kode_satker ?? null,
+        asset.nama_satker ?? null,
+      ]);
+
+      const savedAssetId = Number(rows[0].id);
+      const photoPaths = asset.photo_paths ?? [];
+      const photoUrls = asset.photo_urls ?? [];
+      const photoNames = asset.photo_names ?? [];
+      const documentPaths = asset.document_paths ?? [];
+      const documentNames = asset.document_names ?? [];
+
+      await client.query('delete from asset_photos where asset_id = $1', [savedAssetId]);
+      const photoBatch = buildPhotoBatchInsert(savedAssetId, photoPaths, photoUrls, photoNames);
+      if (photoBatch.query) {
+        await client.query(photoBatch.query, photoBatch.params);
+      }
+
+      await client.query('delete from asset_documents where asset_id = $1', [savedAssetId]);
+      const docBatch = buildDocumentBatchInsert(savedAssetId, documentPaths, documentNames);
+      if (docBatch.query) {
+        await client.query(docBatch.query, docBatch.params);
+      }
+
+      results.push(normalizeAsset({ ...rows[0], photo_paths: photoPaths, photo_urls: photoPaths.map((p, i) => photoUrls[i] ?? `/uploads/${p}`), photo_names: photoNames, document_paths: documentPaths, document_names: documentNames }));
+    }
+
+    await client.query("select setval('assets_id_seq', (select max(id) from assets))");
+    return results;
+  });
 }

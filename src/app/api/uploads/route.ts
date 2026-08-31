@@ -2,12 +2,17 @@ import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/server/session';
+import { validateUploadFile } from '@/lib/server/validation';
+import { requireCsrf } from '@/lib/server/csrf-guard';
 
 function safePart(value: string) {
   return value.trim().toLowerCase().replace(/[^a-z0-9._/-]+/g, '-').replace(/-+/g, '-').replace(/^[-/]+|[-/]+$/g, '') || 'file';
 }
 
 export async function POST(request: Request) {
+  const csrfError = await requireCsrf();
+  if (csrfError) return csrfError;
+
   const user = await getSessionUser();
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -17,12 +22,13 @@ export async function POST(request: Request) {
   const desiredPath = safePart(String(form.get('path') ?? ''));
   if (!(file instanceof File)) return NextResponse.json({ error: 'File wajib diisi.' }, { status: 400 });
 
-  const extension = file.name.includes('.') ? `.${file.name.split('.').pop()?.toLowerCase()}` : '';
-  const allowedExtensions = ['.pdf', '.png', '.jpg', '.jpeg', '.xlsx', '.xls', '.csv'];
-
-  if (!extension || !allowedExtensions.includes(extension)) {
-    return NextResponse.json({ error: 'Format berkas tidak diizinkan. Hanya file PDF, Gambar (PNG/JPG), dan Excel/CSV yang diperbolehkan.' }, { status: 400 });
+  const validation = validateUploadFile(file);
+  if (!validation.success) {
+    const isSizeError = validation.error.toLowerCase().includes('melebihi batas');
+    return NextResponse.json({ error: validation.error }, { status: isSizeError ? 413 : 400 });
   }
+
+  const { extension } = validation.data;
 
   const filename = desiredPath || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}-${safePart(file.name.replace(/\.[^.]+$/, ''))}${extension}`;
   const relativePath = safePart(path.posix.join(folder, filename));

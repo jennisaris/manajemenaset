@@ -29,6 +29,16 @@ create table if not exists profiles (
   updated_at timestamptz not null default now()
 );
 
+insert into roles (name, description) values
+  ('Superadmin', 'Akses global seluruh kampus, user, role, master data, verifikasi aset, dan persetujuan SK.'),
+  ('Operator Kampus', 'Input dan update data aset kampus sendiri, unggah dokumen/foto/GIS, dan usulan penghapusan.'),
+  ('Pimpinan Dashboard', 'View-only dashboard, peta sebaran GIS, KPI, dan ringkasan eksekutif.')
+on conflict (name) do update set description = excluded.description;
+
+insert into profiles (full_name, email, password_hash, status, university_name, role_id)
+select 'Superadmin Tim Pusat', 'superadmin@aset.id', 'plain:superadmin123', 'aktif', null, roles.id from roles where roles.name = 'Superadmin'
+on conflict (email) do nothing;
+
 create table if not exists assets (
   id bigserial primary key,
   asset_code text not null unique,
@@ -46,6 +56,13 @@ create table if not exists assets (
   geometry_type text check (geometry_type in ('point','polygon')),
   geometry_geojson jsonb,
   is_deleted smallint not null default 0,
+  status_sertifikasi text,
+  nilai_perolehan_pertama numeric,
+  luas_bangunan numeric,
+  no_psp text,
+  alamat text,
+  kode_satker text,
+  nama_satker text,
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
@@ -122,33 +139,23 @@ create table if not exists issue_progress (
   responsible_person text,
   result_note text,
   status text not null default 'dicatat',
-  created_at timestamptz not null default now()
+  document_name text,
+  document_path text,
+  document_url text,
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
-insert into roles (name, description) values
-  ('Superadmin', 'Akses global seluruh kampus, user, role, master data, dan verifikasi akhir.'),
-  ('Admin Aset', 'Admin sekaligus verifikator aset, dibatasi per kampus yang ditugaskan.'),
-  ('Operator Kampus', 'Input dan update data aset kampus sendiri, lalu mengajukan verifikasi.'),
-  ('Pimpinan Dashboard', 'View-only dashboard, peta, dan ringkasan eksekutif tanpa export data.')
-on conflict (name) do update set description = excluded.description;
-
--- Password demo memakai format plain: untuk bootstrap. Ganti dengan hash via scripts/hash-password.mjs sebelum produksi.
-insert into profiles (full_name, email, password_hash, status, university_name, role_id)
-select 'Admin Aset', 'admin@aset.id', 'plain:admin123', 'aktif', 'Kampus Utama', roles.id from roles where roles.name = 'Admin Aset'
-on conflict (email) do nothing;
-
-insert into profiles (full_name, email, password_hash, status, university_name, role_id)
-select 'Operator Aset', 'operator@aset.id', 'plain:operator123', 'aktif', 'Kampus Utama', roles.id from roles where roles.name = 'Operator Kampus'
-on conflict (email) do nothing;
-
+-- Tabel Master Satker
 create table if not exists satker (
   id bigserial primary key,
   kode_satker text not null unique,
   nama_satker text not null,
-  created_at timestamptz not null default now()
+  created_at timestamptz not null default now(),
+  updated_at timestamptz not null default now()
 );
 
--- Tabel BMN Sub-Menu 2: Alat Angkut Bermotor
+-- Tabel BMN Sub-Menu 2: Alat Angkutan & Kendaraan Bermotor
 create table if not exists bmn_alat_angkutan (
   id bigserial primary key,
   jenis_bmn text,
@@ -226,6 +233,7 @@ create table if not exists bmn_disposals (
   kode_satker text not null,
   nama_satker text not null,
   no_surat_permohonan text not null,
+  tgl_surat_permohonan date,
   surat_permohonan_name text,
   surat_permohonan_path text,
   surat_permohonan_url text,
@@ -250,5 +258,22 @@ create table if not exists bmn_disposals (
   updated_at timestamptz not null default now()
 );
 
-
-
+-- Indeks Performa Database
+create index if not exists idx_assets_is_deleted_verification on assets(is_deleted, verification_status);
+create index if not exists idx_assets_kode_satker on assets(kode_satker);
+create index if not exists idx_assets_campus_name on assets(campus_name);
+create index if not exists idx_assets_type on assets(asset_type);
+create index if not exists idx_asset_photos_asset_id on asset_photos(asset_id);
+create index if not exists idx_asset_documents_asset_id on asset_documents(asset_id);
+create index if not exists idx_asset_utilizations_asset_id_status on asset_utilizations(asset_id, status);
+create index if not exists idx_asset_issues_asset_id_status on asset_issues(asset_id, status);
+create index if not exists idx_issue_progress_issue_id on issue_progress(issue_id);
+create index if not exists idx_bmn_alat_angkutan_satker on bmn_alat_angkutan(kode_satker);
+create index if not exists idx_bmn_khusus_tik_satker on bmn_khusus_tik(kode_satker);
+create index if not exists idx_bmn_non_tik_satker on bmn_non_tik(kode_satker);
+create index if not exists idx_bmn_disposals_satker on bmn_disposals(kode_satker);
+create index if not exists idx_bmn_disposals_status on bmn_disposals(status);
+create index if not exists idx_profiles_status on profiles(status);
+create index if not exists idx_profiles_nip on profiles(nip);
+create index if not exists idx_profiles_kode_satker on profiles(kode_satker);
+create index if not exists idx_satker_kode on satker(kode_satker);

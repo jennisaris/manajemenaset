@@ -2,6 +2,7 @@ import 'server-only';
 import { existsSync, readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { query } from '@/lib/server/db';
+import { logger } from '@/lib/server/logger';
 import type { BmnAssetItem, BmnCategoryType } from '@/lib/types';
 
 const categoryTableMap: Record<BmnCategoryType, string> = {
@@ -23,7 +24,7 @@ function getBmnFromJson(category: BmnCategoryType): BmnAssetItem[] {
   try {
     return JSON.parse(readFileSync(jsonPath, 'utf8')) as BmnAssetItem[];
   } catch (err) {
-    console.error(`Gagal membaca ${fileName}:`, err);
+    logger.warn(`Gagal membaca ${fileName}`, 'bmn', { error: err instanceof Error ? err.message : String(err) });
     return [];
   }
 }
@@ -42,7 +43,8 @@ export async function getBmnAssetsFromDb(
                 status_bmn, merk, tipe, kondisi, umur_aset, intra_extra, henti_guna, status_sbsn,
                 latitude, longitude, alamat_lokasi, created_at, updated_at
          from ${tableName}
-         where kode_satker = $1 or ($2::text is not null and lower(nama_satker) = lower($2::text))
+         where (kode_satker = $1 or ($2::text is not null and lower(nama_satker) = lower($2::text)))
+           and is_deleted = 0
          order by id desc`,
         [kodeSatker, universityName || null]
       );
@@ -55,6 +57,7 @@ export async function getBmnAssetsFromDb(
                 status_bmn, merk, tipe, kondisi, umur_aset, intra_extra, henti_guna, status_sbsn,
                 latitude, longitude, alamat_lokasi, created_at, updated_at
          from ${tableName}
+         where is_deleted = 0
          order by id desc`
       );
       if (res.rows && res.rows.length > 0) {
@@ -62,7 +65,7 @@ export async function getBmnAssetsFromDb(
       }
     }
   } catch (err) {
-    console.warn(`Gagal mengambil data ${tableName} dari PostgreSQL, menggunakan fallback JSON:`, err);
+    logger.warn(`Gagal mengambil data ${tableName} dari PostgreSQL, menggunakan fallback JSON`, 'bmn', { error: err instanceof Error ? err.message : String(err) });
   }
 
   if (items.length === 0) {
@@ -156,6 +159,6 @@ export async function upsertBmnAssetToDb(
 
 export async function deleteBmnAssetFromDb(category: BmnCategoryType, id: number): Promise<boolean> {
   const tableName = categoryTableMap[category];
-  const res = await query(`delete from ${tableName} where id = $1`, [id]);
+  const res = await query(`update ${tableName} set is_deleted = 1, updated_at = now() where id = $1 and is_deleted = 0`, [id]);
   return (res.rowCount ?? 0) > 0;
 }

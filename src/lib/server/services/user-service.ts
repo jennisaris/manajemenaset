@@ -10,6 +10,7 @@ import {
   rejectUserRegistration,
 } from '@/lib/server/repositories/user-repository';
 import { sendRegistrationReceivedEmail, sendApprovalStatusEmail } from '@/lib/server/services/email-service';
+import { validatePasswordStrength } from '@/lib/server/password-policy';
 import type { UserRegistrationInput, UserRole } from '@/lib/types';
 
 export async function authenticateUser(email: string) {
@@ -41,8 +42,9 @@ export async function registerUser(input: UserRegistrationInput) {
     throw new Error('Nomor handphone/WhatsApp tidak valid. Masukkan nomor angka yang benar (contoh: 08123456789).');
   }
 
-  if (input.password.trim().length < 6) {
-    throw new Error('Password minimal 6 karakter.');
+  const passwordCheck = validatePasswordStrength(input.password.trim());
+  if (!passwordCheck.valid) {
+    throw new Error(passwordCheck.error);
   }
 
   // Submit/update pending user registration seamlessly

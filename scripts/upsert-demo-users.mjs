@@ -26,10 +26,19 @@ if (!url || !anonKey) {
   process.exit(1);
 }
 
+// Demo users - passwords should be set via env vars or interactive prompt
+const demoEmail = process.env.DEMO_ADMIN_EMAIL || 'admin@aset.id';
+const demoPassword = process.env.DEMO_ADMIN_PASSWORD;
+const demoFullName = process.env.DEMO_ADMIN_FULL_NAME || 'Administrator';
+
+if (!demoPassword) {
+  console.error('Missing DEMO_ADMIN_PASSWORD env var. Set it before running this script.');
+  console.error('Example: DEMO_ADMIN_PASSWORD=YourSecurePassword node scripts/upsert-demo-users.mjs');
+  process.exit(1);
+}
+
 const users = [
-  { email: 'superadmin@aset.id', password: 'superadmin123', full_name: 'Superadmin Tim Pusat', role_id: 1, university_name: null },
-  { email: 'operator.unsil@aset.id', password: 'operator123', full_name: 'Operator Universitas Siliwangi', role_id: 3, university_name: 'UNIVERSITAS SILIWANGI' },
-  { email: 'pimpinan@aset.id', password: 'pimpinan123', full_name: 'Pimpinan Kemdiktisaintek', role_id: 4, university_name: null },
+  { email: demoEmail, password: demoPassword, full_name: demoFullName, role_id: 1, university_name: null },
 ];
 
 const supabase = createClient(url, anonKey, {

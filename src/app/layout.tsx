@@ -9,8 +9,8 @@ const lexendDeca = Lexend_Deca({
 });
 
 export const metadata: Metadata = {
-  title: "Sistem Manajemen Aset Universitas - Kemdiktisaintek",
-  description: "Dashboard aset universitas Kemdiktisaintek",
+  title: "SMART-DIKTI - Sistem Manajemen & Aset Real-Time Kemdiktisaintek",
+  description: "Sistem Management & Asset Real-Time Perguruan Tinggi Kementerian Pendidikan Tinggi, Sains, dan Teknologi",
 };
 
 export default function RootLayout({

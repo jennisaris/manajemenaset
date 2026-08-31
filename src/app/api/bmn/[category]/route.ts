@@ -5,6 +5,7 @@ import {
   upsertBmnAssetToDb,
 } from '@/lib/server/local-repository';
 import { getSessionUser } from '@/lib/server/session';
+import { requireCsrf } from '@/lib/server/csrf-guard';
 import type { BmnAssetItem, BmnCategoryType } from '@/lib/types';
 
 const validCategories: BmnCategoryType[] = ['alat_angkutan', 'khusus_tik', 'non_tik'];
@@ -50,6 +51,9 @@ export async function POST(
   { params }: { params: Promise<{ category: string }> }
 ) {
   try {
+    const csrfError = await requireCsrf();
+    if (csrfError) return csrfError;
+
     const resolvedParams = await params;
     const category = resolveCategory(resolvedParams.category);
     if (!category) {
@@ -87,6 +91,9 @@ export async function DELETE(
   { params }: { params: Promise<{ category: string }> }
 ) {
   try {
+    const csrfError = await requireCsrf();
+    if (csrfError) return csrfError;
+
     const resolvedParams = await params;
     const category = resolveCategory(resolvedParams.category);
     if (!category) {

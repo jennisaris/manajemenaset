@@ -25,12 +25,13 @@ async function run() {
   await pool.query('alter table profiles add column if not exists assignment_letter_url text');
   await pool.query('alter table profiles add column if not exists rejection_reason text');
 
-  console.log('Updating passwords...');
-  await pool.query('update profiles set password_hash = $1 where lower(email) = $2', [hashPassword('admin123'), 'admin@aset.id']);
-  await pool.query('update profiles set password_hash = $1 where lower(email) = $2', [hashPassword('operator123'), 'operator@aset.id']);
-  await pool.query('update profiles set password_hash = $1 where lower(email) = $2', [hashPassword('admin123'), 'jennisaris@gmail.com']);
-  await pool.query('update profiles set password_hash = $1 where lower(email) = $2', [hashPassword('ChangeMe123!'), 'admin.kampusutama@kampusaset.id']);
-  await pool.query('update profiles set password_hash = $1 where lower(email) = $2', [hashPassword('ChangeMe123!'), 'operator.kampusutama@kampusaset.id']);
+  console.log('Updating passwords and roles...');
+  await pool.query('update profiles set password_hash = $1, role_id = 1, status = \'aktif\' where lower(email) = $2', [hashPassword('superadmin123'), 'superadmin@aset.id']);
+  await pool.query('update profiles set password_hash = $1, role_id = 2, status = \'aktif\' where lower(email) = $2', [hashPassword('admin123'), 'admin@aset.id']);
+  await pool.query('update profiles set password_hash = $1, role_id = 1, status = \'aktif\' where lower(email) = $2', [hashPassword('admin123'), 'jennisaris@gmail.com']);
+  await pool.query('update profiles set password_hash = $1, role_id = 3, status = \'aktif\' where lower(email) = $2', [hashPassword('operator123'), 'operator@aset.id']);
+  await pool.query('update profiles set password_hash = $1, role_id = 1, status = \'aktif\' where lower(email) = $2', [hashPassword('ChangeMe123!'), 'admin.kampusutama@kampusaset.id']);
+  await pool.query('update profiles set password_hash = $1, role_id = 3, status = \'aktif\' where lower(email) = $2', [hashPassword('ChangeMe123!'), 'operator.kampusutama@kampusaset.id']);
 
   const res = await pool.query('select full_name, email, status, university_name, kode_satker from profiles');
   console.log('User Accounts in DB:');

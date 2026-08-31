@@ -29,8 +29,6 @@ const rolePermissions: RolePermission[] = [
 
 const demoUsers: UserProfile[] = [
   { id: 'demo-superadmin', full_name: 'Superadmin Tim Pusat', email: 'superadmin@aset.id', role_name: 'Superadmin', campus_name: null, university_name: null, status: 'aktif' },
-  { id: 'demo-operator-utama', full_name: 'Operator Kampus Utama', email: 'operator@aset.id', role_name: 'Operator Kampus', campus_name: 'Kampus Utama', university_name: 'Kampus Utama', status: 'aktif' },
-  { id: 'demo-pimpinan', full_name: 'Pimpinan Kemdiktisaintek', email: 'pimpinan@aset.id', role_name: 'Pimpinan Dashboard', campus_name: null, university_name: null, status: 'aktif' },
 ];
 
 function emptyDraft(campusOptions: string[]): DraftUser {

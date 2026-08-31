@@ -3,6 +3,8 @@ import path from 'node:path';
 import { NextResponse } from 'next/server';
 import { createDisposalInDb, deleteDisposalFromDb, getDisposalsFromDb, parseLampiranRecap, updateDisposalStatusInDb } from '@/lib/server/local-repository';
 import { getSessionUser } from '@/lib/server/session';
+import { requireCsrf } from '@/lib/server/csrf-guard';
+import { logger } from '@/lib/server/logger';
 import type { BmnDisposalProposal } from '@/lib/types';
 
 function safePart(value: string) {
@@ -53,13 +55,16 @@ export async function GET(request: Request) {
 
     return NextResponse.json({ proposals });
   } catch (err) {
-    console.error('GET /api/disposals error:', err);
+    logger.error('GET /api/disposals error', 'disposals', { error: err instanceof Error ? err.message : String(err) });
     return NextResponse.json({ error: 'Gagal mengambil data usulan penghapusan.' }, { status: 500 });
   }
 }
 
 export async function POST(request: Request) {
   try {
+    const csrfError = await requireCsrf();
+    if (csrfError) return csrfError;
+
     const user = await getSessionUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -152,13 +157,16 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ proposal: newProposal });
   } catch (err) {
-    console.error('POST /api/disposals error:', err);
+    logger.error('POST /api/disposals error', 'disposals', { error: err instanceof Error ? err.message : String(err) });
     return NextResponse.json({ error: 'Gagal mengajukan usulan penghapusan BMN.' }, { status: 500 });
   }
 }
 
 export async function PATCH(request: Request) {
   try {
+    const csrfError = await requireCsrf();
+    if (csrfError) return csrfError;
+
     const user = await getSessionUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -176,13 +184,16 @@ export async function PATCH(request: Request) {
     const updated = await updateDisposalStatusInDb(Number(id), String(status), catatan ? String(catatan) : null);
     return NextResponse.json({ proposal: updated });
   } catch (err) {
-    console.error('PATCH /api/disposals error:', err);
+    logger.error('PATCH /api/disposals error', 'disposals', { error: err instanceof Error ? err.message : String(err) });
     return NextResponse.json({ error: 'Gagal memperbarui status usulan.' }, { status: 500 });
   }
 }
 
 export async function DELETE(request: Request) {
   try {
+    const csrfError = await requireCsrf();
+    if (csrfError) return csrfError;
+
     const user = await getSessionUser();
     if (!user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -207,7 +218,7 @@ export async function DELETE(request: Request) {
     const success = await deleteDisposalFromDb(id);
     return NextResponse.json({ success });
   } catch (err) {
-    console.error('DELETE /api/disposals error:', err);
+    logger.error('DELETE /api/disposals error', 'disposals', { error: err instanceof Error ? err.message : String(err) });
     return NextResponse.json({ error: 'Gagal menghapus usulan penghapusan.' }, { status: 500 });
   }
 }

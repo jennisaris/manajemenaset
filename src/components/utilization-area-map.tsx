@@ -25,7 +25,14 @@ function MapClickCollector({ enabled, points, onChange }: { enabled: boolean; po
 function RecenterMapController({ center }: { center: LatLngExpression }) {
   const map = useMap();
   useEffect(() => {
-    map.setView(center, 18, { animate: true });
+    try {
+      const container = map.getContainer();
+      if (container && container.ownerDocument && container.ownerDocument.contains(container)) {
+        map.setView(center, 18, { animate: true });
+      }
+    } catch {
+      // Safe fallback if map instance or container was destroyed
+    }
   }, [center, map]);
   return null;
 }

@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { deleteUtilizationFromDb, upsertUtilizationToDb } from '@/lib/server/local-repository';
 import { getSessionUser } from '@/lib/server/session';
 import { canManageAssets } from '@/lib/auth';
+import { requireCsrf } from '@/lib/server/csrf-guard';
 import type { Utilization } from '@/lib/types';
 
 async function requireManager() {
@@ -12,6 +13,9 @@ async function requireManager() {
 }
 
 export async function POST(request: Request) {
+  const csrfError = await requireCsrf();
+  if (csrfError) return csrfError;
+
   const auth = await requireManager();
   if (auth.error) return auth.error;
   const { utilization, isNew } = await request.json() as { utilization: Utilization; isNew?: boolean };
@@ -19,6 +23,9 @@ export async function POST(request: Request) {
 }
 
 export async function DELETE(request: Request) {
+  const csrfError = await requireCsrf();
+  if (csrfError) return csrfError;
+
   const auth = await requireManager();
   if (auth.error) return auth.error;
   const id = Number(new URL(request.url).searchParams.get('id'));

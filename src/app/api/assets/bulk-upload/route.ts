@@ -1,10 +1,15 @@
 import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/server/session';
-import { upsertAssetToDb } from '@/lib/server/local-repository';
+import { bulkUpsertAssetsToDb } from '@/lib/server/local-repository';
+import { requireCsrf } from '@/lib/server/csrf-guard';
+import { logger } from '@/lib/server/logger';
 import type { Asset } from '@/lib/types';
 
 export async function POST(request: Request) {
   try {
+    const csrfError = await requireCsrf();
+    if (csrfError) return csrfError;
+
     const user = await getSessionUser();
     if (!user) {
       return NextResponse.json({ error: 'Tidak terotentikasi' }, { status: 401 });
@@ -21,23 +26,17 @@ export async function POST(request: Request) {
     if (isOperator && !user.kode_satker) {
       return NextResponse.json({ error: 'Akun Operator Kampus tidak memiliki kode satker yang valid.' }, { status: 403 });
     }
-    const insertedAssets: Asset[] = [];
 
-    for (const item of items) {
-      const assetData: Asset = {
-        ...item,
-        id: item.id || `AST-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
-        verification_status: isOperator ? 'menunggu_verifikasi' : (item.verification_status || 'terverifikasi'),
-        campus_name: item.campus_name || user.university_name || 'Portofolio Kemdiktisaintek',
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
+    const preparedAssets: Asset[] = items.map((item: Partial<Asset>) => ({
+      ...item,
+      id: item.id || `AST-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`,
+      verification_status: isOperator ? 'menunggu_verifikasi' : (item.verification_status || 'terverifikasi'),
+      campus_name: item.campus_name || user.university_name || 'Portofolio Kemdiktisaintek',
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    } as Asset));
 
-      const saved = await upsertAssetToDb(assetData);
-      if (saved) {
-        insertedAssets.push(saved);
-      }
-    }
+    const insertedAssets = await bulkUpsertAssetsToDb(preparedAssets);
 
     return NextResponse.json({
       success: true,
@@ -45,7 +44,7 @@ export async function POST(request: Request) {
       assets: insertedAssets,
     });
   } catch (error: any) {
-    console.error('Error Bulk Upload Aset:', error);
+    logger.error('Bulk Upload Aset error', 'assets', { error: error.message || 'Unknown error' });
     return NextResponse.json({ error: error.message || 'Gagal memproses bulk upload aset' }, { status: 500 });
   }
 }

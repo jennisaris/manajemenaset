@@ -16,19 +16,6 @@ export type LoginUser = {
   rejection_reason?: string | null;
 };
 
-export async function ensureUserProfileColumns() {
-  await query('alter table profiles add column if not exists nip text');
-  await query('alter table profiles add column if not exists satuan_kerja text');
-  await query('alter table profiles add column if not exists kode_satker text');
-  await query('alter table profiles add column if not exists phone_number text');
-  await query('alter table profiles add column if not exists assignment_letter_name text');
-  await query('alter table profiles add column if not exists assignment_letter_path text');
-  await query('alter table profiles add column if not exists assignment_letter_url text');
-  await query('alter table profiles add column if not exists rejection_reason text');
-  await query('alter table profiles drop constraint if exists profiles_status_check');
-  await query("alter table profiles add constraint profiles_status_check check (status in ('aktif', 'nonaktif', 'menunggu_persetujuan', 'ditolak'))");
-}
-
 export function normalizeUserProfile(row: Record<string, unknown>): UserProfile {
   const statusRaw = String(row.status ?? 'aktif');
   let status: UserStatus = 'aktif';
@@ -66,7 +53,6 @@ export function normalizeUserProfile(row: Record<string, unknown>): UserProfile 
 }
 
 export async function findUserByNip(nip: string): Promise<LoginUser | null> {
-  await ensureUserProfileColumns();
   const { rows } = await query(`
     select p.id, p.email, p.full_name, p.status, p.university_name, p.kode_satker, p.password_hash, p.rejection_reason, r.name as role_name
     from profiles p
@@ -99,16 +85,8 @@ export async function findUserByNip(nip: string): Promise<LoginUser | null> {
   };
 }
 
-const builtInDemoAccounts: Record<string, { full_name: string; role: UserRole; university_name: string | null; defaultPass: string }> = {
-  'superadmin@aset.id': { full_name: 'Superadmin Tim Pusat', role: 'Superadmin', university_name: null, defaultPass: 'superadmin123' },
-  'operator.unsil@aset.id': { full_name: 'Universitas Siliwangi', role: 'Operator Kampus', university_name: 'UNIVERSITAS SILIWANGI', defaultPass: 'operator123' },
-  'operator@aset.id': { full_name: 'Universitas Siliwangi', role: 'Operator Kampus', university_name: 'UNIVERSITAS SILIWANGI', defaultPass: 'operator123' },
-  'admin@aset.id': { full_name: 'Superadmin Sistem', role: 'Superadmin', university_name: null, defaultPass: 'admin123' },
-  'pimpinan@aset.id': { full_name: 'Pimpinan Kemdiktisaintek', role: 'Pimpinan Dashboard', university_name: null, defaultPass: 'pimpinan123' },
-};
-
 export async function findUserForLogin(email: string): Promise<LoginUser | null> {
-  await ensureUserProfileColumns();
+
   const cleanEmail = email.trim().toLowerCase();
 
   const { rows } = await query(`
@@ -119,42 +97,7 @@ export async function findUserForLogin(email: string): Promise<LoginUser | null>
     limit 1
   `, [cleanEmail]);
 
-  let row = rows[0];
-
-  // Auto-seed demo accounts in PostgreSQL if missing
-  if (!row && builtInDemoAccounts[cleanEmail]) {
-    const demo = builtInDemoAccounts[cleanEmail];
-    const pwdHash = hashPassword(demo.defaultPass);
-    try {
-      const roleRes = await query(`select id from roles where name = $1 limit 1`, [demo.role]);
-      const roleId = roleRes.rows[0]?.id ?? '1';
-      const insertRes = await query(`
-        insert into profiles (full_name, email, password_hash, status, university_name, role_id)
-        values ($1, $2, $3, 'aktif', $4, $5)
-        returning id, email, full_name, status, university_name, kode_satker, password_hash, rejection_reason
-      `, [demo.full_name, cleanEmail, pwdHash, demo.university_name, roleId]);
-      if (insertRes.rows[0]) {
-        row = { ...insertRes.rows[0], role_name: demo.role };
-      }
-    } catch (err) {
-      console.warn('Gagal auto-seed demo user ke database:', err);
-    }
-
-    if (!row) {
-      return {
-        id: `demo-${cleanEmail}`,
-        email: cleanEmail,
-        full_name: demo.full_name,
-        status: 'aktif',
-        university_name: demo.university_name,
-        kode_satker: demo.university_name === 'UNIVERSITAS SILIWANGI' ? '693374' : null,
-        role: demo.role,
-        password_hash: pwdHash,
-        rejection_reason: null,
-      };
-    }
-  }
-
+  const row = rows[0];
   if (!row) return null;
 
   let resolvedRole: UserRole = 'Operator Kampus';
@@ -166,11 +109,6 @@ export async function findUserForLogin(email: string): Promise<LoginUser | null>
     }
   }
 
-  let passwordHash = row.password_hash as string | null;
-  if (!passwordHash && builtInDemoAccounts[cleanEmail]) {
-    passwordHash = hashPassword(builtInDemoAccounts[cleanEmail].defaultPass);
-  }
-
   return {
     id: String(row.id),
     email: String(row.email ?? cleanEmail),
@@ -179,13 +117,13 @@ export async function findUserForLogin(email: string): Promise<LoginUser | null>
     university_name: row.university_name as string | null,
     kode_satker: (row.kode_satker as string) ?? null,
     role: resolvedRole,
-    password_hash: passwordHash,
+    password_hash: row.password_hash as string | null,
     rejection_reason: (row.rejection_reason as string) ?? null,
   };
 }
 
 export async function createPendingUserRegistration(input: UserRegistrationInput): Promise<UserProfile> {
-  await ensureUserProfileColumns();
+
   const hashedPassword = hashPassword(input.password);
   
   // Assign default Operator role_id if available
@@ -257,7 +195,7 @@ export async function createPendingUserRegistration(input: UserRegistrationInput
 }
 
 export async function getPendingRegistrationsFromDb(): Promise<UserProfile[]> {
-  await ensureUserProfileColumns();
+
   const { rows } = await query(`
     select p.*, r.name as role_name
     from profiles p
@@ -269,7 +207,7 @@ export async function getPendingRegistrationsFromDb(): Promise<UserProfile[]> {
 }
 
 export async function getAllUsersFromDb(): Promise<UserProfile[]> {
-  await ensureUserProfileColumns();
+
   const { rows } = await query(`
     select p.*, r.name as role_name
     from profiles p
@@ -280,7 +218,7 @@ export async function getAllUsersFromDb(): Promise<UserProfile[]> {
 }
 
 export async function approveUserRegistration(userId: string, roleName: UserRole, campusName?: string): Promise<UserProfile> {
-  await ensureUserProfileColumns();
+
   const roleRes = await query(`select id from roles where name = $1 limit 1`, [roleName]);
   const roleId = roleRes.rows[0]?.id ?? null;
 
@@ -296,7 +234,7 @@ export async function approveUserRegistration(userId: string, roleName: UserRole
 }
 
 export async function rejectUserRegistration(userId: string, reason?: string): Promise<UserProfile> {
-  await ensureUserProfileColumns();
+
   const { rows } = await query(`
     update profiles
     set status = 'ditolak', rejection_reason = $1, updated_at = now()

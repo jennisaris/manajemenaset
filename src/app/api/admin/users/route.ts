@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { getSessionUser } from '@/lib/server/session';
 import { canManageUsers } from '@/lib/auth';
 import { fetchPendingUsers, fetchAllUsers, approveUser, rejectUser } from '@/lib/server/services/user-service';
+import { requireCsrf } from '@/lib/server/csrf-guard';
 import type { UserRole } from '@/lib/types';
 
 async function requireAdmin() {
@@ -28,6 +29,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const csrfError = await requireCsrf();
+  if (csrfError) return csrfError;
+
   const auth = await requireAdmin();
   if (auth.error) return auth.error;
 

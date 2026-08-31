@@ -1,9 +1,14 @@
 import { NextResponse } from 'next/server';
 import { updateOwnPassword } from '@/lib/server/local-repository';
 import { getSessionUser } from '@/lib/server/session';
+import { requireCsrf } from '@/lib/server/csrf-guard';
+import { validatePasswordStrength } from '@/lib/server/password-policy';
 
 export async function POST(request: Request) {
   try {
+    const csrfError = await requireCsrf();
+    if (csrfError) return csrfError;
+
     const user = await getSessionUser();
     if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
@@ -16,9 +21,12 @@ export async function POST(request: Request) {
     if (!currentPassword || !nextPassword || !confirmPassword) {
       return NextResponse.json({ error: 'Password saat ini, password baru, dan konfirmasi wajib diisi.' }, { status: 400 });
     }
-    if (nextPassword.length < 8) {
-      return NextResponse.json({ error: 'Password baru minimal 8 karakter.' }, { status: 400 });
+
+    const passwordCheck = validatePasswordStrength(nextPassword);
+    if (!passwordCheck.valid) {
+      return NextResponse.json({ error: passwordCheck.error }, { status: 400 });
     }
+
     if (nextPassword !== confirmPassword) {
       return NextResponse.json({ error: 'Konfirmasi password tidak sama.' }, { status: 400 });
     }

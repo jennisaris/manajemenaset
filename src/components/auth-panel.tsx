@@ -108,7 +108,7 @@ export function AuthPanel({ role, onRoleChange, campusOptions = [] }: AuthPanelP
         <div className="max-w-2xl">
           <p className="mb-2 inline-flex items-center rounded-full border border-sky-100 bg-sky-50 px-3 py-1 text-xs font-black text-sky-700"><ShieldCheck className="mr-2 h-4 w-4" /> PostgreSQL lokal Auth & Role Guard</p>
           <h3 className="text-lg font-black">Akses pengguna</h3>
-          <p className="mt-1 text-sm leading-6 text-slate-500">Role aktif: <strong className="text-slate-800">{role}</strong>. CRUD aset dibuka untuk Superadmin, Admin Aset, dan Operator Kampus.</p>
+          <p className="mt-1 text-sm leading-6 text-slate-500">Role aktif: <strong className="text-slate-800">{role}</strong>. CRUD aset dibuka untuk Superadmin dan Operator Kampus.</p>
           <p className={`mt-2 text-xs font-bold ${status === 'error' ? 'text-rose-600' : 'text-slate-500'}`}>{message}</p>
         </div>
 

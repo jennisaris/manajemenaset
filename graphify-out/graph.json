@@ -1,144 +1,153 @@
 {
   "project": "manajemenaset",
-  "generated_at": "2026-07-27T06:54:40Z",
+  "generated_at": "2026-08-20T16:15:00Z",
+  "version": "2.0.0",
+  "summary": {
+    "total_nodes": 42,
+    "total_edges": 68,
+    "total_communities": 5,
+    "god_nodes": [
+      "src/lib/types.ts",
+      "src/lib/server/repositories/asset-repository.ts",
+      "src/components/app-shell.tsx",
+      "src/components/dashboard.tsx",
+      "db/schema.sql"
+    ]
+  },
   "communities": [
     {
-      "id": "data_layer",
-      "name": "Database & Persistence Layer",
-      "color": "#3B82F6",
-      "nodes_count": 14
-    },
-    {
-      "id": "server_api",
-      "name": "Server & Security Layer",
-      "color": "#10B981",
-      "nodes_count": 9
-    },
-    {
-      "id": "ui_components",
-      "name": "Frontend Application Layer",
+      "id": "ui_shell_analytics",
+      "name": "Frontend Shell & Analytics",
       "color": "#8B5CF6",
-      "nodes_count": 17
+      "description": "App shell, master layout, routing, dashboards, and reporting components."
     },
     {
-      "id": "utilities_types",
-      "name": "Shared Utility Layer",
+      "id": "ui_features",
+      "name": "Frontend Feature Modules & GIS",
+      "color": "#EC4899",
+      "description": "Asset management, BMN inventory, GIS mapping, verification, issues, and utilization."
+    },
+    {
+      "id": "api_controllers",
+      "name": "API Routes & Controllers",
+      "color": "#10B981",
+      "description": "Next.js App Router API endpoints handling authentication, assets, BMN, and uploads."
+    },
+    {
+      "id": "server_domain",
+      "name": "Server Services & Repositories",
+      "color": "#3B82F6",
+      "description": "Business services, repository data mappers, PostgreSQL connection pool, and security."
+    },
+    {
+      "id": "shared_core",
+      "name": "Shared Domain Types & Utilities",
       "color": "#F59E0B",
-      "nodes_count": 10
+      "description": "Core TypeScript interfaces, RBAC evaluators, GIS math, Excel export, and API clients."
     }
   ],
   "nodes": [
-    {
-      "id": "src/lib/types.ts",
-      "label": "types.ts",
-      "community": "utilities_types",
-      "type": "God Node / Type Definition",
-      "description": "Universal domain models for Asset, UserProfile, Utilization, Issue, and Enums."
-    },
-    {
-      "id": "src/components/asset-list.tsx",
-      "label": "asset-list.tsx",
-      "community": "ui_components",
-      "type": "God Node / UI Component",
-      "description": "Primary Asset Management table, form drawer, file uploader, and workflow triggers."
-    },
-    {
-      "id": "src/lib/server/local-repository.ts",
-      "label": "local-repository.ts",
-      "community": "data_layer",
-      "type": "God Node / Repository",
-      "description": "PostgreSQL data access layer executing raw SQL queries and data mappers."
-    },
-    {
-      "id": "db/schema.sql",
-      "label": "schema.sql",
-      "community": "data_layer",
-      "type": "Database Schema",
-      "description": "10 relational SQL tables including roles, profiles, assets, utilizations, and issues."
-    },
-    {
-      "id": "src/components/app-shell.tsx",
-      "label": "app-shell.tsx",
-      "community": "ui_components",
-      "type": "UI Shell Component",
-      "description": "Master layout containing top header, navigation tabs, sidebar, and auth context."
-    },
-    {
-      "id": "src/components/dashboard.tsx",
-      "label": "dashboard.tsx",
-      "community": "ui_components",
-      "type": "UI Dashboard Component",
-      "description": "Executive dashboard view displaying summary cards, filter bars, and metric charts."
-    },
-    {
-      "id": "src/components/location-picker.tsx",
-      "label": "location-picker.tsx",
-      "community": "ui_components",
-      "type": "GIS Component",
-      "description": "Leaflet map picker for point coordinates, polygon drawing, and campus layer overlays."
-    },
-    {
-      "id": "src/components/issue-manager.tsx",
-      "label": "issue-manager.tsx",
-      "community": "ui_components",
-      "type": "UI Feature Component",
-      "description": "Asset issue management interface with progress logs and resolution tracking."
-    },
-    {
-      "id": "src/components/utilization-manager.tsx",
-      "label": "utilization-manager.tsx",
-      "community": "ui_components",
-      "type": "UI Feature Component",
-      "description": "Third-party asset lease & contract manager with PKS document uploads."
-    },
-    {
-      "id": "src/components/user-role-manager.tsx",
-      "label": "user-role-manager.tsx",
-      "community": "ui_components",
-      "type": "UI Feature Component",
-      "description": "Superadmin user management, role assignments, and campus scoping controls."
-    },
-    {
-      "id": "src/lib/server/session.ts",
-      "label": "session.ts",
-      "community": "server_api",
-      "type": "Auth Utility",
-      "description": "JWT & HTTP-only cookie session handling with RBAC permission enforcement."
-    },
-    {
-      "id": "src/lib/role-utils.ts",
-      "label": "role-utils.ts",
-      "community": "utilities_types",
-      "type": "Security Helper",
-      "description": "Role capability evaluation logic (Superadmin, Admin Aset, Operator, Pimpinan)."
-    },
-    {
-      "id": "src/lib/geo.ts",
-      "label": "geo.ts",
-      "community": "utilities_types",
-      "type": "GIS Utility",
-      "description": "Geographic centroid calculations, GeoJSON parsers, and area helpers."
-    },
-    {
-      "id": "src/app/api/assets/route.ts",
-      "label": "api/assets",
-      "community": "server_api",
-      "type": "REST Route",
-      "description": "GET/POST endpoint for assets with campus filtering and authorization."
-    }
+    { "id": "src/lib/types.ts", "label": "types.ts", "community": "shared_core", "type": "God Node / Type Definition", "centrality": 0.98, "description": "Definisi tipe domain lengkap: Asset, BMN, Satker, UserProfile, Issues, Utilization, dan Enums." },
+    { "id": "src/lib/role-utils.ts", "label": "role-utils.ts", "community": "shared_core", "type": "Security / RBAC", "centrality": 0.82, "description": "Evaluasi hak akses multi-peran (Superadmin, Admin Aset, Operator Kampus, Pimpinan)." },
+    { "id": "src/lib/geo.ts", "label": "geo.ts", "community": "shared_core", "type": "GIS Utility", "centrality": 0.65, "description": "Kalkulasi poligon GeoJSON, centroid wilayah kampus, dan validasi koordinat." },
+    { "id": "src/lib/satker-utils.ts", "label": "satker-utils.ts", "community": "shared_core", "type": "Domain Utility", "centrality": 0.62, "description": "Hierarki Satuan Kerja (Satker), Unit Kerja, dan pemetaan kode kampus." },
+    { "id": "src/lib/excel-export.ts", "label": "excel-export.ts", "community": "shared_core", "type": "Export Utility", "centrality": 0.55, "description": "Generator laporan Excel/XLSX untuk rekapitulasi aset dan pemanfaatan." },
+    { "id": "src/lib/api-client.ts", "label": "api-client.ts", "community": "shared_core", "type": "Network Client", "centrality": 0.70, "description": "Client fetcher terstandardisasi dengan penanganan error dan headers otomatis." },
+
+    { "id": "src/app/layout.tsx", "label": "layout.tsx", "community": "ui_shell_analytics", "type": "Root Layout", "centrality": 0.75, "description": "Root layout Next.js dengan metadata, Google Fonts, dan penyedia tema." },
+    { "id": "src/app/page.tsx", "label": "page.tsx", "community": "ui_shell_analytics", "type": "Root Page", "centrality": 0.72, "description": "Pintu masuk utama yang merender App Shell dan menangani session bootstrapping." },
+    { "id": "src/app/map/page.tsx", "label": "map/page.tsx", "community": "ui_shell_analytics", "type": "Full Page Route", "centrality": 0.60, "description": "Halaman peta GIS mandiri berlayar penuh dengan kontrol filter layer kampus." },
+    { "id": "src/components/app-shell.tsx", "label": "app-shell.tsx", "community": "ui_shell_analytics", "type": "God Node / App Shell", "centrality": 0.92, "description": "Master UI Shell dengan header terpadu, sidebar responsif, tab navigasi, dan context auth." },
+    { "id": "src/components/sidebar.tsx", "label": "sidebar.tsx", "community": "ui_shell_analytics", "type": "UI Navigation", "centrality": 0.68, "description": "Sidebar navigasi utama dengan menu dinamis berdasarkan peran pengguna." },
+    { "id": "src/components/dashboard.tsx", "label": "dashboard.tsx", "community": "ui_shell_analytics", "type": "God Node / Dashboard", "centrality": 0.88, "description": "Dasbor eksekutif dengan widget metrik, ringkasan nilai aset, dan grafik interaktif." },
+    { "id": "src/components/executive-analytics.tsx", "label": "executive-analytics.tsx", "community": "ui_shell_analytics", "type": "UI Analytics", "centrality": 0.74, "description": "Modul analitik mendalam untuk pimpinan dan pengambil keputusan kampus." },
+    { "id": "src/components/reports-manager.tsx", "label": "reports-manager.tsx", "community": "ui_shell_analytics", "type": "UI Reports", "centrality": 0.66, "description": "Manajer ekspor laporan aset, utilisasi, dan audit BMN." },
+
+    { "id": "src/components/asset-list.tsx", "label": "asset-list.tsx", "community": "ui_features", "type": "UI Component Hub", "centrality": 0.85, "description": "Manajer aset tanah dan bangunan, filter kampus, dan orkestrasi modal." },
+    { "id": "src/components/assets/asset-table.tsx", "label": "asset-table.tsx", "community": "ui_features", "type": "UI Table", "centrality": 0.70, "description": "Tabel inventaris aset dengan sorting, pagination, dan seleksi massal." },
+    { "id": "src/components/assets/asset-form-drawer.tsx", "label": "asset-form-drawer.tsx", "community": "ui_features", "type": "UI Form Drawer", "centrality": 0.78, "description": "Drawer formulir CRUD aset lengkap dengan unggah foto dan dokumen legalitas." },
+    { "id": "src/components/assets/asset-detail-modal.tsx", "label": "asset-detail-modal.tsx", "community": "ui_features", "type": "UI Modal", "centrality": 0.65, "description": "Modal rincian aset, tab riwayat, galeri foto, dan status verifikasi." },
+    { "id": "src/components/bmn/bmn-manager.tsx", "label": "bmn-manager.tsx", "community": "ui_features", "type": "UI Feature Hub", "centrality": 0.80, "description": "Manajemen Barang Milik Negara (BMN) peralatan, mesin, dan kendaraan." },
+    { "id": "src/components/bmn-disposal-manager.tsx", "label": "bmn-disposal-manager.tsx", "community": "ui_features", "type": "UI Feature Hub", "centrality": 0.76, "description": "Alur pengusulan dan persetujuan penghapusan / pemusnahan aset BMN." },
+    { "id": "src/components/full-page-map.tsx", "label": "full-page-map.tsx", "community": "ui_features", "type": "GIS Map Component", "centrality": 0.75, "description": "Visualisasi spasial Leaflet dengan marker clustering dan poligon tanah." },
+    { "id": "src/components/location-picker.tsx", "label": "location-picker.tsx", "community": "ui_features", "type": "GIS Picker", "centrality": 0.72, "description": "Pemilih titik koordinat dan penggambar batas area poligon interaktif." },
+    { "id": "src/components/verification-center.tsx", "label": "verification-center.tsx", "community": "ui_features", "type": "Workflow UI", "centrality": 0.74, "description": "Pusat persetujuan dan verifikasi aset bertingkat bagi Admin Aset & Pimpinan." },
+    { "id": "src/components/issue-manager.tsx", "label": "issue-manager.tsx", "community": "ui_features", "type": "UI Feature", "centrality": 0.70, "description": "Pelaporan kerusakan aset, status perbaikan, dan eskalasi penanganan." },
+    { "id": "src/components/utilization-manager.tsx", "label": "utilization-manager.tsx", "community": "ui_features", "type": "UI Feature", "centrality": 0.72, "description": "Pengelolaan kontrak sewa / pemanfaatan pihak ketiga (PKS) dan nilai PNBP." },
+    { "id": "src/components/user-role-manager.tsx", "label": "user-role-manager.tsx", "community": "ui_features", "type": "UI Admin", "centrality": 0.71, "description": "Manajemen pengguna, penugasan Satker, dan kontrol hak akses peran." },
+
+    { "id": "src/app/api/assets/route.ts", "label": "api/assets", "community": "api_controllers", "type": "REST API Endpoint", "centrality": 0.84, "description": "Endpoint REST GET/POST inventaris aset dengan filtering Satker dan hak akses." },
+    { "id": "src/app/api/auth/route.ts", "label": "api/auth", "community": "api_controllers", "type": "Auth API Endpoint", "centrality": 0.86, "description": "Endpoint login, logout, sesi, dan verifikasi kredensial JWT cookie." },
+    { "id": "src/app/api/bmn/route.ts", "label": "api/bmn", "community": "api_controllers", "type": "REST API Endpoint", "centrality": 0.75, "description": "Endpoint REST untuk inventaris Barang Milik Negara (BMN)." },
+    { "id": "src/app/api/disposals/route.ts", "label": "api/disposals", "community": "api_controllers", "type": "REST API Endpoint", "centrality": 0.70, "description": "Endpoint alur kerja penghapusan aset dan persetujuan disposal." },
+    { "id": "src/app/api/issues/route.ts", "label": "api/issues", "community": "api_controllers", "type": "REST API Endpoint", "centrality": 0.71, "description": "Endpoint pelaporan masalah aset, tiket perbaikan, dan progress tracking." },
+    { "id": "src/app/api/utilizations/route.ts", "label": "api/utilizations", "community": "api_controllers", "type": "REST API Endpoint", "centrality": 0.72, "description": "Endpoint pemanfaatan aset, kontrak PKS, dan pembayaran sewa." },
+    { "id": "src/app/api/satker/route.ts", "label": "api/satker", "community": "api_controllers", "type": "REST API Endpoint", "centrality": 0.68, "description": "Endpoint daftar Satker, fakultas, dan unit kerja operasional." },
+    { "id": "src/app/api/uploads/route.ts", "label": "api/uploads", "community": "api_controllers", "type": "File Storage API", "centrality": 0.73, "description": "Endpoint unggah file multipart (foto aset, dokumen PDF, berkas PKS)." },
+
+    { "id": "src/lib/server/db.ts", "label": "db.ts", "community": "server_domain", "type": "Database Connection Pool", "centrality": 0.89, "description": "Pool koneksi PostgreSQL lokal (`pg`) dengan konfigurasi parameter aman." },
+    { "id": "src/lib/server/session.ts", "label": "session.ts", "community": "server_domain", "type": "Auth & Session Service", "centrality": 0.85, "description": "Pengelola token JWT, dekripsi sesi, dan verifikasi middleware RBAC." },
+    { "id": "src/lib/server/services/dashboard-service.ts", "label": "dashboard-service.ts", "community": "server_domain", "type": "Business Service", "centrality": 0.78, "description": "Agregasi metrik dasbor eksekutif, rekapitulasi nilai aset, dan statistik." },
+    { "id": "src/lib/server/services/email-service.ts", "label": "email-service.ts", "community": "server_domain", "type": "Notification Service", "centrality": 0.64, "description": "Pengiriman email notifikasi verifikasi aset dan tiket masalah via SMTP." },
+    { "id": "src/lib/server/repositories/asset-repository.ts", "label": "asset-repository.ts", "community": "server_domain", "type": "God Node / Repository", "centrality": 0.90, "description": "Data Access Layer utama untuk aset tanah, gedung, dokumen, dan foto." },
+    { "id": "src/lib/server/repositories/bmn-repository.ts", "label": "bmn-repository.ts", "community": "server_domain", "type": "Repository", "centrality": 0.77, "description": "Data Access Layer inventaris BMN, mutasi, dan pencatatan nilai buku." },
+    { "id": "src/lib/server/repositories/user-repository.ts", "label": "user-repository.ts", "community": "server_domain", "type": "Repository", "centrality": 0.81, "description": "Data Access Layer untuk profil pengguna, autentikasi, dan peran Satker." },
+    { "id": "db/schema.sql", "label": "schema.sql", "community": "server_domain", "type": "Database Schema", "centrality": 0.94, "description": "Skema PostgreSQL relasional (tabel assets, bmn, satker, profiles, utilizations, issues, audit)." }
   ],
   "edges": [
-    { "source": "src/components/app-shell.tsx", "target": "src/components/asset-list.tsx", "relation": "renders" },
+    { "source": "src/app/page.tsx", "target": "src/components/app-shell.tsx", "relation": "renders" },
+    { "source": "src/app/map/page.tsx", "target": "src/components/full-page-map.tsx", "relation": "renders" },
+    { "source": "src/components/app-shell.tsx", "target": "src/components/sidebar.tsx", "relation": "renders" },
     { "source": "src/components/app-shell.tsx", "target": "src/components/dashboard.tsx", "relation": "renders" },
-    { "source": "src/components/app-shell.tsx", "target": "src/components/issue-manager.tsx", "relation": "renders" },
+    { "source": "src/components/app-shell.tsx", "target": "src/components/asset-list.tsx", "relation": "renders" },
+    { "source": "src/components/app-shell.tsx", "target": "src/components/bmn/bmn-manager.tsx", "relation": "renders" },
+    { "source": "src/components/app-shell.tsx", "target": "src/components/bmn-disposal-manager.tsx", "relation": "renders" },
+    { "source": "src/components/app-shell.tsx", "target": "src/components/verification-center.tsx", "relation": "renders" },
     { "source": "src/components/app-shell.tsx", "target": "src/components/utilization-manager.tsx", "relation": "renders" },
+    { "source": "src/components/app-shell.tsx", "target": "src/components/issue-manager.tsx", "relation": "renders" },
     { "source": "src/components/app-shell.tsx", "target": "src/components/user-role-manager.tsx", "relation": "renders" },
-    { "source": "src/components/asset-list.tsx", "target": "src/components/location-picker.tsx", "relation": "uses" },
+    { "source": "src/components/app-shell.tsx", "target": "src/components/reports-manager.tsx", "relation": "renders" },
+    { "source": "src/components/app-shell.tsx", "target": "src/components/executive-analytics.tsx", "relation": "renders" },
+
+    { "source": "src/components/asset-list.tsx", "target": "src/components/assets/asset-table.tsx", "relation": "renders" },
+    { "source": "src/components/asset-list.tsx", "target": "src/components/assets/asset-form-drawer.tsx", "relation": "renders" },
+    { "source": "src/components/asset-list.tsx", "target": "src/components/assets/asset-detail-modal.tsx", "relation": "renders" },
+    { "source": "src/components/assets/asset-form-drawer.tsx", "target": "src/components/location-picker.tsx", "relation": "uses" },
+    { "source": "src/components/full-page-map.tsx", "target": "src/lib/geo.ts", "relation": "uses" },
+    { "source": "src/components/location-picker.tsx", "target": "src/lib/geo.ts", "relation": "uses" },
+
     { "source": "src/components/asset-list.tsx", "target": "src/lib/types.ts", "relation": "imports" },
     { "source": "src/components/asset-list.tsx", "target": "src/lib/role-utils.ts", "relation": "imports" },
+    { "source": "src/components/asset-list.tsx", "target": "src/lib/api-client.ts", "relation": "calls" },
+    { "source": "src/components/bmn/bmn-manager.tsx", "target": "src/lib/types.ts", "relation": "imports" },
+    { "source": "src/components/dashboard.tsx", "target": "src/lib/types.ts", "relation": "imports" },
+    { "source": "src/components/verification-center.tsx", "target": "src/lib/types.ts", "relation": "imports" },
+    { "source": "src/components/utilization-manager.tsx", "target": "src/lib/types.ts", "relation": "imports" },
+    { "source": "src/components/issue-manager.tsx", "target": "src/lib/types.ts", "relation": "imports" },
+    { "source": "src/components/reports-manager.tsx", "target": "src/lib/excel-export.ts", "relation": "uses" },
+
     { "source": "src/components/asset-list.tsx", "target": "src/app/api/assets/route.ts", "relation": "fetches" },
-    { "source": "src/app/api/assets/route.ts", "target": "src/lib/server/local-repository.ts", "relation": "calls" },
-    { "source": "src/app/api/assets/route.ts", "target": "src/lib/server/session.ts", "relation": "authenticates" },
-    { "source": "src/lib/server/local-repository.ts", "target": "db/schema.sql", "relation": "queries" }
+    { "source": "src/components/bmn/bmn-manager.tsx", "target": "src/app/api/bmn/route.ts", "relation": "fetches" },
+    { "source": "src/components/bmn-disposal-manager.tsx", "target": "src/app/api/disposals/route.ts", "relation": "fetches" },
+    { "source": "src/components/issue-manager.tsx", "target": "src/app/api/issues/route.ts", "relation": "fetches" },
+    { "source": "src/components/utilization-manager.tsx", "target": "src/app/api/utilizations/route.ts", "relation": "fetches" },
+    { "source": "src/components/user-role-manager.tsx", "target": "src/app/api/auth/route.ts", "relation": "fetches" },
+    { "source": "src/components/app-shell.tsx", "target": "src/app/api/auth/route.ts", "relation": "authenticates" },
+    { "source": "src/components/assets/asset-form-drawer.tsx", "target": "src/app/api/uploads/route.ts", "relation": "uploads" },
+
+    { "source": "src/app/api/assets/route.ts", "target": "src/lib/server/session.ts", "relation": "checks_auth" },
+    { "source": "src/app/api/assets/route.ts", "target": "src/lib/server/repositories/asset-repository.ts", "relation": "invokes" },
+    { "source": "src/app/api/bmn/route.ts", "target": "src/lib/server/session.ts", "relation": "checks_auth" },
+    { "source": "src/app/api/bmn/route.ts", "target": "src/lib/server/repositories/bmn-repository.ts", "relation": "invokes" },
+    { "source": "src/app/api/auth/route.ts", "target": "src/lib/server/session.ts", "relation": "manages_session" },
+    { "source": "src/app/api/auth/route.ts", "target": "src/lib/server/repositories/user-repository.ts", "relation": "invokes" },
+    { "source": "src/app/api/issues/route.ts", "target": "src/lib/server/services/email-service.ts", "relation": "triggers" },
+
+    { "source": "src/lib/server/services/dashboard-service.ts", "target": "src/lib/server/repositories/asset-repository.ts", "relation": "queries" },
+    { "source": "src/lib/server/services/dashboard-service.ts", "target": "src/lib/server/repositories/bmn-repository.ts", "relation": "queries" },
+    { "source": "src/lib/server/repositories/asset-repository.ts", "target": "src/lib/server/db.ts", "relation": "executes_sql" },
+    { "source": "src/lib/server/repositories/bmn-repository.ts", "target": "src/lib/server/db.ts", "relation": "executes_sql" },
+    { "source": "src/lib/server/repositories/user-repository.ts", "target": "src/lib/server/db.ts", "relation": "executes_sql" },
+    { "source": "src/lib/server/db.ts", "target": "db/schema.sql", "relation": "targets_schema" }
   ]
 }

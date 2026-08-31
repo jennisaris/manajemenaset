@@ -4,7 +4,10 @@ import { resolve } from 'node:path';
 import { query } from '@/lib/server/db';
 import type { Satker } from '@/lib/types';
 
+import { createTtlCache } from '@/lib/server/cache';
+
 let cachedSatkerJson: Satker[] | null = null;
+const satkerCache = createTtlCache<string, Satker[]>(300000); // 5 min TTL
 
 function getSatkerFromJson(): Satker[] {
   if (cachedSatkerJson) return cachedSatkerJson;
@@ -21,15 +24,18 @@ function getSatkerFromJson(): Satker[] {
 }
 
 export async function getSatkerListFromDb(): Promise<Satker[]> {
-  try {
-    const res = await query<Satker>(
-      `select id, kode_satker, nama_satker from satker order by kode_satker asc`
-    );
-    if (res.rows && res.rows.length > 0) {
-      return res.rows;
+  return satkerCache.getOrFetch('satker_list_all', async () => {
+    try {
+      const res = await query<Satker>(
+        `select id, kode_satker, nama_satker from satker order by kode_satker asc`
+      );
+      if (res.rows && res.rows.length > 0) {
+        return res.rows;
+      }
+    } catch (err) {
+      console.warn('Gagal mengambil data Satker dari PostgreSQL, menggunakan fallback JSON:', err);
     }
-  } catch (err) {
-    console.warn('Gagal mengambil data Satker dari PostgreSQL, menggunakan fallback JSON:', err);
-  }
-  return getSatkerFromJson();
+    return getSatkerFromJson();
+  });
 }
+
