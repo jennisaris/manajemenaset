@@ -24,11 +24,11 @@ function createTransporter() {
 }
 
 export async function sendRegistrationReceivedEmail(user: UserProfile) {
-  const subject = `Pendaftaran Akun Operator Aset Universitas Diterima - [${user.full_name}]`;
+  const subject = `Pendaftaran Akun Operator Aset Universitas / LLDIKTI Diterima - [${user.full_name}]`;
   const body = `
 Yth. ${user.full_name},
 
-Pendaftaran akun Anda untuk Sistem Informasi Manajemen Aset Universitas telah kami terima dengan rincian:
+Pendaftaran akun Anda untuk Sistem Informasi Manajemen Aset Universitas / LLDIKTI telah kami terima dengan rincian:
 - NIP: ${user.nip ?? '-'}
 - Nama: ${user.full_name}
 - Satuan Kerja / Unit: ${user.satuan_kerja ?? user.university_name ?? '-'}
@@ -37,11 +37,11 @@ Pendaftaran akun Anda untuk Sistem Informasi Manajemen Aset Universitas telah ka
 
 Status Akun: MENUNGGU PERSETUJUAN ADMINISTRATOR (PENDING APPROVAL)
 
-Tim Administrator Aset Universitas sedang memverifikasi data dan Surat Penunjukan Operator Anda.
+Tim Administrator Aset Universitas / LLDIKTI sedang memverifikasi data dan Surat Penunjukan Operator Anda.
 Anda akan menerima pemberitahuan email selanjutnya setelah pendaftaran Anda disetujui atau ditinjau.
 
 Terima kasih,
-Tim Layanan Sistem Manajemen Aset Universitas
+Tim Layanan Sistem Manajemen Aset Universitas / LLDIKTI
   `.trim();
 
   const transporter = createTransporter();
@@ -81,7 +81,7 @@ export async function sendApprovalStatusEmail(user: UserProfile, isApproved: boo
     ? `
 Yth. ${user.full_name},
 
-Selamat! Pendaftaran akun Anda pada Sistem Informasi Manajemen Aset Universitas telah DISETUJUI oleh Administrator.
+Selamat! Pendaftaran akun Anda pada Sistem Informasi Manajemen Aset Universitas / LLDIKTI telah DISETUJUI oleh Administrator.
 
 Rincian Akun Aktif Anda:
 - Nama: ${user.full_name}
@@ -92,20 +92,20 @@ Rincian Akun Aktif Anda:
 Anda sekarang dapat melakukan login ke dalam sistem menggunakan email dan password yang telah Anda daftarkan saat pendaftaran.
 
 Salam hangat,
-Tim Layanan Sistem Manajemen Aset Universitas
+Tim Layanan Sistem Manajemen Aset Universitas / LLDIKTI
     `.trim()
     : `
 Yth. ${user.full_name},
 
-Mohon maaf, pendaftaran akun Anda pada Sistem Informasi Manajemen Aset Universitas BELUM DAPAT DISETUJUI saat ini.
+Mohon maaf, pendaftaran akun Anda pada Sistem Informasi Manajemen Aset Universitas / LLDIKTI BELUM DAPAT DISETUJUI saat ini.
 
 Catatan/Alasan Penolakan:
 "${reason || user.rejection_reason || 'Dokumen Surat Penunjukan Operator atau data diri belum memenuhi persyaratan.'}"
 
-Silakan hubungi Administrator Aset Universitas di kampus Anda untuk informasi dan bantuan lebih lanjut.
+Silakan hubungi Administrator Aset Universitas / LLDIKTI di kampus Anda untuk informasi dan bantuan lebih lanjut.
 
 Salam hangat,
-Tim Layanan Sistem Manajemen Aset Universitas
+Tim Layanan Sistem Manajemen Aset Universitas / LLDIKTI
     `.trim();
 
   const transporter = createTransporter();

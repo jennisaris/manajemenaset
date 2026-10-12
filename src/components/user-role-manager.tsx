@@ -23,7 +23,7 @@ type RolePermission = {
 
 const rolePermissions: RolePermission[] = [
   { role: 'Superadmin', scope: 'Global semua Satker / PTN', permissions: ['Kelola user & approval registrasi', 'Verifikasi & approve aset baru', 'Verifikasi & SK penghapusan BMN', 'Akses analitik & laporan'] },
-  { role: 'Operator Kampus', scope: 'Per Satker / Kampus', permissions: ['Input aset single & massal Excel', 'Upload foto & GIS koordinat', 'Ajukan usulan penghapusan BMN', 'Lihat data Satkernya'] },
+  { role: 'Operator Kampus', scope: 'Per Satker / LLDIKTI', permissions: ['Input aset single & massal Excel', 'Upload foto & GIS koordinat', 'Ajukan usulan penghapusan BMN', 'Lihat data Satkernya'] },
   { role: 'Pimpinan Dashboard', scope: 'Monitoring Eksekutif', permissions: ['Monitoring peta GIS & KPI', 'Lihat statistik portofolio', 'Akses laporan & analitik eksekutif', 'Tanpa fitur CRUD'] },
 ];
 
@@ -402,19 +402,19 @@ export function UserRoleManager({
           </div>
         ) : (
           <div className="grid gap-4 xl:grid-cols-[1.1fr_.9fr]">
-            <div className="overflow-hidden rounded-3xl border border-sky-100 bg-white/70">
-              <div className="grid grid-cols-[1.2fr_.9fr_.8fr_.6fr_.7fr] gap-3 border-b border-sky-100 bg-sky-50/80 px-4 py-3 text-xs font-black uppercase tracking-wide text-slate-500">
-                <span>User</span><span>Role</span><span>Kampus</span><span>Status</span><span>Aksi</span>
+            <div className="overflow-x-auto rounded-3xl border border-sky-100 bg-white/70">
+              <div className="min-w-[650px] grid grid-cols-[1.2fr_.9fr_1.3fr_.6fr_.7fr] gap-3 border-b border-sky-100 bg-sky-50/80 px-4 py-3 text-xs font-black uppercase tracking-wide text-slate-500">
+                <span>User</span><span>Role</span><span>Universitas / LLDIKTI</span><span>Status</span><span>Aksi</span>
               </div>
               <div className="divide-y divide-sky-100">
                 {users.map((user) => (
-                  <div key={user.id} className="grid grid-cols-[1.2fr_.9fr_.8fr_.6fr_.7fr] items-center gap-3 px-4 py-4 text-sm">
+                  <div key={user.id} className="min-w-[650px] grid grid-cols-[1.2fr_.9fr_1.3fr_.6fr_.7fr] items-center gap-3 px-4 py-4 text-sm">
                     <div className="min-w-0">
                       <p className="truncate font-black text-slate-900">{user.full_name}</p>
                       <p className="truncate text-xs font-semibold text-slate-500">{user.email}</p>
                     </div>
                     <div className="font-bold text-sky-700">{user.role_name}</div>
-                    <div className="text-slate-600">{user.campus_name ?? user.university_name ?? 'Semua'}</div>
+                    <div className="text-slate-600 whitespace-normal break-words text-xs leading-snug" title={user.campus_name ?? user.university_name ?? 'Semua'}>{user.campus_name ?? user.university_name ?? 'Semua'}</div>
                     <div>
                       <span className={`rounded-full px-3 py-1 text-xs font-black ${
                         user.status === 'aktif' ? 'bg-emerald-50 text-emerald-700' : 'bg-slate-100 text-slate-500'

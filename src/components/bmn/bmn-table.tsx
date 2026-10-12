@@ -134,13 +134,13 @@ export function BmnTable({
       {/* Table Data */}
       <div className="overflow-hidden rounded-card border border-border bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse">
+          <table className="w-full min-w-[980px] text-left border-collapse">
             <thead>
               <tr className="border-b border-border bg-gray-50 text-xs font-bold text-secondary">
                 <th className="py-4 px-4 w-12 text-center">No</th>
                 <th className="py-4 px-4">Nama Barang & Merk/Tipe</th>
                 <th className="py-4 px-4">Kode Barang & NUP</th>
-                <th className="py-4 px-4">Satuan Kerja (Satker)</th>
+                <th className="py-4 px-4 min-w-[220px]">Satker / Universitas / LLDIKTI</th>
                 <th className="py-4 px-4 text-center">Kondisi</th>
                 <th className="py-4 px-4 text-center">Status BMN</th>
                 <th className="py-4 px-4 text-center w-28">Aksi</th>
@@ -167,8 +167,8 @@ export function BmnTable({
                         <div className="font-bold text-foreground">{item.kode_barang || '-'}</div>
                         <div className="text-[11px] text-secondary">NUP: {item.nup || '-'}</div>
                       </td>
-                      <td className="py-3.5 px-4">
-                        <div className="font-medium text-foreground max-w-[240px] truncate" title={item.nama_satker || ''}>
+                      <td className="py-3.5 px-4 min-w-[220px]">
+                        <div className="font-medium text-foreground whitespace-normal break-words leading-snug" title={item.nama_satker || ''}>
                           {item.nama_satker || '-'}
                         </div>
                         <div className="text-[11px] text-secondary">{item.kode_satker || ''}</div>

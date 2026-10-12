@@ -1,11 +1,11 @@
 'use client';
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
-import { Eye, FileText, MapPinned, Pencil, Plus, Trash2, UploadCloud, X } from 'lucide-react';
+import { Eye, FileText, Filter, MapPinned, Pencil, Plus, RotateCcw, Search, Trash2, UploadCloud, X } from 'lucide-react';
 import { deleteIssue, getIssueProgress, persistIssue, persistIssueProgress } from '@/lib/issue-crud';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { createAssetDocumentPreviewUrl, uploadIssueProgressDocument } from '@/lib/storage';
-import type { Asset, AssetIssue, IssueProgress } from '@/lib/types';
+import type { Asset, AssetIssue, IssueProgress, ProgressDocumentItem } from '@/lib/types';
 import { formatDateForInput, formatDateIndo } from '@/lib/date-utils';
 
 import { AssetAutocompleteInput } from './asset-autocomplete-input';
@@ -40,16 +40,32 @@ function getIssueProgressPercentage(status: string): number {
 function getIssueProgressLabel(status: string): string {
   switch (status) {
     case 'identifikasi_masalah':
-      return 'Identifikasi Masalah (25%)';
+      return 'Ditindaklanjuti (25%)';
     case 'sedang_ditindaklanjuti':
-      return 'Sedang Ditindaklanjuti (75%)';
+      return 'Penyelesaian (75%)';
     case 'selesai':
-      return 'Selesai (100%)';
+      return 'Selesai / Finish (100%)';
     case 'permasalahan':
     case 'belum_ditindaklanjuti':
     default:
-      return 'Permasalahan (0%)';
+      return 'Identifikasi (0%)';
   }
+}
+
+export function formatKodeSatker(rawCode: string | null | undefined): string | null {
+  if (!rawCode) return null;
+  const clean = rawCode.trim();
+  const match = clean.match(/69\d{4}/);
+  if (match) return match[0];
+  return clean;
+}
+
+export function getCanonicalSatkerName(name: string | null | undefined): string {
+  if (!name) return 'Lainnya';
+  const clean = name.replace(/^REKTORAT\s+/i, '').trim();
+  if (/padja[dj]aran/i.test(clean)) return 'UNIVERSITAS PADJADJARAN';
+  if (/hasanud+in/i.test(clean)) return 'UNIVERSITAS HASANUDDIN';
+  return clean.toUpperCase();
 }
 
 function IssueProgressBar({ status }: { status: string }) {
@@ -95,19 +111,19 @@ function IssueProgressBar({ status }: { status: string }) {
       <div className="grid grid-cols-4 text-[10px] font-bold text-slate-400 text-center pt-1 gap-1">
         <div className={`flex flex-col items-center ${percentage >= 0 ? 'text-rose-600 font-extrabold' : ''}`}>
           <div className={`h-2 w-2 rounded-full mb-1 ${percentage >= 0 ? 'bg-rose-500 ring-2 ring-rose-200' : 'bg-slate-300'}`} />
-          <span>Permasalahan (0%)</span>
+          <span>Identifikasi (0%)</span>
         </div>
         <div className={`flex flex-col items-center ${percentage >= 25 ? 'text-amber-600 font-extrabold' : ''}`}>
           <div className={`h-2 w-2 rounded-full mb-1 ${percentage >= 25 ? 'bg-amber-500 ring-2 ring-amber-200' : 'bg-slate-300'}`} />
-          <span>Identifikasi (25%)</span>
+          <span>Ditindaklanjuti (25%)</span>
         </div>
         <div className={`flex flex-col items-center ${percentage >= 75 ? 'text-blue-600 font-extrabold' : ''}`}>
           <div className={`h-2 w-2 rounded-full mb-1 ${percentage >= 75 ? 'bg-[#165DFF] ring-2 ring-blue-200' : 'bg-slate-300'}`} />
-          <span>Ditindaklanjuti (75%)</span>
+          <span>Penyelesaian (75%)</span>
         </div>
         <div className={`flex flex-col items-center ${percentage === 100 ? 'text-emerald-600 font-extrabold' : ''}`}>
           <div className={`h-2 w-2 rounded-full mb-1 ${percentage === 100 ? 'bg-emerald-500 ring-2 ring-emerald-200' : 'bg-slate-300'}`} />
-          <span>Selesai (100%)</span>
+          <span>Selesai / Finish (100%)</span>
         </div>
       </div>
     </div>
@@ -136,6 +152,7 @@ function emptyIssue(nextId: number, assetId: number): AssetIssue {
     priority: 'sedang',
     status: 'permasalahan',
     found_date: new Date().toISOString().slice(0, 10),
+    description: '',
   };
 }
 
@@ -153,19 +170,97 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
   const [message, setMessage] = useState(isSupabaseConfigured ? 'Mode database aktif: permasalahan akan disimpan ke PostgreSQL lokal.' : 'Mode demo: permasalahan tersimpan lokal sampai env PostgreSQL lokal diisi.');
   const [isSaving, setIsSaving] = useState(false);
   const [deletingId, setDeletingId] = useState<number | null>(null);
-  const [progressDocument, setProgressDocument] = useState<File | null>(null);
-  const [progressDocumentPreviewUrl, setProgressDocumentPreviewUrl] = useState<string | null>(null);
+  const [progressFiles, setProgressFiles] = useState<File[]>([]);
+  const [existingDocuments, setExistingDocuments] = useState<ProgressDocumentItem[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [expandedProgressIds, setExpandedProgressIds] = useState<Set<number>>(new Set());
 
-  const assetOptions = useMemo(() => assets.map((asset) => ({ id: asset.id, label: `${asset.asset_code} — ${asset.asset_name}` })), [assets]);
+  // Search & Filter State
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterSatker, setFilterSatker] = useState('');
+  const [filterStatus, setFilterStatus] = useState('');
+  const [filterPriority, setFilterPriority] = useState('');
+
+  const assetOptions = useMemo(
+    () =>
+      assets.map((asset) => {
+        const code6 = formatKodeSatker(asset.kode_satker);
+        const codeSuffix = code6 ? ` [Satker: ${code6}]` : '';
+        return { id: asset.id, label: `${asset.asset_code} — ${asset.asset_name}${codeSuffix}` };
+      }),
+    [assets]
+  );
   const assetById = useMemo(() => new Map(assets.map((asset) => [asset.id, asset])), [assets]);
-  const totalPages = Math.max(1, Math.ceil(items.length / itemsPerPage));
+
+  const uniqueSatkersWithCode = useMemo(() => {
+    const map = new Map<string, { key: string; name: string; code: string | null }>();
+    items.forEach((item) => {
+      const asset = assetById.get(item.asset_id);
+      const rawName = asset?.campus_name || asset?.nama_satker || item.issue_title.match(/^\[(.*?)\]/)?.[1];
+      const canonical = getCanonicalSatkerName(rawName);
+      const code = formatKodeSatker(asset?.kode_satker);
+      const key = code || canonical;
+
+      if (!map.has(key)) {
+        map.set(key, { key, name: canonical, code });
+      } else if (!map.get(key)?.code && code) {
+        map.set(key, { key, name: canonical, code });
+      }
+    });
+
+    return Array.from(map.values()).sort((a, b) => a.name.localeCompare(b.name));
+  }, [items, assetById]);
+
+  const filteredIssues = useMemo(() => {
+    return items.filter((item) => {
+      const asset = assetById.get(item.asset_id);
+      const rawSatker = asset?.campus_name || asset?.nama_satker || item.issue_title.match(/^\[(.*?)\]/)?.[1];
+      const satkerName = (rawSatker || '').toLowerCase();
+      const codeFull = (asset?.kode_satker || '').toLowerCase();
+      const code6 = formatKodeSatker(asset?.kode_satker);
+      const canonical = getCanonicalSatkerName(rawSatker);
+      const title = item.issue_title.toLowerCase();
+      const desc = (item.description || '').toLowerCase();
+      const q = searchQuery.toLowerCase().trim();
+
+      if (q) {
+        const matchQuery =
+          title.includes(q) ||
+          desc.includes(q) ||
+          satkerName.includes(q) ||
+          codeFull.includes(q) ||
+          (code6 && code6.toLowerCase().includes(q)) ||
+          canonical.toLowerCase().includes(q);
+        if (!matchQuery) return false;
+      }
+
+      if (filterSatker) {
+        const matchSatker =
+          (code6 && code6 === filterSatker) ||
+          canonical === filterSatker ||
+          satkerName.includes(filterSatker.toLowerCase()) ||
+          title.includes(`[${filterSatker.toLowerCase()}]`);
+        if (!matchSatker) return false;
+      }
+
+      if (filterStatus) {
+        if (item.status !== filterStatus) return false;
+      }
+
+      if (filterPriority) {
+        if (item.priority !== filterPriority) return false;
+      }
+
+      return true;
+    });
+  }, [items, assetById, searchQuery, filterSatker, filterStatus, filterPriority]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredIssues.length / itemsPerPage));
   const effectiveCurrentPage = Math.min(currentPage, totalPages);
   const visibleIssues = useMemo(
-    () => items.slice((effectiveCurrentPage - 1) * itemsPerPage, effectiveCurrentPage * itemsPerPage),
-    [effectiveCurrentPage, items, itemsPerPage]
+    () => filteredIssues.slice((effectiveCurrentPage - 1) * itemsPerPage, effectiveCurrentPage * itemsPerPage),
+    [effectiveCurrentPage, filteredIssues, itemsPerPage]
   );
 
   useEffect(() => {
@@ -197,6 +292,7 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
     if (!canManage) return;
     setDraft({
       ...item,
+      description: item.description ?? '',
       found_date: formatDateForInput(item.found_date),
     });
     setFormOpen(true);
@@ -217,7 +313,7 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
   function openProgress(issue: AssetIssue) {
     if (!canManage) return;
     setProgressDraft({
-      id: Math.max(0, ...progressItems.map((item) => item.id)) + 1,
+      id: 0,
       issue_id: issue.id,
       progress_date: new Date().toISOString().slice(0, 10),
       progress_description: '',
@@ -225,11 +321,29 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
       result_note: '',
       status: 'dalam_proses',
     });
-    setProgressDocument(null);
-    setProgressDocumentPreviewUrl(null);
+    setProgressFiles([]);
+    setExistingDocuments([]);
     setProgressOpen(true);
     setFormOpen(false);
     setMessage(isSupabaseConfigured ? 'Tindak lanjut baru akan disimpan ke issue_progress.' : 'Mode demo: tindak lanjut tersimpan lokal.');
+  }
+
+  function openEditProgress(progress: IssueProgress) {
+    if (!canManage) return;
+    setProgressDraft({
+      ...progress,
+      progress_date: formatDateForInput(progress.progress_date),
+    });
+    setProgressFiles([]);
+    const docs = progress.documents && progress.documents.length > 0
+      ? progress.documents
+      : progress.document_path || progress.document_name || progress.document_url
+      ? [{ name: progress.document_name || 'Dokumen Progress', path: progress.document_path, url: progress.document_url || (progress.document_path ? `/uploads/${progress.document_path}` : null) }]
+      : [];
+    setExistingDocuments(docs);
+    setProgressOpen(true);
+    setFormOpen(false);
+    setMessage(isSupabaseConfigured ? 'Perubahan tindak lanjut akan disimpan ke issue_progress.' : 'Mode demo: perubahan tersimpan lokal.');
   }
 
   function updateProgressDraft(patch: Partial<IssueProgress>) {
@@ -240,34 +354,51 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
     setProgressDraft(null);
     setProgressOpen(false);
     setIsSaving(false);
-    setProgressDocument(null);
-    setProgressDocumentPreviewUrl(null);
+    setProgressFiles([]);
+    setExistingDocuments([]);
   }
 
-  function handleProgressDocument(file?: File) {
-    if (!file) return;
-
+  function handleAddProgressDocuments(fileList: FileList | null) {
+    if (!fileList || fileList.length === 0) return;
     const maxSizeBytes = 10 * 1024 * 1024;
-    if (file.size > maxSizeBytes) {
-      setProgressDocument(null);
-      setProgressDocumentPreviewUrl(null);
-      setMessage(`${file.name} melebihi batas 10MB.`);
-      return;
+    const validFiles: File[] = [];
+    const oversizedFiles: string[] = [];
+
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      if (file.size > maxSizeBytes) {
+        oversizedFiles.push(file.name);
+      } else {
+        validFiles.push(file);
+      }
     }
 
-    setProgressDocument(file);
-    setProgressDocumentPreviewUrl(URL.createObjectURL(file));
-    setMessage(isSupabaseConfigured ? `Dokumen progress ${file.name} dipilih.` : `Dokumen progress ${file.name} dipilih (preview lokal).`);
+    if (oversizedFiles.length > 0) {
+      setMessage(`File melebihi batas 10MB: ${oversizedFiles.join(', ')}`);
+    }
+
+    if (validFiles.length > 0) {
+      setProgressFiles((prev) => [...prev, ...validFiles]);
+      setMessage(isSupabaseConfigured ? `${validFiles.length} berkas baru ditambahkan.` : `${validFiles.length} berkas baru ditambahkan (preview lokal).`);
+    }
   }
 
-  async function openProgressDocument(progress: IssueProgress) {
+  function handleRemoveNewProgressFile(index: number) {
+    setProgressFiles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function handleRemoveExistingDocument(index: number) {
+    setExistingDocuments((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  async function openSingleDocumentUrl(url?: string | null, path?: string | null) {
     try {
-      const url = progress.document_url || (progress.document_path ? await createAssetDocumentPreviewUrl(progress.document_path) : null);
-      if (!url) {
+      const finalUrl = url || (path ? await createAssetDocumentPreviewUrl(path) : null);
+      if (!finalUrl) {
         setMessage('Dokumen progress belum tersedia.');
         return;
       }
-      window.open(url, '_blank', 'noopener,noreferrer');
+      window.open(finalUrl, '_blank', 'noopener,noreferrer');
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Gagal membuka dokumen progress.');
     }
@@ -313,6 +444,7 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
         {
           ...draft,
           issue_title: draft.issue_title.trim(),
+          description: draft.description?.trim() || null,
           found_date: formatDateForInput(draft.found_date) || null,
         },
         { isNew }
@@ -344,23 +476,33 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
     setMessage(isSupabaseConfigured ? 'Menyimpan progress ke PostgreSQL lokal...' : 'Menyimpan progress ke state lokal demo...');
 
     try {
-      let saved = progressDraft;
-      if (progressDocument) {
-        if (isSupabaseConfigured) {
-          const uploaded = await uploadIssueProgressDocument({ issueId: progressDraft.issue_id, file: progressDocument });
-          saved = {
-            ...saved,
-            document_name: progressDocument.name,
-            document_path: uploaded.path,
-          };
-        } else {
-          saved = {
-            ...saved,
-            document_name: progressDocument.name,
-            document_url: progressDocumentPreviewUrl,
-          };
+      let finalDocuments: ProgressDocumentItem[] = [...existingDocuments];
+
+      if (progressFiles.length > 0) {
+        for (const file of progressFiles) {
+          if (isSupabaseConfigured) {
+            const uploaded = await uploadIssueProgressDocument({ issueId: progressDraft.issue_id, file });
+            finalDocuments.push({
+              name: file.name,
+              path: uploaded.path,
+              url: `/uploads/${uploaded.path}`,
+            });
+          } else {
+            finalDocuments.push({
+              name: file.name,
+              url: URL.createObjectURL(file),
+            });
+          }
         }
       }
+
+      const saved: IssueProgress = {
+        ...progressDraft,
+        document_name: finalDocuments[0]?.name ?? null,
+        document_path: finalDocuments[0]?.path ?? null,
+        document_url: finalDocuments[0]?.url ?? null,
+        documents: finalDocuments,
+      };
 
       const result = await persistIssueProgress({
         ...saved,
@@ -370,6 +512,7 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
       });
 
       const nextProgressItems = [result.progress, ...progressItems.filter((item) => item.id !== result.progress.id)];
+      nextProgressItems.sort((a, b) => new Date(b.progress_date).getTime() - new Date(a.progress_date).getTime() || b.id - a.id);
       setProgressItems(nextProgressItems);
 
       const targetIssue = items.find((item) => item.id === progressDraft.issue_id);
@@ -382,7 +525,7 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
       }
 
       setExpandedProgressIds((current) => new Set(current).add(progressDraft.issue_id));
-      setMessage(result.mode === 'postgres' ? 'Tindak lanjut permasalahan berhasil disimpan ke PostgreSQL lokal.' : 'Tindak lanjut berhasil disimpan di mode demo.');
+      setMessage(result.mode === 'postgres' ? (progressDraft.id > 0 ? 'Perubahan tindak lanjut berhasil disimpan.' : 'Tindak lanjut permasalahan berhasil disimpan ke PostgreSQL lokal.') : 'Tindak lanjut berhasil disimpan di mode demo.');
       closeProgressForm();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Gagal menyimpan progress permasalahan.');
@@ -452,6 +595,21 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
               </select>
             </label>
           </div>
+
+          <div className="grid gap-1.5 text-xs font-medium text-foreground">
+            <label htmlFor="uraian-temuan" className="flex items-center justify-between font-semibold">
+              <span>Uraian Temuan</span>
+              <span className="text-secondary font-normal text-[11px]">(Deskripsi detail temuan permasalahan)</span>
+            </label>
+            <textarea
+              id="uraian-temuan"
+              rows={4}
+              value={draft.description ?? ''}
+              onChange={(event) => updateDraft({ description: event.target.value })}
+              placeholder="Tuliskan uraian temuan permasalahan aset secara lengkap..."
+              className="w-full rounded-2xl border border-border bg-white p-3 text-xs font-normal text-foreground placeholder:text-slate-400 outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all resize-y"
+            />
+          </div>
           <div className="flex justify-end gap-3 border-t border-border pt-4">
             <button type="button" onClick={closeForm} className="rounded-button border border-border bg-white px-5 py-2.5 text-xs font-semibold text-secondary hover:bg-muted transition">
               Batal
@@ -477,8 +635,12 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
             >
               ← Kembali ke Daftar Permasalahan
             </button>
-            <h3 className="text-xl font-bold text-foreground">Catat Progress & Tindak Lanjut Masalah</h3>
-            <p className="mt-0.5 text-xs text-secondary">Catat informasi terbaru temuan/tindak lanjut dan upload dokumen pendukung.</p>
+            <h3 className="text-xl font-bold text-foreground">
+              {progressDraft.id > 0 ? 'Edit Progress & Tindak Lanjut' : 'Catat Progress & Tindak Lanjut Masalah'}
+            </h3>
+            <p className="mt-0.5 text-xs text-secondary">
+              {progressDraft.id > 0 ? 'Perbarui informasi tindak lanjut, catatan hasil, status, atau ganti dokumen pendukung.' : 'Catat informasi terbaru temuan/tindak lanjut dan upload dokumen pendukung.'}
+            </p>
           </div>
           <button type="button" onClick={closeProgressForm} className="grid h-9 w-9 place-items-center rounded-xl border border-border bg-gray-50 text-secondary hover:bg-muted transition">
             <X className="h-4 w-4" />
@@ -492,8 +654,16 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
               <input type="date" value={progressDraft.progress_date} onChange={(event) => updateProgressDraft({ progress_date: event.target.value })} required className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
             </label>
             <label className="grid gap-1.5 text-xs font-medium text-foreground">
-              Penanggung Jawab
-              <input value={progressDraft.responsible_person ?? ''} onChange={(event) => updateProgressDraft({ responsible_person: event.target.value })} placeholder="Tim Aset / Bagian Hukum / Unit terkait" className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all" />
+              <span className="flex items-center justify-between">
+                <span>Penanggung Jawab</span>
+                <span className="text-[11px] font-normal text-secondary">(Bisa lebih dari 1 orang, pisahkan koma)</span>
+              </span>
+              <input
+                value={progressDraft.responsible_person ?? ''}
+                onChange={(event) => updateProgressDraft({ responsible_person: event.target.value })}
+                placeholder="Contoh: Budi Santoso, Siti Rahma, Tim Hukum BMN"
+                className="rounded-2xl border border-border bg-white px-4 py-2.5 text-xs font-medium text-foreground outline-none focus:border-primary transition-all"
+              />
             </label>
             <label className="grid gap-1.5 text-xs font-medium text-foreground md:col-span-2">
               Informasi Terbaru / Temuan
@@ -520,31 +690,105 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
                 </div>
                 <div>
                   <h5 className="font-bold text-foreground text-sm">Dokumen Pendukung Progress</h5>
-                  <p className="mt-0.5 text-xs text-secondary">Upload surat, foto dokumen, berita acara, atau bukti tindak lanjut. Maksimal 10MB.</p>
-                  {progressDocument && <p className="mt-1 text-xs font-semibold text-primary">{progressDocument.name}</p>}
+                  <p className="mt-0.5 text-xs text-secondary">
+                    Upload surat, foto dokumen, berita acara, atau bukti tindak lanjut. Bisa pilih lebih dari 1 dokumen (Maks. 10MB/file).
+                  </p>
                 </div>
               </div>
-              <div className="flex flex-wrap gap-2">
-                {progressDocumentPreviewUrl && (
-                  <button type="button" onClick={() => window.open(progressDocumentPreviewUrl, '_blank', 'noopener,noreferrer')} className="inline-flex items-center gap-2 rounded-button bg-gray-50 border border-border px-4 py-2 text-xs font-semibold text-primary hover:bg-muted transition">
-                    <Eye className="h-4 w-4" />
-                    Lihat
-                  </button>
-                )}
+              <div>
                 <label className="inline-flex cursor-pointer items-center gap-2 rounded-button bg-info-light px-4 py-2 text-xs font-semibold text-primary hover:bg-info-light/80 transition">
                   <UploadCloud className="h-4 w-4" />
-                  Pilih Dokumen
-                  <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" onChange={(event) => handleProgressDocument(event.target.files?.[0])} className="sr-only" />
+                  + Tambah Dokumen
+                  <input
+                    type="file"
+                    multiple
+                    accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.xls,.xlsx"
+                    onChange={(event) => {
+                      handleAddProgressDocuments(event.target.files);
+                      event.target.value = '';
+                    }}
+                    className="sr-only"
+                  />
                 </label>
               </div>
             </div>
+
+            {/* List of existing and newly selected documents */}
+            {(existingDocuments.length > 0 || progressFiles.length > 0) && (
+              <div className="mt-4 space-y-2 border-t border-border pt-3">
+                <div className="text-[11px] font-bold text-secondary uppercase tracking-wider">
+                  Daftar Berkas Terlampir ({existingDocuments.length + progressFiles.length})
+                </div>
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {/* Existing documents */}
+                  {existingDocuments.map((doc, idx) => (
+                    <div key={`existing-${doc.name}-${idx}`} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-gray-50/80 px-3 py-2 text-xs">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <FileText className="h-4 w-4 text-primary shrink-0" />
+                        <span className="truncate font-medium text-foreground" title={doc.name}>{doc.name}</span>
+                        <span className="shrink-0 rounded bg-slate-200 px-1.5 py-0.2 text-[10px] text-slate-600">Tersimpan</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        {(doc.url || doc.path) && (
+                          <button
+                            type="button"
+                            onClick={() => openSingleDocumentUrl(doc.url, doc.path)}
+                            title="Lihat Dokumen"
+                            className="grid h-7 w-7 place-items-center rounded-lg bg-white border border-border text-primary hover:bg-muted transition"
+                          >
+                            <Eye className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveExistingDocument(idx)}
+                          title="Hapus Dokumen"
+                          className="grid h-7 w-7 place-items-center rounded-lg bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 transition"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+
+                  {/* New files */}
+                  {progressFiles.map((file, idx) => (
+                    <div key={`new-${file.name}-${idx}`} className="flex items-center justify-between gap-2 rounded-xl border border-primary/30 bg-primary/5 px-3 py-2 text-xs">
+                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                        <FileText className="h-4 w-4 text-primary shrink-0" />
+                        <span className="truncate font-semibold text-primary" title={file.name}>{file.name}</span>
+                        <span className="shrink-0 rounded bg-primary/20 px-1.5 py-0.2 text-[10px] text-primary font-bold">Baru</span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <button
+                          type="button"
+                          onClick={() => window.open(URL.createObjectURL(file), '_blank', 'noopener,noreferrer')}
+                          title="Preview Dokumen Baru"
+                          className="grid h-7 w-7 place-items-center rounded-lg bg-white border border-border text-primary hover:bg-muted transition"
+                        >
+                          <Eye className="h-3.5 w-3.5" />
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => handleRemoveNewProgressFile(idx)}
+                          title="Batal Unggah"
+                          className="grid h-7 w-7 place-items-center rounded-lg bg-white border border-rose-200 text-rose-600 hover:bg-rose-50 transition"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
           <div className="flex justify-end gap-3 border-t border-border pt-4">
             <button type="button" onClick={closeProgressForm} className="rounded-button border border-border bg-white px-5 py-2.5 text-xs font-semibold text-secondary hover:bg-muted transition">
               Batal
             </button>
             <button disabled={isSaving} className="rounded-button bg-primary px-5 py-2.5 text-xs font-semibold text-white shadow-md shadow-primary/20 hover:bg-primary-hover transition disabled:opacity-60">
-              {isSaving ? 'Menyimpan...' : 'Simpan Progress'}
+              {isSaving ? 'Menyimpan...' : progressDraft.id > 0 ? 'Simpan Perubahan' : 'Simpan Progress'}
             </button>
           </div>
         </form>
@@ -569,6 +813,110 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
         </button>
       </div>
 
+      {/* Filter and Search Bar */}
+      <div className="mb-6 rounded-2xl border border-slate-200/80 bg-slate-50/70 p-4 shadow-sm">
+        <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+          <div className="relative flex-1">
+            <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1);
+              }}
+              placeholder="Cari temuan, nama kampus, kode satker (misal: 693412)..."
+              className="w-full rounded-xl border border-slate-200 bg-white pl-10 pr-4 py-2 text-xs font-medium text-slate-800 placeholder-slate-400 shadow-sm outline-none transition focus:border-primary focus:ring-1 focus:ring-primary"
+            />
+          </div>
+
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Filter Satker */}
+            <div className="flex items-center gap-1.5">
+              <Filter className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+              <select
+                value={filterSatker}
+                onChange={(e) => {
+                  setFilterSatker(e.target.value);
+                  setCurrentPage(1);
+                }}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none transition focus:border-primary max-w-[260px]"
+              >
+                <option value="">Semua Satker / Kampus ({uniqueSatkersWithCode.length})</option>
+                {uniqueSatkersWithCode.map((s) => (
+                  <option key={s.key} value={s.key}>
+                    {s.name} {s.code ? `(${s.code})` : ''}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {/* Filter Status */}
+            <select
+              value={filterStatus}
+              onChange={(e) => {
+                setFilterStatus(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none transition focus:border-primary"
+            >
+              <option value="">Semua Tahap Status</option>
+              <option value="permasalahan">Identifikasi (0%)</option>
+              <option value="identifikasi_masalah">Ditindaklanjuti (25%)</option>
+              <option value="sedang_ditindaklanjuti">Penyelesaian (75%)</option>
+              <option value="selesai">Selesai (100%)</option>
+            </select>
+
+            {/* Filter Prioritas */}
+            <select
+              value={filterPriority}
+              onChange={(e) => {
+                setFilterPriority(e.target.value);
+                setCurrentPage(1);
+              }}
+              className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-medium text-slate-700 shadow-sm outline-none transition focus:border-primary"
+            >
+              <option value="">Semua Prioritas</option>
+              <option value="mendesak">Mendesak</option>
+              <option value="tinggi">Tinggi</option>
+              <option value="sedang">Sedang</option>
+              <option value="rendah">Rendah</option>
+            </select>
+
+            {/* Reset Button */}
+            {(searchQuery || filterSatker || filterStatus || filterPriority) && (
+              <button
+                type="button"
+                onClick={() => {
+                  setSearchQuery('');
+                  setFilterSatker('');
+                  setFilterStatus('');
+                  setFilterPriority('');
+                  setCurrentPage(1);
+                }}
+                title="Reset Filter"
+                className="inline-flex items-center gap-1 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-600 transition hover:bg-rose-100"
+              >
+                <RotateCcw className="h-3.5 w-3.5" />
+                Reset
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Filter stats badge */}
+        <div className="mt-2.5 flex items-center justify-between text-[11px] text-slate-500 font-medium border-t border-slate-200/60 pt-2">
+          <span>
+            Menampilkan <strong>{filteredIssues.length}</strong> dari <strong>{items.length}</strong> permasalahan BMN
+            {filterSatker ? (() => {
+              const active = uniqueSatkersWithCode.find((s) => s.key === filterSatker);
+              return active ? ` • Kampus: ${active.name}${active.code ? ` (${active.code})` : ''}` : ` • Kampus: ${filterSatker}`;
+            })() : ''}
+          </span>
+          <span className="text-slate-400 font-normal">Prioritas 1 Rencana Aksi Kemdiktisaintek</span>
+        </div>
+      </div>
+
       <div className="grid gap-4">
         {visibleIssues.map((issue) => {
           const issueProgress = progressItems.filter((progress) => progress.issue_id === issue.id);
@@ -577,11 +925,33 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
           return (
             <div key={issue.id} className="rounded-2xl border border-border bg-white p-5 shadow-sm hover:shadow-md transition-all">
               <div className="flex items-start justify-between gap-3">
-                <div>
+                <div className="flex-1 min-w-0 pr-4">
                   <h4 className="font-bold text-foreground text-base">{issue.issue_title}</h4>
-                  <p className="mt-1 text-xs text-secondary">
-                    {asset?.asset_name ?? `Aset #${issue.asset_id}`} • {asset?.campus_name ?? 'Universitas belum diisi'} • {issue.issue_type.replaceAll('_', ' ')} • Prioritas <strong className="text-foreground uppercase">{issue.priority}</strong> • Temuan: {formatDateIndo(issue.found_date)}
-                  </p>
+                  {issue.description ? (
+                    <div className="mt-2 rounded-xl border border-slate-100 bg-slate-50/80 p-3 text-xs text-slate-700 leading-relaxed whitespace-pre-line break-words">
+                      <span className="font-semibold text-slate-900 block text-[11px] uppercase tracking-wider mb-1">Uraian Temuan:</span>
+                      {issue.description}
+                    </div>
+                  ) : null}
+                  <div className="mt-2.5 flex flex-wrap items-center gap-2 text-xs text-secondary">
+                    <span className="font-bold text-slate-800 flex items-center gap-1.5">
+                      🏛️ {asset?.campus_name ?? 'Universitas / LLDIKTI belum diisi'}
+                    </span>
+                    {formatKodeSatker(asset?.kode_satker) ? (
+                      <span className="inline-flex items-center gap-1 rounded-md bg-indigo-50 border border-indigo-200/80 px-2 py-0.5 text-[11px] font-bold text-indigo-700">
+                        <span className="text-[9px] uppercase tracking-wider text-indigo-400 font-semibold">Kode Satker:</span>
+                        {formatKodeSatker(asset?.kode_satker)}
+                      </span>
+                    ) : null}
+                    <span className="text-slate-300">•</span>
+                    <span>{asset?.asset_name ?? `Aset #${issue.asset_id}`}</span>
+                    <span className="text-slate-300">•</span>
+                    <span className="capitalize">{issue.issue_type.replaceAll('_', ' ')}</span>
+                    <span className="text-slate-300">•</span>
+                    <span>Prioritas <strong className="text-foreground uppercase">{issue.priority}</strong></span>
+                    <span className="text-slate-300">•</span>
+                    <span>Temuan: {formatDateIndo(issue.found_date)}</span>
+                  </div>
                 </div>
                 <div className="flex shrink-0 flex-wrap justify-end gap-2">
                   <button
@@ -639,22 +1009,59 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
                       {issueProgress.map((progress) => (
                         <div key={progress.id} className="rounded-2xl border border-border bg-white p-3.5 shadow-sm">
                           <div className="flex items-start justify-between gap-3">
-                            <div>
+                            <div className="space-y-1.5 min-w-0 flex-1">
                               <p className="text-xs font-bold text-primary">{formatDateIndo(progress.progress_date)} • {progress.status.replaceAll('_', ' ')}</p>
-                              <p className="mt-1 text-xs font-medium leading-relaxed text-foreground">{progress.progress_description}</p>
-                              {progress.responsible_person && <p className="mt-1 text-xs text-secondary">PJ: {progress.responsible_person}</p>}
-                              {progress.result_note && <p className="mt-1 text-xs text-secondary">Catatan: {progress.result_note}</p>}
+                              <p className="text-xs font-medium leading-relaxed text-foreground whitespace-pre-line">{progress.progress_description}</p>
+                              
+                              {/* Multiple PJ Tags */}
+                              {progress.responsible_person && (
+                                <div className="flex flex-wrap items-center gap-1.5 pt-0.5">
+                                  <span className="text-[11px] font-bold text-secondary">PJ:</span>
+                                  {progress.responsible_person.split(',').map((p) => p.trim()).filter(Boolean).map((person, pIdx) => (
+                                    <span key={`pj-${progress.id}-${pIdx}`} className="inline-flex items-center rounded-md bg-slate-100 border border-slate-200/80 px-2 py-0.5 text-[11px] font-medium text-slate-700">
+                                      👤 {person}
+                                    </span>
+                                  ))}
+                                </div>
+                              )}
+
+                              {progress.result_note && <p className="text-xs text-secondary">Catatan: {progress.result_note}</p>}
+
+                              {/* Multiple Documents List */}
+                              {((progress.documents && progress.documents.length > 0) || progress.document_path || progress.document_url) && (
+                                <div className="mt-2 flex flex-wrap gap-2 pt-1 border-t border-slate-100">
+                                  {(progress.documents && progress.documents.length > 0
+                                    ? progress.documents
+                                    : [{ name: progress.document_name || 'Dokumen Progress', path: progress.document_path, url: progress.document_url || (progress.document_path ? `/uploads/${progress.document_path}` : null) }]
+                                  ).map((doc, dIdx) => (
+                                    <button
+                                      key={`doc-${progress.id}-${dIdx}`}
+                                      type="button"
+                                      onClick={() => openSingleDocumentUrl(doc.url, doc.path)}
+                                      title={`Buka Dokumen: ${doc.name}`}
+                                      className="inline-flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/5 px-2.5 py-1 text-xs font-semibold text-primary hover:bg-primary/10 transition"
+                                    >
+                                      <FileText className="h-3.5 w-3.5" />
+                                      <span className="truncate max-w-[180px]">{doc.name}</span>
+                                      <Eye className="h-3 w-3 opacity-70" />
+                                    </button>
+                                  ))}
+                                </div>
+                              )}
                             </div>
-                            {progress.document_path || progress.document_url ? (
-                              <button
-                                type="button"
-                                onClick={() => openProgressDocument(progress)}
-                                title="Lihat Dokumen Progress"
-                                className="grid h-9 w-9 place-items-center rounded-xl bg-info-light text-primary transition hover:bg-info-light/80 shrink-0"
-                              >
-                                <Eye className="h-4 w-4" />
-                              </button>
-                            ) : null}
+
+                            <div className="flex items-center gap-1.5 shrink-0">
+                              {canManage && (
+                                <button
+                                  type="button"
+                                  onClick={() => openEditProgress(progress)}
+                                  title="Edit Tindak Lanjut"
+                                  className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] shrink-0"
+                                >
+                                  <Pencil className="h-4 w-4" />
+                                </button>
+                              )}
+                            </div>
                           </div>
                         </div>
                       ))}
@@ -669,7 +1076,11 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
             </div>
           );
         })}
-        {items.length === 0 && <div className="grid place-items-center rounded-2xl border border-dashed border-border p-8 text-sm font-medium text-secondary bg-white">Belum ada permasalahan aset.</div>}
+        {filteredIssues.length === 0 && (
+          <div className="grid place-items-center rounded-2xl border border-dashed border-border p-8 text-sm font-medium text-secondary bg-white">
+            {items.length === 0 ? 'Belum ada permasalahan aset.' : 'Tidak ada permasalahan aset yang sesuai dengan kriteria pencarian/filter.'}
+          </div>
+        )}
       </div>
 
       <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between border-t border-border pt-4">
@@ -693,8 +1104,8 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
             data / hal
           </label>
           <span className="text-xs text-secondary font-medium">
-            (Menampilkan {items.length > 0 ? ((effectiveCurrentPage - 1) * itemsPerPage) + 1 : 0}-
-            {Math.min(effectiveCurrentPage * itemsPerPage, items.length)} dari {items.length} temuan)
+            (Menampilkan {filteredIssues.length > 0 ? ((effectiveCurrentPage - 1) * itemsPerPage) + 1 : 0}-
+            {Math.min(effectiveCurrentPage * itemsPerPage, filteredIssues.length)} dari {filteredIssues.length} temuan{filteredIssues.length !== items.length ? ` [difilter dari ${items.length}]` : ''})
           </span>
         </div>
 

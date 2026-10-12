@@ -750,10 +750,10 @@ export function BmnDisposalManager({
       {/* Table Section */}
       <div className="overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs border-collapse">
+          <table className="w-full min-w-[1050px] text-left text-xs border-collapse">
             <thead className="border-b border-[#E5E7EB] bg-[#F9FAFB] text-[11px] font-bold uppercase tracking-wider text-[#6A7686]">
               <tr>
-                <th className="px-5 py-4">No. Surat & Satker</th>
+                <th className="px-5 py-4 min-w-[240px]">No. Surat & Satker</th>
                 <th className="px-5 py-4">Jumlah Barang</th>
                 <th className="px-5 py-4">Jenis BMN</th>
                 <th className="px-5 py-4">Nilai Perolehan</th>
@@ -778,13 +778,13 @@ export function BmnDisposalManager({
                 filteredProposals.map((item) => (
                   <tr key={item.id} className="hover:bg-[#F9FAFB]/80 transition">
                     {/* Kolom 1: No. Surat & Satker */}
-                    <td className="px-5 py-4">
+                    <td className="px-5 py-4 min-w-[240px]">
                       <div className="font-extrabold text-[#080C1A]">{item.no_surat_permohonan}</div>
                       {item.tgl_surat_permohonan && (
                         <div className="text-[11px] font-medium text-slate-500">Tgl: {item.tgl_surat_permohonan}</div>
                       )}
-                      <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-[#165DFF]">
-                        <Building2 className="h-3.5 w-3.5" />
+                      <div className="mt-1 flex items-center gap-1 text-[11px] font-semibold text-[#165DFF] whitespace-normal break-words" title={item.nama_satker}>
+                        <Building2 className="h-3.5 w-3.5 shrink-0" />
                         <span>[{extract6DigitKodeSatker(item.kode_satker)}] {item.nama_satker}</span>
                       </div>
                     </td>

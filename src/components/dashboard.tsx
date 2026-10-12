@@ -588,10 +588,10 @@ export function Dashboard({
         <section className="mb-6 rounded-card border border-border bg-white p-6 shadow-sm">
           <div className="flex flex-col justify-between gap-3 md:flex-row md:items-center">
             <div>
-              <h3 className="font-bold text-foreground">Filter Universitas / Kampus</h3>
+              <h3 className="font-bold text-foreground">Filter Universitas / LLDIKTI</h3>
               <p className="mt-1 text-sm text-secondary">
                 {canViewAll
-                  ? 'Filter data aset, pemanfaatan, dan laporan berdasarkan kampus terdaftar.'
+                  ? 'Filter data aset, pemanfaatan, dan laporan berdasarkan Universitas / LLDIKTI terdaftar.'
                   : 'Data difilter secara otomatis berdasarkan wilayah penugasan Operator Kampus.'}
               </p>
             </div>
@@ -601,7 +601,7 @@ export function Dashboard({
                 onChange={(event) => setSelectedUniversity(event.target.value)}
                 className="min-w-64 rounded-2xl border border-border bg-gray-50 px-4 py-2.5 text-sm font-medium text-foreground outline-none transition-all duration-200 focus:border-primary focus:bg-white cursor-pointer"
               >
-                <option value="">Semua Universitas (Global)</option>
+                <option value="">Semua Universitas / LLDIKTI (Global)</option>
                 {universityOptions.map((name) => (
                   <option key={name} value={name}>
                     {name}
@@ -611,7 +611,7 @@ export function Dashboard({
             ) : (
               <div className="inline-flex items-center gap-2.5 rounded-2xl bg-slate-100/90 border border-slate-200 px-4 py-2.5 text-sm font-extrabold text-slate-800 shadow-2xs select-none">
                 <Building2 className="h-4.5 w-4.5 text-primary shrink-0" />
-                <span>{universityName || 'Universitas Penugasan Anda'}</span>
+                <span>{universityName || 'Universitas / LLDIKTI Penugasan Anda'}</span>
                 <span className="inline-flex items-center gap-1 rounded-full bg-slate-200/80 px-2.5 py-0.5 text-[10px] font-extrabold text-slate-600 uppercase tracking-wider">
                   🔒 Khusus Kampus Anda
                 </span>

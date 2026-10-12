@@ -160,7 +160,7 @@ export function AssetAutocompleteInput({
                         <span className="text-[11px] font-extrabold text-[#080C1A] truncate">{displayMerk}</span>
                       </div>
                       <p className="mt-0.5 text-[11px] font-medium text-slate-500 truncate">
-                        {asset.asset_code} • {asset.campus_name || 'Universitas'}
+                        {asset.asset_code} • {asset.campus_name || 'Universitas / LLDIKTI'}
                       </p>
                     </div>
                   </div>

@@ -547,11 +547,11 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
       </div>
 
       <div className="overflow-x-auto rounded-2xl border border-border">
-        <table className="min-w-[980px] w-full text-left text-sm">
+        <table className="min-w-[1100px] w-full text-left text-sm">
           <thead className="bg-muted text-xs uppercase font-semibold text-secondary border-b border-border">
             <tr>
               <th className="px-4 py-3.5 font-semibold">Pihak Ketiga</th>
-              <th className="px-4 py-3.5 font-semibold">Universitas</th>
+              <th className="px-4 py-3.5 font-semibold min-w-[220px]">Universitas / LLDIKTI</th>
               <th className="px-4 py-3.5 font-semibold">Aset</th>
               <th className="px-4 py-3.5 font-semibold">Jenis</th>
               <th className="px-4 py-3.5 font-semibold">Luas</th>
@@ -567,7 +567,7 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
               return (
                 <tr key={item.id} className="hover:bg-muted/50 transition-colors">
                   <td className="px-4 py-3.5 font-bold text-foreground">{item.third_party_name}</td>
-                  <td className="px-4 py-3.5 text-xs font-medium text-secondary">{asset?.campus_name ?? '-'}</td>
+                  <td className="px-4 py-3.5 text-xs font-medium text-secondary min-w-[220px] whitespace-normal break-words leading-relaxed" title={asset?.campus_name ?? ''}>{asset?.campus_name ?? '-'}</td>
                   <td className="px-4 py-3.5 text-xs font-medium text-foreground">{asset ? getAssetDisplayName(asset) : `Aset #${item.asset_id}`}</td>
                   <td className="px-4 py-3.5 text-xs font-semibold text-[#080C1A]">
                     <span className="inline-flex items-center rounded-md bg-slate-100 px-2.5 py-1 text-[11px] font-bold text-slate-800 border border-slate-200/60">
@@ -805,7 +805,7 @@ function UtilizationDetailModal({
           </div>
 
           <div className="rounded-3xl border border-slate-200 bg-white p-5 shadow-xs">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Perguruan Tinggi / Universitas</span>
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-slate-400 block">Perguruan Tinggi / Universitas / LLDIKTI</span>
             <strong className="text-xs font-bold text-slate-800 mt-1 block">{asset?.campus_name ?? '-'}</strong>
           </div>
 

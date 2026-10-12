@@ -444,11 +444,11 @@ export function ReportsManager({
         {/* TAB 1: PEMANFAATAN ASET TABLE */}
         {activeTab === 'pemanfaatan' && (
           <div className="overflow-x-auto rounded-xl border border-border">
-            <table className="w-full text-left text-xs">
+            <table className="w-full min-w-[980px] text-left text-xs">
               <thead className="border-b border-border bg-slate-50 font-semibold text-foreground">
                 <tr>
                   <th className="px-4 py-3">No</th>
-                  <th className="px-4 py-3">Kode / Satker</th>
+                  <th className="px-4 py-3 min-w-[200px]">Universitas / LLDIKTI</th>
                   <th className="px-4 py-3">Nama Aset</th>
                   <th className="px-4 py-3">Jenis Pemanfaatan</th>
                   <th className="px-4 py-3">Mitra / Pihak Ke-3</th>
@@ -470,8 +470,8 @@ export function ReportsManager({
                     return (
                       <tr key={item.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="px-4 py-3 font-medium text-slate-500">{idx + 1}</td>
-                        <td className="px-4 py-3">
-                          <div className="font-semibold text-foreground">{asset?.nama_satker || asset?.campus_name || '-'}</div>
+                        <td className="px-4 py-3 min-w-[200px]">
+                          <div className="font-semibold text-foreground whitespace-normal break-words leading-snug" title={asset?.nama_satker || asset?.campus_name || ''}>{asset?.nama_satker || asset?.campus_name || '-'}</div>
                           <div className="text-[11px] text-secondary">{asset?.kode_satker || '-'}</div>
                         </td>
                         <td className="px-4 py-3">
@@ -515,11 +515,11 @@ export function ReportsManager({
         {/* TAB 2: PERMASALAHAN ASET TABLE */}
         {activeTab === 'permasalahan' && (
           <div className="overflow-x-auto rounded-xl border border-border">
-            <table className="w-full text-left text-xs">
+            <table className="w-full min-w-[980px] text-left text-xs">
               <thead className="border-b border-border bg-slate-50 font-semibold text-foreground">
                 <tr>
                   <th className="px-4 py-3">No</th>
-                  <th className="px-4 py-3">Kode / Satker</th>
+                  <th className="px-4 py-3 min-w-[200px]">Universitas / LLDIKTI</th>
                   <th className="px-4 py-3">Nama Aset</th>
                   <th className="px-4 py-3">Judul Permasalahan</th>
                   <th className="px-4 py-3">Jenis Permasalahan</th>
@@ -541,8 +541,8 @@ export function ReportsManager({
                     return (
                       <tr key={issue.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="px-4 py-3 font-medium text-slate-500">{idx + 1}</td>
-                        <td className="px-4 py-3">
-                          <div className="font-semibold text-foreground">{asset?.nama_satker || asset?.campus_name || '-'}</div>
+                        <td className="px-4 py-3 min-w-[200px]">
+                          <div className="font-semibold text-foreground whitespace-normal break-words leading-snug" title={asset?.nama_satker || asset?.campus_name || ''}>{asset?.nama_satker || asset?.campus_name || '-'}</div>
                           <div className="text-[11px] text-secondary">{asset?.kode_satker || '-'}</div>
                         </td>
                         <td className="px-4 py-3">
@@ -551,7 +551,14 @@ export function ReportsManager({
                           </div>
                           <div className="text-[11px] text-secondary">Kode: {asset?.kode_barang || asset?.asset_code || '-'}</div>
                         </td>
-                        <td className="px-4 py-3 font-bold text-foreground">{issue.issue_title}</td>
+                        <td className="px-4 py-3 min-w-[180px]">
+                          <div className="font-bold text-foreground">{issue.issue_title}</div>
+                          {issue.description ? (
+                            <div className="mt-1 text-xs font-normal text-slate-500 whitespace-normal break-words leading-relaxed max-w-sm">
+                              {issue.description}
+                            </div>
+                          ) : null}
+                        </td>
                         <td className="px-4 py-3 font-medium text-secondary">{issue.issue_type}</td>
                         <td className="px-4 py-3">
                           <span
@@ -598,11 +605,11 @@ export function ReportsManager({
                 <span>Memuat data usulan penghapusan BMN...</span>
               </div>
             ) : (
-              <table className="w-full text-left text-xs">
+              <table className="w-full min-w-[1050px] text-left text-xs">
                 <thead className="border-b border-border bg-slate-50 font-semibold text-foreground">
                   <tr>
                     <th className="px-4 py-3">No</th>
-                    <th className="px-4 py-3">Satker / Universitas</th>
+                    <th className="px-4 py-3 min-w-[220px]">Satker / Universitas / LLDIKTI</th>
                     <th className="px-4 py-3">No. Surat Permohonan</th>
                     <th className="px-4 py-3">Deskripsi Barang</th>
                     <th className="px-4 py-3 text-right">Jumlah (Unit)</th>
@@ -622,8 +629,8 @@ export function ReportsManager({
                     filteredDisposals.map((prop, idx) => (
                       <tr key={prop.id} className="hover:bg-slate-50/80 transition-colors">
                         <td className="px-4 py-3 font-medium text-slate-500">{idx + 1}</td>
-                        <td className="px-4 py-3 font-semibold text-foreground">
-                          <div>{prop.nama_satker}</div>
+                        <td className="px-4 py-3 font-semibold text-foreground min-w-[220px]">
+                          <div className="whitespace-normal break-words leading-snug" title={prop.nama_satker}>{prop.nama_satker}</div>
                           <div className="text-[11px] text-secondary font-mono">Kode: {prop.kode_satker}</div>
                         </td>
                         <td className="px-4 py-3 font-mono font-semibold text-foreground">{prop.no_surat_permohonan}</td>

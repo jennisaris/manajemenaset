@@ -217,7 +217,7 @@ function ClickHandler({ onPick }: { onPick: (lat: number, lng: number) => void }
 }
 
 function shortName(result: LocationSearchResult) {
-  return result.name || result.display_name.split(',')[0] || 'Lokasi Universitas';
+  return result.name || result.display_name.split(',')[0] || 'Lokasi Universitas / LLDIKTI';
 }
 
 export function LocationPicker({

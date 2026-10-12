@@ -39,7 +39,7 @@ const emptyAsset = (nextId: number): Asset => ({
   campus_name: '',
   faculty_or_unit: '',
   address: '',
-  ownership_status: 'Milik Universitas',
+  ownership_status: 'Milik Universitas / LLDIKTI',
   condition_status: 'Baik',
   verification_status: 'draft',
   latitude: null,
@@ -569,13 +569,13 @@ export function AssetList({
             {/* Header & Filter Controls Bar */}
             <div className="flex flex-col gap-4 border-b border-[#F3F4F3] p-5 lg:flex-row lg:items-center lg:justify-between">
               <div>
-                <h3 className="text-lg font-bold text-[#080C1A]">Data Aset Universitas</h3>
+                <h3 className="text-lg font-bold text-[#080C1A]">Data Aset Universitas / LLDIKTI</h3>
                 <p className="text-xs text-[#6A7686]">
                   Kelola inventarisasi tanah dan bangunan serta status verifikasi aset.
                 </p>
                 {isScopedRole && (
                   <p className="mt-1 text-xs font-semibold text-[#165DFF]">
-                    Scope universitas: {currentUniversity ?? 'Belum diset di profil'}
+                    Scope universitas / LLDIKTI: {currentUniversity ?? 'Belum diset di profil'}
                   </p>
                 )}
               </div>

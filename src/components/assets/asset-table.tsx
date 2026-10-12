@@ -68,15 +68,15 @@ const AssetRow = memo(function AssetRow({
       </td>
 
       {/* Column 2: Tipe & Lokasi */}
-      <td className="px-5 py-4">
+      <td className="px-5 py-4 min-w-[240px]">
         <span className="inline-flex items-center gap-1 rounded-md bg-[#EFF2F7] px-2 py-0.5 text-[11px] font-bold text-[#165DFF] mb-1">
           {asset.asset_type === 'land' ? 'Tanah' : 'Bangunan'}
         </span>
-        <p className="text-xs font-semibold text-[#080C1A]">
+        <p className="text-xs font-semibold text-[#080C1A] whitespace-normal break-words leading-snug" title={asset.campus_name || asset.nama_satker || ''}>
           {asset.kode_satker ? <span className="text-[#165DFF] font-extrabold mr-1">[{extract6DigitKodeSatker(asset.kode_satker)}]</span> : null}
           {asset.campus_name || asset.nama_satker || '-'}
         </p>
-        <p className="text-[11px] text-[#6A7686] truncate max-w-48">{asset.faculty_or_unit || '-'}</p>
+        <p className="text-[11px] text-[#6A7686] break-words" title={asset.faculty_or_unit || ''}>{asset.faculty_or_unit || '-'}</p>
       </td>
 
       {/* Column 3: Kondisi & Kepemilikan */}
@@ -86,7 +86,7 @@ const AssetRow = memo(function AssetRow({
         }`}>
           {asset.condition_status || 'Baik'}
         </span>
-        <p className="mt-1 text-xs font-semibold text-[#080C1A]">{asset.ownership_status || 'Milik Universitas'}</p>
+        <p className="mt-1 text-xs font-semibold text-[#080C1A]">{asset.ownership_status || 'Milik Universitas / LLDIKTI'}</p>
       </td>
 
       {/* Column 4: Media & Dokumen */}
@@ -232,7 +232,7 @@ export function AssetTable({
                   <strong className="text-[#080C1A] font-bold">
                     {asset.asset_type === 'land' ? 'Tanah' : 'Bangunan'}
                   </strong>
-                  <span className="block truncate">
+                  <span className="block break-words" title={asset.campus_name || asset.nama_satker || ''}>
                     {asset.kode_satker ? <span className="font-extrabold text-[#165DFF] mr-1">[{extract6DigitKodeSatker(asset.kode_satker)}]</span> : null}
                     {asset.campus_name || asset.nama_satker || '-'}
                   </span>
@@ -240,7 +240,7 @@ export function AssetTable({
                 <div>
                   <span className="block text-[10px] uppercase font-semibold text-[#6A7686]">Kondisi & Legalitas</span>
                   <strong className="text-[#080C1A] font-bold">{asset.condition_status || 'Baik'}</strong>
-                  <span className="block truncate">{asset.ownership_status || 'Milik Univ'}</span>
+                  <span className="block break-words">{asset.ownership_status || 'Milik Universitas / LLDIKTI'}</span>
                 </div>
               </div>
 
@@ -315,11 +315,11 @@ export function AssetTable({
 
       {/* Desktop Table Layout - 6 Explicit Columns */}
       <div className="hidden overflow-x-auto lg:block">
-        <table className="w-full min-w-[900px] text-left text-sm">
+        <table className="w-full min-w-[1050px] text-left text-sm">
           <thead className="border-b border-[#F3F4F3] bg-[#F9FAFB] text-[11px] font-bold uppercase tracking-wider text-[#6A7686]">
             <tr>
               <th className="px-5 py-3.5">Nama Aset</th>
-              <th className="px-5 py-3.5">Tipe & Lokasi</th>
+              <th className="px-5 py-3.5 min-w-[240px]">Tipe & Universitas / LLDIKTI</th>
               <th className="px-5 py-3.5">Kondisi & Kepemilikan</th>
               <th className="px-5 py-3.5">Media & Dokumen</th>
               <th className="px-5 py-3.5 text-center">Status Verifikasi</th>

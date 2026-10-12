@@ -231,7 +231,7 @@ export function AssetFormDrawer({
           compact
         />
         <TextField
-          label="Universitas/Kampus"
+          label="Universitas / LLDIKTI"
           value={editingAsset.campus_name ?? ''}
           onChange={(value) => onUpdateDraft({ campus_name: value })}
           disabled={isOperator && Boolean(currentUniversity)}

@@ -86,7 +86,7 @@ export function AdminUniversityCharts({
   const [searchQuery, setSearchQuery] = useState('');
   const [displayLimit, setDisplayLimit] = useState<number | 'all'>(5);
 
-  // 1. Data Pemanfaatan Lahan per Universitas
+  // 1. Data Pemanfaatan Lahan per Universitas / LLDIKTI
   const allUtilizationData = useMemo<UniversityUtilizationData[]>(() => {
     const assetById = new Map(assets.map((a) => [a.id, a]));
     const activeUtilizations = utilizations.filter((u) => ['aktif', 'akan_berakhir'].includes(u.status));
@@ -140,7 +140,7 @@ export function AdminUniversityCharts({
     return result;
   }, [allUtilizationData, searchQuery, displayLimit]);
 
-  // 2. Data Aset Bermasalah vs Tidak Bermasalah per Universitas (dengan Persentase Progress Stage)
+  // 2. Data Aset Bermasalah vs Tidak Bermasalah per Universitas / LLDIKTI (dengan Persentase Progress Stage)
   const allIssueData = useMemo<UniversityIssueData[]>(() => {
     const unresolvedIssues = issues.filter((i) => i.status !== 'selesai');
     const problematicAssetIds = new Set(unresolvedIssues.map((i) => i.asset_id));
@@ -311,7 +311,7 @@ export function AdminUniversityCharts({
 
       {/* Grid Charts Container */}
       <div className="grid gap-8 lg:grid-cols-2">
-        {/* CHART 1: Pemanfaatan Lahan per Universitas */}
+        {/* CHART 1: Pemanfaatan Lahan per Universitas / LLDIKTI */}
         <div className="flex flex-col rounded-3xl border border-sky-100 bg-white p-6 shadow-xl shadow-slate-200/40 transition-all">
           <div className="mb-4 flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
@@ -319,7 +319,7 @@ export function AdminUniversityCharts({
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-emerald-50 text-emerald-600 font-black">
                   <Handshake className="h-4 w-4" />
                 </span>
-                <h3 className="text-base font-black text-slate-900">1. Pemanfaatan Lahan per Universitas</h3>
+                <h3 className="text-base font-black text-slate-900">1. Pemanfaatan Lahan per Universitas / LLDIKTI</h3>
               </div>
               <p className="mt-1 text-xs text-slate-500 font-medium leading-relaxed">
                 Grafik pemanfaatan lahan dengan tabel rincian data perguruan tinggi di bawah.
@@ -391,11 +391,11 @@ export function AdminUniversityCharts({
               <span className="text-[11px] font-extrabold uppercase text-slate-500">Tabel Keterangan Nomor Urut Grafik (#)</span>
               <span className="text-[11px] font-bold text-emerald-700">Total: {filteredUtilizationData.length} Kampus</span>
             </div>
-            <table className="w-full text-left">
+            <table className="w-full min-w-[500px] text-left">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px] font-bold">
                   <th className="pb-2 text-center w-12">No (#)</th>
-                  <th className="pb-2">Nama Perguruan Tinggi</th>
+                  <th className="pb-2 min-w-[220px]">Nama Universitas / LLDIKTI</th>
                   <th className="pb-2 text-center">Lahan Dimanfaatkan</th>
                   <th className="pb-2 text-right">Total Luas Pemanfaatan</th>
                 </tr>
@@ -407,7 +407,7 @@ export function AdminUniversityCharts({
                       <td className="py-2.5 text-center font-black text-slate-900 bg-emerald-100/50 rounded-lg">
                         {item.rankLabel}
                       </td>
-                      <td className="py-2.5 pl-2 text-slate-900 font-bold max-w-[200px] truncate">{item.university}</td>
+                      <td className="py-2.5 pl-2 text-slate-900 font-bold min-w-[220px] whitespace-normal break-words" title={item.university}>{item.university}</td>
                       <td className="py-2.5 text-center font-bold text-emerald-600">{item.utilizedLandCount} Unit</td>
                       <td className="py-2.5 text-right font-mono text-slate-900">{formatArea(item.utilizedAreaM2)}</td>
                     </tr>
@@ -424,7 +424,7 @@ export function AdminUniversityCharts({
           </div>
         </div>
 
-        {/* CHART 2: Perbandingan Aset Bermasalah vs Tidak Bermasalah per Universitas */}
+        {/* CHART 2: Perbandingan Aset Bermasalah vs Tidak Bermasalah per Universitas / LLDIKTI */}
         <div className="flex flex-col rounded-3xl border border-sky-100 bg-white p-6 shadow-xl shadow-slate-200/40 transition-all">
           <div className="mb-4 flex items-start justify-between gap-3 border-b border-slate-100 pb-4">
             <div>
@@ -432,7 +432,7 @@ export function AdminUniversityCharts({
                 <span className="flex h-8 w-8 items-center justify-center rounded-xl bg-rose-50 text-rose-600 font-black">
                   <AlertTriangle className="h-4 w-4" />
                 </span>
-                <h3 className="text-base font-black text-slate-900">2. Status Permasalahan Aset per Universitas</h3>
+                <h3 className="text-base font-black text-slate-900">2. Status Permasalahan Aset per Universitas / LLDIKTI</h3>
               </div>
               <p className="mt-1 text-xs text-slate-500 font-medium leading-relaxed">
                 Perbandingan aset normal vs bermasalah dan progres penanganan isu per kampus.
@@ -519,11 +519,11 @@ export function AdminUniversityCharts({
               <span className="text-[11px] font-extrabold uppercase text-slate-500">Tabel Keterangan & Persentase Progres (#)</span>
               <span className="text-[11px] font-bold text-rose-700">Total: {filteredIssueData.length} Kampus</span>
             </div>
-            <table className="w-full text-left">
+            <table className="w-full min-w-[560px] text-left">
               <thead>
                 <tr className="border-b border-slate-200 text-slate-400 uppercase text-[10px] font-bold">
                   <th className="pb-2 text-center w-12">No (#)</th>
-                  <th className="pb-2">Nama Perguruan Tinggi</th>
+                  <th className="pb-2 min-w-[220px]">Nama Universitas / LLDIKTI</th>
                   <th className="pb-2 text-center">Normal</th>
                   <th className="pb-2 text-center">Progres Penanganan Issue</th>
                   <th className="pb-2 text-right">Rasio Risiko Aset</th>
@@ -536,7 +536,7 @@ export function AdminUniversityCharts({
                       <td className="py-2.5 text-center font-black text-slate-900 bg-rose-100/50 rounded-lg">
                         {item.rankLabel}
                       </td>
-                      <td className="py-2.5 pl-2 text-slate-900 font-bold max-w-[160px] truncate">{item.university}</td>
+                      <td className="py-2.5 pl-2 text-slate-900 font-bold min-w-[220px] whitespace-normal break-words" title={item.university}>{item.university}</td>
                       <td className="py-2.5 text-center font-bold text-emerald-600">
                         {item.normalAssets} Unit <span className="text-[10px] text-emerald-700/80">({item.healthPercentage}%)</span>
                       </td>

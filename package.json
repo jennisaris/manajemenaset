@@ -15,6 +15,7 @@
     "supabase:export": "node scripts/export-supabase-json.mjs",
     "postgres:import": "node scripts/import-json-postgres.mjs",
     "supabase:demo-users": "node scripts/upsert-demo-users.mjs",
+    "bmn:import-issues": "node scripts/import-bmn-issues.mjs",
     "postbuild": "node scripts/postbuild.mjs"
   },
   "dependencies": {

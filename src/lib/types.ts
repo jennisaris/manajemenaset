@@ -222,6 +222,14 @@ export type AssetIssue = {
   priority: string;
   status: string;
   found_date: string | null;
+  description?: string | null;
+  uraian_kasus?: string | null;
+};
+
+export type ProgressDocumentItem = {
+  name: string;
+  path?: string | null;
+  url?: string | null;
 };
 
 export type IssueProgress = {
@@ -235,6 +243,7 @@ export type IssueProgress = {
   document_name?: string | null;
   document_path?: string | null;
   document_url?: string | null;
+  documents?: ProgressDocumentItem[];
 };
 
 export type BmnDisposalProposal = {

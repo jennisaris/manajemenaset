@@ -405,14 +405,14 @@ export function BulkAssetUploader({
           {/* Staging Table */}
           <div className="overflow-hidden rounded-2xl border border-[#E5E7EB] bg-white shadow-sm">
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
+              <table className="w-full min-w-[950px] text-left text-xs border-collapse">
                 <thead className="border-b border-[#E5E7EB] bg-[#F9FAFB] text-[11px] font-bold uppercase tracking-wider text-[#6A7686]">
                   <tr>
                     <th className="px-4 py-3.5">Nama / Merk Barang</th>
                     <th className="px-4 py-3.5">Target Sub-Menu</th>
                     <th className="px-4 py-3.5">Kode & NUP</th>
                     <th className="px-4 py-3.5">Nilai & Tahun</th>
-                    <th className="px-4 py-3.5">Satker</th>
+                    <th className="px-4 py-3.5 min-w-[220px]">Satker / Universitas / LLDIKTI</th>
                     <th className="px-4 py-3.5 text-right">Aksi</th>
                   </tr>
                 </thead>
@@ -429,7 +429,7 @@ export function BulkAssetUploader({
                           href={row.targetSubMenuHash}
                           className="inline-flex items-center gap-1 rounded-md bg-sky-50 border border-sky-200 px-2.5 py-1 text-[11px] font-extrabold text-[#165DFF]"
                         >
-                          {row.targetSubMenuLabel} <ChevronRight className="h-3 w-3" />
+                          {row.targetSubMenuLabel}
                         </a>
                       </td>
 
@@ -445,8 +445,8 @@ export function BulkAssetUploader({
                         <div className="text-[11px] text-slate-500">Tahun {row.acquisition_year}</div>
                       </td>
 
-                      <td className="px-4 py-3.5">
-                        <div className="font-semibold text-slate-700">{row.nama_satker}</div>
+                      <td className="px-4 py-3.5 min-w-[220px]">
+                        <div className="font-semibold text-slate-700 whitespace-normal break-words leading-snug" title={row.nama_satker || undefined}>{row.nama_satker}</div>
                         <div className="text-[11px] text-slate-500">[{extract6DigitKodeSatker(row.kode_satker || '')}]</div>
                       </td>
 

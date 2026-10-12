@@ -396,10 +396,10 @@ export function ExecutiveAnalytics({
             </div>
 
             <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs">
+              <table className="w-full min-w-[950px] text-left text-xs">
                 <thead>
                   <tr className="border-b border-slate-200 bg-slate-50/80 text-slate-600 font-extrabold uppercase tracking-wider text-[10px]">
-                    <th className="py-3 px-4">Satker Pengaju</th>
+                    <th className="py-3 px-4 min-w-[220px]">Satker / Universitas / LLDIKTI</th>
                     <th className="py-3 px-4">No. Surat Permohonan</th>
                     <th className="py-3 px-4">Jenis Barang BMN</th>
                     <th className="py-3 px-4 text-center">Jumlah Unit</th>
@@ -410,12 +410,12 @@ export function ExecutiveAnalytics({
                 <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
                   {activeDisposals.map((item, idx) => (
                     <tr key={item.id || idx} className="hover:bg-slate-50/70 transition-colors">
-                      <td className="py-3.5 px-4 font-bold text-slate-900">
+                      <td className="py-3.5 px-4 font-bold text-slate-900 min-w-[220px]">
                         <div className="flex items-center gap-2.5">
                           <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-amber-100 text-amber-900 font-black text-[10px]">
                             {idx + 1}
                           </span>
-                          <span className="font-extrabold">{item.nama_satker || `[${item.kode_satker}] Satker`}</span>
+                          <span className="font-extrabold whitespace-normal break-words" title={item.nama_satker || ''}>{item.nama_satker || `[${item.kode_satker}] Satker`}</span>
                         </div>
                       </td>
                       <td className="py-3.5 px-4 font-mono text-[11px] text-slate-500">
