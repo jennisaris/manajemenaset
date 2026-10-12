@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
 import {
-  Archive,
   BadgeCheck,
   BarChart3,
   BookOpen,
@@ -14,7 +13,6 @@ import {
   CircleAlert,
   FileText,
   GraduationCap,
-  Handshake,
   KeyRound,
   Landmark,
   Laptop,
@@ -98,8 +96,6 @@ export function Sidebar({ currentRole, isOpenMobile, onCloseMobile }: SidebarPro
   }, [hasUserMgmt]);
 
   const managementMenu = [
-    { href: '#utilization', label: 'Pemanfaatan', icon: Handshake },
-    { href: '#disposal', label: 'Penghapusan', icon: Archive },
     { href: '#issues', label: 'Permasalahan', icon: CircleAlert },
     { href: '#reports', label: 'Laporan', icon: FileText },
     ...(hasUserMgmt ? [{ href: '#users', label: 'User & Role', icon: Users }] : []),

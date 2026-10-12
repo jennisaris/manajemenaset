@@ -3,7 +3,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
-  Archive,
   BadgeCheck,
   Bell,
   Building2,
@@ -12,7 +11,6 @@ import {
   Download,
   FileSpreadsheet,
   FileText,
-  Handshake,
   Landmark,
   LogOut,
   MapPinned,
@@ -36,11 +34,9 @@ import { ExecutiveAnalytics } from './executive-analytics';
 import { AdminUniversityCharts } from './admin-university-charts';
 import { IssueManager } from './issue-manager';
 import { MapCard } from './map-card';
-import { UtilizationManager } from './utilization-manager';
 import { UserRoleManager } from './user-role-manager';
 import { BmnManager } from './bmn/bmn-manager';
 import { matchesUniversityScope } from '@/lib/satker-utils';
-import { BmnDisposalManager } from './bmn-disposal-manager';
 import { VerificationCenter } from './verification-center';
 import { BulkAssetUploader } from './bulk-asset-uploader';
 import { ReportsManager } from './reports-manager';
@@ -345,10 +341,6 @@ export function Dashboard({
         return 'Verifikasi Aset';
       case '#upload':
         return 'Unggah Data Aset Massal';
-      case '#utilization':
-        return 'Pemanfaatan Aset';
-      case '#disposal':
-        return 'Penghapusan BMN';
       case '#issues':
         return 'Permasalahan Aset';
       case '#reports':
@@ -647,29 +639,7 @@ export function Dashboard({
                 </div>
               </div>
 
-              {/* Card 2: Summary Pemanfaatan */}
-              <div className="relative overflow-hidden rounded-3xl border border-sky-100 bg-white p-5 shadow-xs transition-all hover:shadow-md hover:border-sky-200">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Pemanfaatan Aset</span>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-[#165DFF] border border-sky-100">
-                    <Handshake className="h-5 w-5" />
-                  </div>
-                </div>
-                <div className="mt-3">
-                  <div className="text-2xl font-black text-[#080C1A]">
-                    {nf.format(executiveSummaryData.activeUtilCount)} <span className="text-xs font-bold text-slate-400">Kerjasama</span>
-                  </div>
-                  <p className="mt-0.5 text-xs font-extrabold text-[#165DFF]">
-                    Est. PNBP: Rp {nf.format(executiveSummaryData.totalNilaiPnbp)}
-                  </p>
-                  <div className="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2 text-[11px] font-medium text-slate-500">
-                    <span>🤝 Pihak Ketiga</span>
-                    <span className="text-sky-700 font-bold">Sewa / KSP / BSG</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 3: Summary Permasalahan */}
+              {/* Card 2: Summary Permasalahan & Sengketa */}
               <div className="relative overflow-hidden rounded-3xl border border-rose-100 bg-white p-5 shadow-xs transition-all hover:shadow-md hover:border-rose-200">
                 <div className="flex items-center justify-between">
                   <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Permasalahan & Sengketa</span>
@@ -691,24 +661,46 @@ export function Dashboard({
                 </div>
               </div>
 
-              {/* Card 4: Summary Penghapusan */}
-              <div className="relative overflow-hidden rounded-3xl border border-amber-100 bg-white p-5 shadow-xs transition-all hover:shadow-md hover:border-amber-200">
+              {/* Card 3: Summary Aset Terverifikasi */}
+              <div className="relative overflow-hidden rounded-3xl border border-sky-100 bg-white p-5 shadow-xs transition-all hover:shadow-md hover:border-sky-200">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Usulan Penghapusan</span>
-                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-amber-50 text-amber-600 border border-amber-100">
-                    <Archive className="h-5 w-5" />
+                  <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Aset Terverifikasi</span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sky-50 text-[#165DFF] border border-sky-100">
+                    <BadgeCheck className="h-5 w-5" />
                   </div>
                 </div>
                 <div className="mt-3">
                   <div className="text-2xl font-black text-[#080C1A]">
-                    {nf.format(executiveSummaryData.pendingDisposalCount)} <span className="text-xs font-bold text-slate-400">Usulan Satker</span>
+                    {nf.format(displayedAssets.filter((a) => a.verification_status === 'terverifikasi').length)} <span className="text-xs font-bold text-slate-400">Unit</span>
                   </div>
-                  <p className="mt-0.5 text-xs font-extrabold text-amber-700">
-                    {executiveSummaryData.approvedDisposalCount} Disetujui (SK Terbit)
+                  <p className="mt-0.5 text-xs font-extrabold text-[#165DFF]">
+                    Status Disetujui & Sah
                   </p>
                   <div className="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2 text-[11px] font-medium text-slate-500">
-                    <span>📑 5 Berkas syarat</span>
-                    <span className="text-amber-700 font-bold">Penelitian BMN</span>
+                    <span>✅ Data Resmi Dikti</span>
+                    <span className="text-sky-700 font-bold">Terverifikasi</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Card 4: Satker Terdaftar */}
+              <div className="relative overflow-hidden rounded-3xl border border-indigo-100 bg-white p-5 shadow-xs transition-all hover:shadow-md hover:border-indigo-200">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Satker Terdata</span>
+                  <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-indigo-50 text-indigo-600 border border-indigo-100">
+                    <Building2 className="h-5 w-5" />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <div className="text-2xl font-black text-[#080C1A]">
+                    {nf.format(new Set(displayedAssets.map((a) => a.campus_name || a.nama_satker).filter(Boolean)).size || universityOptions.length)} <span className="text-xs font-bold text-slate-400">Satker</span>
+                  </div>
+                  <p className="mt-0.5 text-xs font-extrabold text-indigo-700">
+                    Kampus & Lembaga Layanan
+                  </p>
+                  <div className="mt-2.5 flex items-center justify-between border-t border-slate-100 pt-2 text-[11px] font-medium text-slate-500">
+                    <span>🏛️ PTN & LLDIKTI</span>
+                    <span className="text-indigo-700 font-bold">Terintegrasi</span>
                   </div>
                 </div>
               </div>
@@ -916,28 +908,7 @@ export function Dashboard({
         )}
 
 
-        {/* Utilization Manager */}
-        {pageHash === '#utilization' && (
-          <section className="mt-6" id="utilization">
-            <UtilizationManager
-              key={`utilization-${effectiveUniversity || 'all'}`}
-              assets={displayedAssets}
-              utilizations={scopedUtilizations}
-              canManage={canManage}
-              onUtilizationsChange={handleUtilizationsChange}
-            />
-          </section>
-        )}
 
-        {/* BMN Disposal Manager */}
-        {pageHash === '#disposal' && (
-          <section className="mt-6" id="disposal">
-            <BmnDisposalManager
-              currentRole={role}
-              universityName={universityName}
-            />
-          </section>
-        )}
 
         {/* Issue Manager */}
         {pageHash === '#issues' && (
