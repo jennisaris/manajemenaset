@@ -10,13 +10,12 @@ const AssetMap = dynamic(() => import('./asset-map').then((mod) => mod.AssetMap)
   loading: () => <div className="grid h-[360px] place-items-center rounded-b-[1.5rem] bg-sky-50 text-sm font-bold text-sky-700 sm:h-[430px] lg:h-[470px]">Memuat peta aset...</div>,
 });
 
-type FilterKey = 'all' | 'land' | 'building' | 'utilized' | 'issue';
+type FilterKey = 'all' | 'land' | 'building' | 'issue';
 
 const filters: { key: FilterKey; label: string }[] = [
   { key: 'all', label: 'Semua' },
   { key: 'land', label: 'Tanah' },
   { key: 'building', label: 'Bangunan' },
-  { key: 'utilized', label: 'Dimanfaatkan' },
   { key: 'issue', label: 'Bermasalah' },
 ];
 
@@ -25,7 +24,6 @@ function applyFilter(assets: Asset[], filter: FilterKey) {
     if (filter === 'all') return true;
     if (filter === 'land') return asset.asset_type === 'land';
     if (filter === 'building') return asset.asset_type === 'building';
-    if (filter === 'utilized') return asset.has_active_utilization;
     if (filter === 'issue') return asset.has_active_issue;
     return true;
   });

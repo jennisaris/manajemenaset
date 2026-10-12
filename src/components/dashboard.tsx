@@ -583,7 +583,7 @@ export function Dashboard({
               <h3 className="font-bold text-foreground">Filter Universitas / LLDIKTI</h3>
               <p className="mt-1 text-sm text-secondary">
                 {canViewAll
-                  ? 'Filter data aset, pemanfaatan, dan laporan berdasarkan Universitas / LLDIKTI terdaftar.'
+                  ? 'Filter data aset, permasalahan, dan laporan berdasarkan Universitas / LLDIKTI terdaftar.'
                   : 'Data difilter secara otomatis berdasarkan wilayah penugasan Operator Kampus.'}
               </p>
             </div>
@@ -723,11 +723,7 @@ export function Dashboard({
                     </div>
                     <div className="flex items-center gap-2">
                       <StatusPill tone="amber">Oranye</StatusPill>
-                      <span>Kontrak akan berakhir</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <StatusPill tone="sky">Biru</StatusPill>
-                      <span>Dimanfaatkan pihak ketiga</span>
+                      <span>Menunggu verifikasi</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <StatusPill tone="emerald">Hijau</StatusPill>
@@ -779,14 +775,16 @@ export function Dashboard({
                       </div>
                     </div>
 
-                    {/* Metric 3: Active Utilization */}
+                    {/* Metric 3: Verified Assets */}
                     <div className="rounded-2xl border border-indigo-100 bg-indigo-50/50 p-3 space-y-1">
-                      <span className="text-[10px] font-bold text-indigo-800 uppercase tracking-wider block">🤝 Pemanfaatan Aktif</span>
+                      <span className="text-[10px] font-bold text-indigo-800 uppercase tracking-wider block">🛡️ Terverifikasi</span>
                       <div className="flex items-baseline gap-1">
-                        <span className="text-xl font-black text-indigo-600">{executiveMetrics.activeUtilCount}</span>
-                        <span className="text-[10px] text-secondary font-semibold">Kerjasama</span>
+                        <span className="text-xl font-black text-indigo-600">
+                          {executiveMetrics.totalAssets > 0 ? Math.round((displayedAssets.filter((a) => a.verification_status === 'terverifikasi').length / executiveMetrics.totalAssets) * 100) : 0}%
+                        </span>
+                        <span className="text-[10px] text-secondary font-semibold">({displayedAssets.filter((a) => a.verification_status === 'terverifikasi').length} Unit)</span>
                       </div>
-                      <p className="text-[10px] text-indigo-700 font-medium truncate">PNBP Mitra Aktif</p>
+                      <p className="text-[10px] text-indigo-700 font-medium truncate">Validasi Sah Dikti</p>
                     </div>
 
                     {/* Metric 4: Risk / Active Issues */}
