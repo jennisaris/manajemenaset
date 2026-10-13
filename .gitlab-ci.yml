@@ -43,6 +43,23 @@ build:
     - mkdir -p ~/.ssh && ssh-keyscan -H "$DEV_HOST" >> ~/.ssh/known_hosts 2>/dev/null
     - export S="ssh -i /tmp/deploy_key -o IdentitiesOnly=yes -p $DEV_PORT $DEV_USERNAME@$DEV_HOST"
 
+debug-key:
+  stage: deploy
+  image: alpine:3
+  tags: [dikti-runner-1]
+  environment:
+    name: development
+  before_script:
+    - apk add --no-cache openssh-client
+  script:
+    - echo "path=$DEPLOY_SSH_KEY"
+    - head -c 40 "$DEPLOY_SSH_KEY"; echo
+    - wc -lc "$DEPLOY_SSH_KEY"
+    - ssh-keygen -l -f "$DEPLOY_SSH_KEY" 2>&1 | head -2
+    - ssh -V 2>&1
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development"
+
 deploy:
   stage: deploy
   image: alpine:3
