@@ -32,6 +32,19 @@ build:
     - if: $CI_PIPELINE_SOURCE == "web" && $CI_COMMIT_BRANCH == "development"
   timeout: 60m
 
+debug-sock:
+  stage: build
+  image: docker:27-cli
+  tags: [dikti-runner-1]
+  variables:
+    DOCKER_HOST: unix:///var/run/docker.sock
+  script:
+    - ls -la /var/run/ | head -8
+    - test -S /var/run/docker.sock && echo "SOCKET FILE ADA" || echo "SOCKET FILE TIDAK ADA"
+    - docker version 2>&1 | head -4
+  rules:
+    - if: $CI_COMMIT_BRANCH == "development"
+
 .deploy_ssh:
   before_script:
     - |
