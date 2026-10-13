@@ -36,7 +36,7 @@ insert into roles (name, description) values
 on conflict (name) do update set description = excluded.description;
 
 insert into profiles (full_name, email, password_hash, status, university_name, role_id)
-select 'Superadmin Tim Pusat', 'superadmin@aset.id', 'plain:superadmin123', 'aktif', null, roles.id from roles where roles.name = 'Superadmin'
+select 'Superadmin Tim Pusat', 'superadmin@aset.id', 'pbkdf2$210000$XuQxvGwSNCWAkLicO_ObHA$PNsA1dUpvJ0opOLTtsjt1kuyeKJRlu698rHRVrg5oOk', 'aktif', null, roles.id from roles where roles.name = 'Superadmin'
 on conflict (email) do nothing;
 
 create table if not exists assets (
