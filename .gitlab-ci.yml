@@ -1,6 +1,6 @@
 variables:
   REGISTRY: registry-pd.dikti.go.id
-  IMAGE: registry-pd.dikti.go.id/sekjen/sekjen-smartdikti/sekjen-smartdikti
+  IMAGE: registry-pd.dikti.go.id/sekjen-smartdikti/app
   APP_DIR: /home/app01-garuda/sekjen-smartdikti
 
 stages:
