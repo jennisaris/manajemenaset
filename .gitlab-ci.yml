@@ -10,11 +10,11 @@ stages:
 build:
   stage: build
   image: docker:27-cli
-  services:
-    - docker:27-dind
   tags: [dikti-runner-1]
   environment:
     name: development
+  variables:
+    DOCKER_HOST: unix:///var/run/docker.sock
   script:
     - |
       {
