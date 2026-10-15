@@ -69,7 +69,11 @@ export function FullPageMap({ assets, utilizations, issues, focusAssetId, focusU
       </section>
       <section className="relative min-h-0 flex-1">
         <MapContainer center={focusCenter} zoom={focusZoom} minZoom={4} scrollWheelZoom className="h-[calc(100vh-112px)] w-full">
-          <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          <TileLayer
+            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            maxZoom={19}
+          />
           <FocusMap center={focusCenter} zoom={focusZoom} />
           {assets.map((asset) => {
             const color = asset.id === focusedAsset?.id ? '#7c3aed' : assetColor(asset);
