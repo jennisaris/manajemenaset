@@ -27,8 +27,8 @@ function resolveRole(row: ProfileRow | null): UserRole {
 
 export function AuthPanel({ role, onRoleChange, campusOptions = [] }: AuthPanelProps) {
   const [isMounted, setIsMounted] = useState(false);
-  const [email, setEmail] = useState('admin@aset.id');
-  const [password, setPassword] = useState('admin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('Admin Demo');
   const [status, setStatus] = useState<'demo' | 'idle' | 'loading' | 'signed-in' | 'error'>(isSupabaseConfigured ? 'idle' : 'demo');
   const [message, setMessage] = useState(isSupabaseConfigured ? 'Login PostgreSQL lokal siap digunakan setelah user dibuat.' : 'Mode demo: PostgreSQL lokal env belum diisi, gunakan role selector untuk simulasi akses.');
@@ -113,8 +113,8 @@ export function AuthPanel({ role, onRoleChange, campusOptions = [] }: AuthPanelP
         </div>
 
         <form onSubmit={handleLogin} className="grid gap-3 sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] xl:min-w-[620px]">
-          <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="admin@aset.id / operator@aset.id" className="rounded-2xl border border-sky-100 bg-white/90 px-4 py-3 text-sm font-medium text-slate-900 outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" />
-          <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="admin123 / operator123" className="rounded-2xl border border-sky-100 bg-white/90 px-4 py-3 text-sm font-medium text-slate-900 outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" />
+          <input value={email} onChange={(event) => setEmail(event.target.value)} type="email" placeholder="Masukkan email terdaftar" className="rounded-2xl border border-sky-100 bg-white/90 px-4 py-3 text-sm font-medium text-slate-900 outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" />
+          <input value={password} onChange={(event) => setPassword(event.target.value)} type="password" placeholder="Masukkan password" className="rounded-2xl border border-sky-100 bg-white/90 px-4 py-3 text-sm font-medium text-slate-900 outline-none focus:border-sky-400 focus:ring-4 focus:ring-sky-100" />
           <button type="submit" disabled={status === 'loading'} className="inline-flex items-center justify-center gap-2 rounded-2xl bg-gradient-to-br from-sky-400 to-blue-700 px-5 py-3 text-sm font-black text-white shadow-lg shadow-sky-300/40 disabled:opacity-60"><LogIn className="h-4 w-4" />{status === 'loading' ? 'Memeriksa...' : 'Login'}</button>
         </form>
       </div>

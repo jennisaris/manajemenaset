@@ -30,8 +30,8 @@ function withTimeout<T>(promise: PromiseLike<T>, timeoutMs: number, message: str
 export function AppShell() {
   const [isMounted, setIsMounted] = useState(false);
   const [authState, setAuthState] = useState<AuthState>('checking');
-  const [email, setEmail] = useState('superadmin@aset.id');
-  const [password, setPassword] = useState('superadmin123');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<UserRole>('Superadmin');
   const [fullName, setFullName] = useState('Superadmin Tim Pusat');
@@ -248,7 +248,7 @@ export function AppShell() {
                       required
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      placeholder="superadmin@aset.id atau email terdaftar"
+                      placeholder="Masukkan email terdaftar"
                       className="w-full px-4 py-3 border border-border rounded-button text-xs font-medium text-foreground placeholder:text-gray-400 focus:outline-none focus:border-primary transition-all duration-200 bg-gray-50"
                     />
                   </div>
@@ -265,7 +265,7 @@ export function AppShell() {
                         required
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        placeholder="••••••••"
+                        placeholder="Masukkan password"
                         className="w-full px-4 py-3 pr-12 border border-border rounded-button text-xs font-medium text-foreground placeholder:text-gray-400 focus:outline-none focus:border-primary transition-all duration-200 bg-gray-50"
                       />
                       <button
@@ -279,22 +279,6 @@ export function AppShell() {
                     </div>
                   </div>
 
-                  {/* Quick Preset Accounts */}
-                  <div className="space-y-1 pt-1">
-                    <span className="text-[11px] font-semibold text-secondary">Akun Quick Login:</span>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setEmail('superadmin@aset.id');
-                          setPassword('superadmin123');
-                        }}
-                        className="rounded-full border border-primary/20 bg-primary/5 px-3.5 py-1 text-xs font-bold text-primary hover:bg-primary hover:text-white transition cursor-pointer shadow-xs"
-                      >
-                        Superuser (Superadmin)
-                      </button>
-                    </div>
-                  </div>
 
                   {/* Sign In Button */}
                   <button
