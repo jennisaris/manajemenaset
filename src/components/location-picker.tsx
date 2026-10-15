@@ -362,7 +362,11 @@ export function LocationPicker({
       <div className="grid gap-4 xl:grid-cols-[1fr_320px]">
         <div className="overflow-hidden rounded-3xl border border-sky-100">
           <MapContainer center={selectedPosition} zoom={latitude && longitude ? 17 : 5} scrollWheelZoom className="h-72 w-full sm:h-80">
-            <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              maxZoom={19}
+            />
             <FlyToLocation position={selectedPosition} />
             <ClickHandler onPick={handleMapPick} />
             {latitude !== null && longitude !== null && (

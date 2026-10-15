@@ -129,7 +129,11 @@ export function AssetMap({
   return (
     <MapContainer center={indonesiaCenter} zoom={5} minZoom={4} scrollWheelZoom={false} className="h-[360px] w-full rounded-b-[1.5rem] sm:h-[430px] lg:h-[470px]">
       <MapResizeTrigger />
-      <TileLayer attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>' url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+      <TileLayer
+        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+        maxZoom={19}
+      />
       {assets.map((asset) => {
         const color = assetColor(asset);
         const polygon = polygonPositions(asset.geometry_geojson);
