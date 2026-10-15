@@ -71,10 +71,9 @@ export function AppShell() {
         const response = await withTimeout(apiJson<SessionResponse>('/api/auth/session'), 5000, 'Pengecekan sesi terlalu lama.');
         if (!isMounted || !response.user) return;
         applySession(response.user);
-        await loadDashboardData();
-        if (!isMounted) return;
         setAuthState('authenticated');
         setMessage('Session aktif.');
+        loadDashboardData().catch(() => null);
       } catch {
         if (!isMounted) return;
         setAuthState('login');
@@ -101,9 +100,11 @@ export function AppShell() {
       );
       if (!response.user) throw new Error('Login gagal. Session tidak terbentuk.');
       applySession(response.user);
-      await loadDashboardData();
       setAuthState('authenticated');
       setMessage('Login berhasil.');
+      loadDashboardData().catch((err) => {
+        console.error('Gagal memuat data dashboard:', err);
+      });
     } catch (error) {
       setAuthState('error');
       setMessage(error instanceof Error ? error.message : 'Login gagal. Coba lagi.');
@@ -342,10 +343,11 @@ export function AppShell() {
         isOpenMobile={isMobileSidebarOpen}
         onCloseMobile={() => setIsMobileSidebarOpen(false)}
       />
-      {isDashboardLoading ? (
+      {isDashboardLoading && data.assets.length === 0 ? (
         <main className="grid min-h-screen place-items-center px-4 py-10 lg:pl-[280px]">
-          <div className="rounded-3xl border border-[#F3F4F3] bg-white px-6 py-5 text-sm font-bold text-[#165DFF] shadow-lg">
-            Memuat data dashboard...
+          <div className="flex flex-col items-center gap-3 rounded-3xl border border-[#F3F4F3] bg-white px-8 py-6 text-sm font-bold text-[#165DFF] shadow-lg">
+            <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+            <span>Memuat data aset & dashboard...</span>
           </div>
         </main>
       ) : (
