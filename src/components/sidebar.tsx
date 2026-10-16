@@ -254,6 +254,34 @@ export function Sidebar({ currentRole, isOpenMobile, onCloseMobile }: SidebarPro
                     )}
                   </div>
 
+                  {/* Pemanfaatan Aset */}
+                  <a
+                    href="#utilizations"
+                    onClick={(e) => handleNavClick('#utilizations', e)}
+                    className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
+                      activeHash === '#utilizations'
+                        ? 'bg-muted font-semibold text-foreground'
+                        : 'text-secondary hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    <Handshake className={`h-5 w-5 ${activeHash === '#utilizations' ? 'text-foreground' : 'text-secondary'}`} />
+                    <span className="font-medium">Pemanfaatan</span>
+                  </a>
+
+                  {/* Penghapusan BMN */}
+                  <a
+                    href="#disposals"
+                    onClick={(e) => handleNavClick('#disposals', e)}
+                    className={`group flex items-center gap-3 rounded-xl p-3.5 transition-all duration-300 cursor-pointer ${
+                      activeHash === '#disposals'
+                        ? 'bg-muted font-semibold text-foreground'
+                        : 'text-secondary hover:bg-muted hover:text-foreground'
+                    }`}
+                  >
+                    <Archive className={`h-5 w-5 ${activeHash === '#disposals' ? 'text-foreground' : 'text-secondary'}`} />
+                    <span className="font-medium">Penghapusan BMN</span>
+                  </a>
+
                   {/* Verifikasi (Khusus Superadmin) */}
                   {currentRole === 'Superadmin' && (
                     <a

@@ -8,6 +8,9 @@ import {
   getAllUsersFromDb,
   approveUserRegistration,
   rejectUserRegistration,
+  adminCreateUser,
+  adminUpdateUser,
+  adminDeleteUser,
 } from '@/lib/server/repositories/user-repository';
 import { sendRegistrationReceivedEmail, sendApprovalStatusEmail } from '@/lib/server/services/email-service';
 import { validatePasswordStrength } from '@/lib/server/password-policy';
@@ -78,3 +81,6 @@ export async function rejectUser(userId: string, reason?: string) {
   await sendApprovalStatusEmail(updatedUser, false, reason);
   return updatedUser;
 }
+
+export { adminCreateUser, adminUpdateUser, adminDeleteUser };
+

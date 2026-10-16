@@ -178,7 +178,7 @@ export function AssetList({
     setDocumentMessage('Dokumen akan diupload ke storage lokal saat aset disimpan.');
     setSaveMessage('Aset baru akan disimpan ke tabel assets.');
     setEditingAsset({
-      ...emptyAsset(Math.max(0, ...items.map((asset) => asset.id)) + 1),
+      ...emptyAsset(0),
       campus_name: currentUniversity ?? '',
       verification_status: isOperator ? 'menunggu_verifikasi' : 'draft',
     });
@@ -483,7 +483,7 @@ export function AssetList({
       ) : formOpen && editingAsset ? (
         <AssetFormDrawer
           editingAsset={editingAsset}
-          isEditMode={items.some((asset) => asset.id === editingAsset.id)}
+          isEditMode={Boolean(editingAsset.id && editingAsset.id > 0 && items.some((asset) => asset.id === editingAsset.id))}
           isOperator={isOperator}
           currentUniversity={currentUniversity}
           formErrors={formErrors}

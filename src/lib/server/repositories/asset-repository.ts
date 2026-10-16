@@ -209,64 +209,107 @@ export async function getAssetsFromDb(options: AssetListOptions = {}): Promise<A
 
 export async function upsertAssetToDb(asset: Asset): Promise<Asset> {
   return transaction(async (client) => {
-    const { rows } = await client.query(`
-      insert into assets (
-        id, asset_code, asset_name, asset_type, campus_name, faculty_or_unit, address,
-        ownership_status, condition_status, verification_status, latitude, longitude,
-        geometry_type, geometry_geojson, is_deleted, status_sertifikasi,
-        nilai_perolehan_pertama, luas_bangunan, no_psp, alamat, kode_satker, nama_satker
-      )
-      values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22)
-      on conflict (id) do update set
-        asset_code=excluded.asset_code,
-        asset_name=excluded.asset_name,
-        asset_type=excluded.asset_type,
-        campus_name=excluded.campus_name,
-        faculty_or_unit=excluded.faculty_or_unit,
-        address=excluded.address,
-        ownership_status=excluded.ownership_status,
-        condition_status=excluded.condition_status,
-        verification_status=excluded.verification_status,
-        latitude=excluded.latitude,
-        longitude=excluded.longitude,
-        geometry_type=excluded.geometry_type,
-        geometry_geojson=excluded.geometry_geojson,
-        is_deleted=excluded.is_deleted,
-        status_sertifikasi=excluded.status_sertifikasi,
-        nilai_perolehan_pertama=excluded.nilai_perolehan_pertama,
-        luas_bangunan=excluded.luas_bangunan,
-        no_psp=excluded.no_psp,
-        alamat=excluded.alamat,
-        kode_satker=excluded.kode_satker,
-        nama_satker=excluded.nama_satker,
-        updated_at=now()
-      returning *
-    `, [
-      asset.id,
-      asset.asset_code,
-      asset.asset_name,
-      asset.asset_type,
-      asset.campus_name,
-      asset.faculty_or_unit,
-      asset.address ?? asset.alamat ?? null,
-      asset.ownership_status ?? asset.status_sertifikasi ?? null,
-      asset.condition_status,
-      asset.verification_status ?? 'terverifikasi',
-      asset.latitude,
-      asset.longitude,
-      asset.geometry_type,
-      asset.geometry_geojson ? JSON.stringify(asset.geometry_geojson) : null,
-      asset.is_deleted ?? 0,
-      asset.status_sertifikasi ?? asset.ownership_status ?? null,
-      asset.nilai_perolehan_pertama ?? asset.nilai_perolehan ?? null,
-      asset.luas_bangunan ?? null,
-      asset.no_psp ?? null,
-      asset.alamat ?? asset.address ?? null,
-      asset.kode_satker ?? null,
-      asset.nama_satker ?? null,
-    ]);
+    let savedRow: Record<string, unknown> | undefined;
+    const isUpdate = Boolean(asset.id && asset.id > 0);
 
-    const savedAssetId = Number(rows[0].id);
+    if (isUpdate) {
+      const existingCheck = await client.query('select id from assets where id = $1', [asset.id]);
+      if (existingCheck.rowCount && existingCheck.rowCount > 0) {
+        const updateRes = await client.query(`
+          update assets set
+            asset_code = $2,
+            asset_name = $3,
+            asset_type = $4,
+            campus_name = $5,
+            faculty_or_unit = $6,
+            address = $7,
+            ownership_status = $8,
+            condition_status = $9,
+            verification_status = $10,
+            latitude = $11,
+            longitude = $12,
+            geometry_type = $13,
+            geometry_geojson = $14,
+            is_deleted = $15,
+            status_sertifikasi = $16,
+            nilai_perolehan_pertama = $17,
+            luas_bangunan = $18,
+            no_psp = $19,
+            alamat = $20,
+            kode_satker = $21,
+            nama_satker = $22,
+            updated_at = now()
+          where id = $1
+          returning *
+        `, [
+          asset.id,
+          asset.asset_code,
+          asset.asset_name,
+          asset.asset_type,
+          asset.campus_name,
+          asset.faculty_or_unit,
+          asset.address ?? asset.alamat ?? null,
+          asset.ownership_status ?? asset.status_sertifikasi ?? null,
+          asset.condition_status,
+          asset.verification_status ?? 'draft',
+          asset.latitude,
+          asset.longitude,
+          asset.geometry_type,
+          asset.geometry_geojson ? JSON.stringify(asset.geometry_geojson) : null,
+          asset.is_deleted ?? 0,
+          asset.status_sertifikasi ?? asset.ownership_status ?? null,
+          asset.nilai_perolehan_pertama ?? asset.nilai_perolehan ?? null,
+          asset.luas_bangunan ?? null,
+          asset.no_psp ?? null,
+          asset.alamat ?? asset.address ?? null,
+          asset.kode_satker ?? null,
+          asset.nama_satker ?? null,
+        ]);
+        savedRow = updateRes.rows[0];
+      }
+    }
+
+    if (!savedRow) {
+      const insertRes = await client.query(`
+        insert into assets (
+          asset_code, asset_name, asset_type, campus_name, faculty_or_unit, address,
+          ownership_status, condition_status, verification_status, latitude, longitude,
+          geometry_type, geometry_geojson, is_deleted, status_sertifikasi,
+          nilai_perolehan_pertama, luas_bangunan, no_psp, alamat, kode_satker, nama_satker
+        )
+        values ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21)
+        returning *
+      `, [
+        asset.asset_code,
+        asset.asset_name,
+        asset.asset_type,
+        asset.campus_name,
+        asset.faculty_or_unit,
+        asset.address ?? asset.alamat ?? null,
+        asset.ownership_status ?? asset.status_sertifikasi ?? null,
+        asset.condition_status,
+        asset.verification_status ?? 'draft',
+        asset.latitude,
+        asset.longitude,
+        asset.geometry_type,
+        asset.geometry_geojson ? JSON.stringify(asset.geometry_geojson) : null,
+        asset.is_deleted ?? 0,
+        asset.status_sertifikasi ?? asset.ownership_status ?? null,
+        asset.nilai_perolehan_pertama ?? asset.nilai_perolehan ?? null,
+        asset.luas_bangunan ?? null,
+        asset.no_psp ?? null,
+        asset.alamat ?? asset.address ?? null,
+        asset.kode_satker ?? null,
+        asset.nama_satker ?? null,
+      ]);
+      savedRow = insertRes.rows[0];
+    }
+
+    if (!savedRow) {
+      throw new Error('Gagal menyimpan atau memperbarui aset ke database.');
+    }
+
+    const savedAssetId = Number(savedRow.id);
     const photoPaths = asset.photo_paths ?? [];
     const photoUrls = asset.photo_urls ?? [];
     const photoNames = asset.photo_names ?? [];
@@ -285,9 +328,16 @@ export async function upsertAssetToDb(asset: Asset): Promise<Asset> {
       await client.query(docBatch.query, docBatch.params);
     }
 
-    await client.query("select setval('assets_id_seq', (select max(id) from assets))");
+    await client.query("select setval('assets_id_seq', (select coalesce(max(id), 1) from assets))");
 
-    return normalizeAsset({ ...rows[0], photo_paths: photoPaths, photo_urls: photoPaths.map((photoPath, index) => photoUrls[index] ?? `/uploads/${photoPath}`), photo_names: photoNames, document_paths: documentPaths, document_names: documentNames });
+    return normalizeAsset({
+      ...savedRow,
+      photo_paths: photoPaths,
+      photo_urls: photoPaths.map((photoPath, index) => photoUrls[index] ?? `/uploads/${photoPath}`),
+      photo_names: photoNames,
+      document_paths: documentPaths,
+      document_names: documentNames,
+    });
   });
 }
 
@@ -384,7 +434,7 @@ export async function bulkUpsertAssetsToDb(assets: Asset[]): Promise<Asset[]> {
       results.push(normalizeAsset({ ...rows[0], photo_paths: photoPaths, photo_urls: photoPaths.map((p, i) => photoUrls[i] ?? `/uploads/${p}`), photo_names: photoNames, document_paths: documentPaths, document_names: documentNames }));
     }
 
-    await client.query("select setval('assets_id_seq', (select max(id) from assets))");
+    await client.query("select setval('assets_id_seq', (select coalesce(max(id), 1) from assets))");
     return results;
   });
 }

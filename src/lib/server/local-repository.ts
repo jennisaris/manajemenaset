@@ -28,6 +28,7 @@ export {
   deleteIssueFromDb,
   getIssueProgressFromDb,
   upsertIssueProgressToDb,
+  deleteIssueProgressFromDb,
 } from '@/lib/server/repositories/issue-repository';
 
 export {

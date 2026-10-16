@@ -201,3 +201,9 @@ export async function upsertIssueProgressToDb(progress: IssueProgress): Promise<
     return normalizeIssueProgress(rows[0]);
   });
 }
+
+export async function deleteIssueProgressFromDb(id: number): Promise<boolean> {
+  const res = await query('delete from issue_progress where id = $1', [id]);
+  return (res.rowCount ?? 0) > 0;
+}
+

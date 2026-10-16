@@ -22,3 +22,8 @@ export async function getIssueProgress(): Promise<IssueProgress[]> {
 export async function persistIssueProgress(progress: IssueProgress): Promise<{ progress: IssueProgress; mode: 'postgres' | 'demo' }> {
   return apiJson<{ progress: IssueProgress; mode: 'postgres' | 'demo' }>('/api/issues/progress', { method: 'POST', body: JSON.stringify(progress) });
 }
+
+export async function deleteIssueProgress(progressId: number): Promise<{ success: boolean; mode: 'postgres' | 'demo' }> {
+  return apiJson<{ success: boolean; mode: 'postgres' | 'demo' }>(`/api/issues/progress?id=${progressId}`, { method: 'DELETE' });
+}
+

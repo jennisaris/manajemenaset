@@ -83,10 +83,13 @@ export async function POST(request: Request) {
   if (auth.user.role === 'Operator Kampus') {
     if (auth.user.kode_satker) asset.kode_satker = auth.user.kode_satker;
     if (auth.user.university_name) asset.campus_name = auth.user.university_name;
+    // Operator mengajukan aset dengan status menunggu_verifikasi atau draft
+    asset.verification_status = asset.verification_status === 'draft' ? 'draft' : 'menunggu_verifikasi';
+  } else {
+    // Superadmin dapat menetapkan status terverifikasi, revisi, draft, atau tidak_aktif
+    asset.verification_status = asset.verification_status ?? 'terverifikasi';
   }
 
-  // Auto-approve assets directly upon saving
-  asset.verification_status = 'terverifikasi';
   return NextResponse.json({ asset: await upsertAssetToDb(asset), mode: 'postgres' });
 }
 

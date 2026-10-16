@@ -257,3 +257,82 @@ export async function updateOwnPassword(userId: string, currentPassword: string,
   await query('update profiles set password_hash = $1, updated_at = now() where id = $2', [hashPassword(nextPassword), userId]);
   return { ok: true as const };
 }
+
+export async function adminCreateUser(input: {
+  full_name: string;
+  email: string;
+  password?: string;
+  role_name: UserRole;
+  campus_name?: string | null;
+  status?: UserStatus;
+}): Promise<UserProfile> {
+  const cleanEmail = input.email.trim().toLowerCase();
+  const passwordToHash = input.password && input.password.trim() ? input.password.trim() : 'Password123!';
+  const hashedPassword = hashPassword(passwordToHash);
+
+  const roleRes = await query(`select id from roles where name = $1 limit 1`, [input.role_name]);
+  const roleId = roleRes.rows[0]?.id ?? null;
+
+  const existingRes = await query(`select id from profiles where lower(email) = lower($1)`, [cleanEmail]);
+  if (existingRes.rows.length > 0) {
+    throw new Error(`Email ${cleanEmail} sudah terdaftar dalam sistem.`);
+  }
+
+  const { rows } = await query(`
+    insert into profiles (full_name, email, password_hash, status, university_name, role_id)
+    values ($1, $2, $3, $4, $5, $6)
+    returning *
+  `, [
+    input.full_name.trim(),
+    cleanEmail,
+    hashedPassword,
+    input.status ?? 'aktif',
+    input.campus_name ?? null,
+    roleId,
+  ]);
+
+  const roleFetch = await query(`select p.*, r.name as role_name from profiles p left join roles r on r.id = p.role_id where p.id = $1`, [rows[0].id]);
+  return normalizeUserProfile(roleFetch.rows[0] ?? rows[0]);
+}
+
+export async function adminUpdateUser(input: {
+  id: string;
+  full_name?: string;
+  email?: string;
+  role_name?: UserRole;
+  campus_name?: string | null;
+  status?: UserStatus;
+}): Promise<UserProfile> {
+  const roleRes = input.role_name ? await query(`select id from roles where name = $1 limit 1`, [input.role_name]) : { rows: [] };
+  const roleId = roleRes.rows[0]?.id ?? null;
+
+  const { rows } = await query(`
+    update profiles
+    set full_name = coalesce($1, full_name),
+        email = coalesce($2, email),
+        role_id = coalesce($3, role_id),
+        university_name = case when $4::boolean then $5 else university_name end,
+        status = coalesce($6, status),
+        updated_at = now()
+    where id = $7
+    returning *
+  `, [
+    input.full_name?.trim() ?? null,
+    input.email ? input.email.trim().toLowerCase() : null,
+    roleId,
+    input.campus_name !== undefined,
+    input.campus_name || null,
+    input.status ?? null,
+    input.id,
+  ]);
+
+  if (!rows[0]) throw new Error('User tidak ditemukan.');
+  const roleFetch = await query(`select p.*, r.name as role_name from profiles p left join roles r on r.id = p.role_id where p.id = $1`, [rows[0].id]);
+  return normalizeUserProfile(roleFetch.rows[0] ?? rows[0]);
+}
+
+export async function adminDeleteUser(userId: string): Promise<boolean> {
+  const res = await query('delete from profiles where id = $1', [userId]);
+  return (res.rowCount ?? 0) > 0;
+}
+

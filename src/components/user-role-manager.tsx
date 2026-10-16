@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { CheckCircle2, Download, FileText, Lock, Pencil, Plus, ShieldCheck, UserCheck, UserRound, UsersRound, X, XCircle } from 'lucide-react';
+import { CheckCircle2, Download, FileText, Lock, Pencil, Plus, ShieldCheck, Trash2, UserCheck, UserRound, UsersRound, X, XCircle } from 'lucide-react';
 import { canManageUsers, roleDescriptions, roles } from '@/lib/auth';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { UserProfile, UserRole } from '@/lib/types';
@@ -58,7 +58,7 @@ export function UserRoleManager({
   useEffect(() => {
     setActiveTab(initialTab);
   }, [initialTab]);
-  const [users, setUsers] = useState<UserProfile[]>(demoUsers.map(normalizeUser));
+  const [users, setUsers] = useState<UserProfile[]>([]);
   const [pendingUsers, setPendingUsers] = useState<UserProfile[]>([]);
   const [draft, setDraft] = useState<DraftUser | null>(null);
 
@@ -71,7 +71,7 @@ export function UserRoleManager({
   const [rejectReason, setRejectReason] = useState<string>('');
 
   const [loadingAction, setLoadingAction] = useState(false);
-  const [message, setMessage] = useState(isSupabaseConfigured ? 'Kelola user dan persetujuan akun operator baru.' : 'Mode demo: perubahan User & Role tersimpan di repositori lokal.');
+  const [message, setMessage] = useState('Kelola user dan persetujuan akun operator baru.');
 
   const sortedCampusOptions = useMemo(() => {
     const values = Array.from(new Set([...campusOptions, 'Kampus Utama'].filter(Boolean))).sort((a, b) => a.localeCompare(b, 'id-ID'));
@@ -92,9 +92,24 @@ export function UserRoleManager({
     }
   }
 
+  async function loadAllUsers() {
+    try {
+      const res = await fetch('/api/admin/users');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data.users)) {
+          setUsers(data.users.map(normalizeUser));
+        }
+      }
+    } catch (err) {
+      console.error('Gagal memuat daftar user:', err);
+    }
+  }
+
   useEffect(() => {
     if (canManage) {
       loadPendingUsers();
+      loadAllUsers();
     }
   }, [canManage]);
 
@@ -116,55 +131,85 @@ export function UserRoleManager({
     event.preventDefault();
     if (!draft || !canManage) return;
     const scopedCampus = draft.role_name === 'Operator Kampus' ? draft.campus_name.trim() : null;
-    const nextUser: UserProfile = {
-      id: draft.id ?? `demo-${Date.now()}`,
-      full_name: draft.full_name.trim(),
-      email: draft.email.trim(),
-      role_name: draft.role_name,
-      campus_name: scopedCampus,
-      university_name: scopedCampus,
-      status: draft.status,
-    };
 
-    if (!nextUser.full_name || !nextUser.email) {
+    if (!draft.full_name?.trim() || !draft.email?.trim()) {
       setMessage('Nama dan email wajib diisi.');
       return;
     }
 
-    if (isSupabaseConfigured && !nextUser.id.startsWith('demo-')) {
-      const { error } = await supabase.from('profiles').update({
-        full_name: nextUser.full_name,
-        email: nextUser.email,
-        role_id: roleToId(nextUser.role_name),
-        university_name: nextUser.university_name,
-        status: nextUser.status,
-      }).eq('id', nextUser.id);
-      if (error) {
-        setMessage(`Gagal update profile: ${error.message}`);
-        return;
+    setLoadingAction(true);
+    try {
+      if (draft.id) {
+        const res = await fetch('/api/admin/users', {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: draft.id,
+            full_name: draft.full_name.trim(),
+            email: draft.email.trim(),
+            role_name: draft.role_name,
+            campus_name: scopedCampus,
+            status: draft.status,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal memperbarui user.');
+        setMessage(`User ${draft.full_name} berhasil diperbarui.`);
+      } else {
+        const res = await fetch('/api/admin/users', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            full_name: draft.full_name.trim(),
+            email: draft.email.trim(),
+            role_name: draft.role_name,
+            campus_name: scopedCampus,
+            status: draft.status,
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Gagal membuat user baru.');
+        setMessage(`User ${draft.full_name} berhasil dibuat.`);
       }
+      await loadAllUsers();
+      closeForm();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Gagal menyimpan user.');
+    } finally {
+      setLoadingAction(false);
     }
-
-    setUsers((current) => {
-      const exists = current.some((user) => user.id === nextUser.id);
-      return exists ? current.map((user) => user.id === nextUser.id ? nextUser : user) : [nextUser, ...current];
-    });
-    setMessage('User berhasil disimpan.');
-    closeForm();
   }
 
   async function toggleStatus(user: UserProfile) {
     if (!canManage) return;
     const nextStatus = user.status === 'aktif' ? 'nonaktif' : 'aktif';
-    if (isSupabaseConfigured && !user.id.startsWith('demo-')) {
-      const { error } = await supabase.from('profiles').update({ status: nextStatus }).eq('id', user.id);
-      if (error) {
-        setMessage(`Gagal mengubah status: ${error.message}`);
-        return;
-      }
+    try {
+      const res = await fetch('/api/admin/users', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: user.id, status: nextStatus }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal mengubah status user.');
+      setMessage(`User ${user.full_name} diubah menjadi ${nextStatus}.`);
+      await loadAllUsers();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Gagal mengubah status.');
     }
-    setUsers((current) => current.map((item) => item.id === user.id ? { ...item, status: nextStatus } : item));
-    setMessage(`User ${user.full_name} diubah menjadi ${nextStatus}.`);
+  }
+
+  async function handleDeleteUser(user: UserProfile) {
+    if (!canManage) return;
+    if (!confirm(`Hapus pengguna "${user.full_name}" (${user.email}) secara permanen dari sistem?`)) return;
+    try {
+      const res = await fetch(`/api/admin/users?id=${user.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Gagal menghapus user.');
+      setMessage(`User ${user.full_name} berhasil dihapus.`);
+      await loadAllUsers();
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Gagal menghapus user.');
+    }
   }
 
   async function handleApproveSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -440,6 +485,15 @@ export function UserRoleManager({
                         className="grid h-9 w-9 place-items-center rounded-xl border border-sky-100 bg-white text-slate-600 transition hover:bg-slate-50 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:text-slate-300 disabled:scale-100"
                       >
                         <Lock className="h-4 w-4" />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteUser(user)}
+                        disabled={!canManage}
+                        title="Hapus User"
+                        className="grid h-9 w-9 place-items-center rounded-xl border border-rose-100 bg-white text-rose-600 transition hover:bg-rose-50 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:text-slate-300 disabled:scale-100"
+                      >
+                        <Trash2 className="h-4 w-4" />
                       </button>
                     </div>
                   </div>

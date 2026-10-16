@@ -2,7 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
 import { Eye, FileText, Filter, MapPinned, Pencil, Plus, RotateCcw, Search, Trash2, UploadCloud, X } from 'lucide-react';
-import { deleteIssue, getIssueProgress, persistIssue, persistIssueProgress } from '@/lib/issue-crud';
+import { deleteIssue, deleteIssueProgress, getIssueProgress, persistIssue, persistIssueProgress } from '@/lib/issue-crud';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { createAssetDocumentPreviewUrl, uploadIssueProgressDocument } from '@/lib/storage';
 import type { Asset, AssetIssue, IssueProgress, ProgressDocumentItem } from '@/lib/types';
@@ -423,6 +423,18 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
       setMessage(error instanceof Error ? error.message : 'Gagal menghapus permasalahan.');
     } finally {
       setDeletingId(null);
+    }
+  }
+
+  async function handleDeleteProgress(progress: IssueProgress) {
+    if (!canManage) return;
+    if (!confirm(`Hapus catatan tindak lanjut tanggal ${formatDateIndo(progress.progress_date)}?`)) return;
+    try {
+      await deleteIssueProgress(progress.id);
+      setProgressItems((prev) => prev.filter((p) => p.id !== progress.id));
+      setMessage('Tindak lanjut berhasil dihapus.');
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : 'Gagal menghapus tindak lanjut.');
     }
   }
 
@@ -1052,14 +1064,24 @@ export function IssueManager({ assets, issues, canManage, onIssuesChange }: Issu
 
                             <div className="flex items-center gap-1.5 shrink-0">
                               {canManage && (
-                                <button
-                                  type="button"
-                                  onClick={() => openEditProgress(progress)}
-                                  title="Edit Tindak Lanjut"
-                                  className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] shrink-0"
-                                >
-                                  <Pencil className="h-4 w-4" />
-                                </button>
+                                <>
+                                  <button
+                                    type="button"
+                                    onClick={() => openEditProgress(progress)}
+                                    title="Edit Tindak Lanjut"
+                                    className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-slate-700 border border-slate-200/60 transition hover:bg-[#165DFF] hover:text-white hover:border-[#165DFF] shrink-0"
+                                  >
+                                    <Pencil className="h-4 w-4" />
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleDeleteProgress(progress)}
+                                    title="Hapus Tindak Lanjut"
+                                    className="grid h-9 w-9 place-items-center rounded-xl bg-slate-100/90 text-rose-600 border border-slate-200/60 transition hover:bg-rose-600 hover:text-white hover:border-rose-600 shrink-0"
+                                  >
+                                    <Trash2 className="h-4 w-4" />
+                                  </button>
+                                </>
                               )}
                             </div>
                           </div>

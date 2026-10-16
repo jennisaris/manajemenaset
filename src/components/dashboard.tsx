@@ -343,12 +343,14 @@ export function Dashboard({
         return 'Data Aset - Mesin Peralatan Non TIK';
       case '#verification':
         return 'Verifikasi Aset';
-      case '#upload':
-        return 'Unggah Data Aset Massal';
+      case '#utilizations':
       case '#utilization':
         return 'Pemanfaatan Aset';
+      case '#disposals':
       case '#disposal':
         return 'Penghapusan BMN';
+      case '#upload':
+        return 'Unggah Data Aset Massal';
       case '#issues':
         return 'Permasalahan Aset';
       case '#reports':
@@ -915,12 +917,11 @@ export function Dashboard({
           </section>
         )}
 
-
-        {/* Utilization Manager */}
-        {pageHash === '#utilization' && (
-          <section className="mt-6" id="utilization">
+        {/* Pemanfaatan Aset */}
+        {(pageHash === '#utilizations' || pageHash === '#utilization') && (
+          <section className="mt-6" id="utilizations">
             <UtilizationManager
-              key={`utilization-${effectiveUniversity || 'all'}`}
+              key={`utilizations-${effectiveUniversity || 'all'}`}
               assets={displayedAssets}
               utilizations={scopedUtilizations}
               canManage={canManage}
@@ -929,12 +930,13 @@ export function Dashboard({
           </section>
         )}
 
-        {/* BMN Disposal Manager */}
-        {pageHash === '#disposal' && (
-          <section className="mt-6" id="disposal">
+        {/* Penghapusan BMN */}
+        {(pageHash === '#disposals' || pageHash === '#disposal') && (
+          <section className="mt-6" id="disposals">
             <BmnDisposalManager
               currentRole={role}
               universityName={universityName}
+              kodeSatker={role === 'Operator Kampus' ? (effectiveUniversity || undefined) : undefined}
             />
           </section>
         )}

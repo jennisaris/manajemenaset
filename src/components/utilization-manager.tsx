@@ -118,7 +118,7 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
 
   function openCreate() {
     if (!canManage || assetOptions.length === 0) return;
-    setDraft(emptyUtilization(Math.max(0, ...items.map((item) => item.id)) + 1, assetOptions[0].id));
+    setDraft(emptyUtilization(0, assetOptions[0].id));
     setPksFile(null);
     setPksPreviewUrl(null);
     setPhotoFiles([]);
@@ -304,54 +304,42 @@ export function UtilizationManager({ assets, utilizations, canManage, onUtilizat
     }
 
     setIsSaving(true);
-    setMessage(isSupabaseConfigured ? 'Menyimpan pemanfaatan ke PostgreSQL lokal...' : 'Menyimpan pemanfaatan ke state lokal demo...');
+    setMessage('Menyimpan pemanfaatan ke PostgreSQL lokal...');
 
     try {
-      const isNew = !items.some((item) => item.id === draft.id);
+      const isNew = !items.some((item) => item.id === draft.id && draft.id > 0);
       const autoStatus = calculateAutomaticStatus(draft.start_date, draft.end_date);
       let result = await persistUtilization({ ...draft, status: autoStatus, third_party_name: draft.third_party_name.trim() }, { isNew });
       let saved = result.utilization;
 
       if (pksFile) {
-        setMessage(isSupabaseConfigured ? 'Mengupload dokumen PKS PDF...' : 'Menyimpan preview PKS lokal...');
-        if (isSupabaseConfigured) {
-          const uploaded = await uploadUtilizationPks({ utilizationId: saved.id, assetId: saved.asset_id, file: pksFile });
-          result = await persistUtilization({
-            ...saved,
-            pks_document_name: pksFile.name,
-            pks_document_path: uploaded.path,
-            pks_document_url: null,
-          });
-          saved = result.utilization;
-        } else {
-          saved = { ...saved, pks_document_name: pksFile.name, pks_document_url: pksPreviewUrl };
-        }
+        setMessage('Mengupload dokumen PKS PDF ke storage...');
+        const uploaded = await uploadUtilizationPks({ utilizationId: saved.id, assetId: saved.asset_id, file: pksFile });
+        result = await persistUtilization({
+          ...saved,
+          pks_document_name: pksFile.name,
+          pks_document_path: uploaded.path,
+          pks_document_url: null,
+        });
+        saved = result.utilization;
       }
 
       if (photoFiles.length > 0) {
-        setMessage(isSupabaseConfigured ? 'Mengupload foto pemanfaatan...' : 'Menyimpan preview foto pemanfaatan lokal...');
-        if (isSupabaseConfigured) {
-          const uploadedPhotos = await Promise.all(photoFiles.map((file) => uploadUtilizationPhoto({ utilizationId: saved.id, assetId: saved.asset_id, file })));
-          result = await persistUtilization({
-            ...saved,
-            photo_names: [...(saved.photo_names ?? []), ...photoFiles.map((file) => file.name)],
-            photo_paths: [...(saved.photo_paths ?? []), ...uploadedPhotos.map((photo) => photo.path)],
-            photo_urls: [...(saved.photo_urls ?? []), ...uploadedPhotos.map((photo) => photo.publicUrl)],
-          });
-          saved = result.utilization;
-        } else {
-          saved = {
-            ...saved,
-            photo_names: [...(saved.photo_names ?? []), ...photoFiles.map((file) => file.name)],
-            photo_urls: [...(saved.photo_urls ?? []), ...photoPreviewUrls],
-          };
-        }
+        setMessage('Mengupload foto pemanfaatan ke storage...');
+        const uploadedPhotos = await Promise.all(photoFiles.map((file) => uploadUtilizationPhoto({ utilizationId: saved.id, assetId: saved.asset_id, file })));
+        result = await persistUtilization({
+          ...saved,
+          photo_names: [...(saved.photo_names ?? []), ...photoFiles.map((file) => file.name)],
+          photo_paths: [...(saved.photo_paths ?? []), ...uploadedPhotos.map((photo) => photo.path)],
+          photo_urls: [...(saved.photo_urls ?? []), ...uploadedPhotos.map((photo) => photo.publicUrl)],
+        });
+        saved = result.utilization;
       }
 
       const nextItems = items.some((item) => item.id === saved.id) ? items.map((item) => item.id === saved.id ? saved : item) : [saved, ...items];
       setItems(nextItems);
       onUtilizationsChange(nextItems);
-      setMessage(result.mode === 'postgres' ? 'Pemanfaatan, dokumen PKS, dan foto berhasil disimpan ke PostgreSQL lokal.' : 'Pemanfaatan berhasil disimpan di mode demo.');
+      setMessage('Pemanfaatan, dokumen PKS, dan foto berhasil disimpan ke database.');
       closeForm();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : 'Gagal menyimpan pemanfaatan.');
